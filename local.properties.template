@@ -1,0 +1,13 @@
+## This file is a template for local.properties
+# Copy this file to local.properties and fill in your actual values
+# 
+# This file should *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+
+# Location of the SDK. This is only used by Gradle.
+# Replace with your actual Android SDK path
+sdk.dir=C\:\\path\\to\\your\\Android\\Sdk
+
+# API Keys
+# Get your NASA API key from: https://api.nasa.gov/
+nasa.api.key=YOUR_NASA_API_KEY_HERE
