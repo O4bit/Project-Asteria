@@ -1,2 +1,2 @@
 # projectAsteria
-working on a readme (its 1am)
+working on a readme.. (its 1am)
