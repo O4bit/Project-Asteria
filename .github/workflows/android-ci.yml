@@ -79,3 +79,88 @@ jobs:
         with:
           name: app-release-apk
           path: app/build/outputs/apk/release/*.apk
+
+      - name: Install Firebase CLI (optional for App Distribution)
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APP_ID_DEBUG: ${{ secrets.FIREBASE_APP_ID_DEBUG }}
+          FIREBASE_APP_ID_RELEASE: ${{ secrets.FIREBASE_APP_ID_RELEASE }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if { [ -n "${FIREBASE_APP_ID}" ] || [ -n "${FIREBASE_APP_ID_DEBUG}" ] || [ -n "${FIREBASE_APP_ID_RELEASE}" ]; } \
+             && { [ -n "${FIREBASE_SERVICE_ACCOUNT_JSON}" ] || [ -n "${FIREBASE_TOKEN}" ]; }; then
+            npm install -g firebase-tools
+          else
+            echo "Skipping Firebase CLI install (missing FIREBASE_APP_ID[_DEBUG|_RELEASE] or credentials)"
+          fi
+
+      - name: Configure Firebase credentials (service account or token)
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APP_ID_DEBUG: ${{ secrets.FIREBASE_APP_ID_DEBUG }}
+          FIREBASE_APP_ID_RELEASE: ${{ secrets.FIREBASE_APP_ID_RELEASE }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if { [ -n "${FIREBASE_APP_ID}" ] || [ -n "${FIREBASE_APP_ID_DEBUG}" ] || [ -n "${FIREBASE_APP_ID_RELEASE}" ]; } \
+             && { [ -n "${FIREBASE_SERVICE_ACCOUNT_JSON}" ] || [ -n "${FIREBASE_TOKEN}" ]; }; then
+            if [ -n "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]; then
+              echo "$FIREBASE_SERVICE_ACCOUNT_JSON" > firebase-sa.json
+              echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/firebase-sa.json" >> $GITHUB_ENV
+            elif [ -n "${FIREBASE_TOKEN}" ]; then
+              echo "FIREBASE_TOKEN=$FIREBASE_TOKEN" >> $GITHUB_ENV
+            fi
+          else
+            echo "Skipping Firebase credentials configuration (missing app id or credentials)"
+          fi
+
+      - name: Distribute Debug to Firebase App Distribution
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APP_ID_DEBUG: ${{ secrets.FIREBASE_APP_ID_DEBUG }}
+          APP_DIST_GROUPS: ${{ secrets.APP_DIST_GROUPS }}
+          APP_DIST_TESTERS: ${{ secrets.APP_DIST_TESTERS }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          APP_ID="${FIREBASE_APP_ID_DEBUG:-$FIREBASE_APP_ID}"
+          if [ -n "$APP_ID" ] && { [ -n "${FIREBASE_SERVICE_ACCOUNT_JSON}" ] || [ -n "${FIREBASE_TOKEN}" ]; }; then
+            RELEASE_NOTES="CI build ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7}) - debug"
+            if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
+              firebase appdistribution:distribute app/build/outputs/apk/debug/app-debug.apk \
+                --app "$APP_ID" \
+                ${APP_DIST_GROUPS:+--groups "$APP_DIST_GROUPS"} \
+                ${APP_DIST_TESTERS:+--testers "$APP_DIST_TESTERS"} \
+                --release-notes "$RELEASE_NOTES"
+            else
+              echo "Debug APK not found; skipping distribution"
+            fi
+          else
+            echo "Skipping Debug distribution (missing app id or credentials)"
+          fi
+
+      - name: Distribute Release to Firebase App Distribution
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APP_ID_RELEASE: ${{ secrets.FIREBASE_APP_ID_RELEASE }}
+          APP_DIST_GROUPS: ${{ secrets.APP_DIST_GROUPS }}
+          APP_DIST_TESTERS: ${{ secrets.APP_DIST_TESTERS }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          APP_ID="${FIREBASE_APP_ID_RELEASE:-$FIREBASE_APP_ID}"
+          if [ -n "$APP_ID" ] && { [ -n "${FIREBASE_SERVICE_ACCOUNT_JSON}" ] || [ -n "${FIREBASE_TOKEN}" ]; }; then
+            RELEASE_NOTES="CI build ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7}) - release"
+            if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+              firebase appdistribution:distribute app/build/outputs/apk/release/app-release.apk \
+                --app "$APP_ID" \
+                ${APP_DIST_GROUPS:+--groups "$APP_DIST_GROUPS"} \
+                ${APP_DIST_TESTERS:+--testers "$APP_DIST_TESTERS"} \
+                --release-notes "$RELEASE_NOTES"
+            else
+              echo "Release APK not found; skipping distribution"
+            fi
+          else
+            echo "Skipping Release distribution (missing app id or credentials)"
+          fi
