@@ -93,17 +93,14 @@ fun FullscreenImageViewer(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Control UI visibility
     var showControls by remember { mutableStateOf(true) }
     val controlsAlpha by animateFloatAsState(
         targetValue = if (showControls) 1f else 0f,
         label = "controlsAlpha"
     )
 
-    // State for wallpaper confirmation dialog
     var showWallpaperDialog by remember { mutableStateOf(false) }
 
-    // Format date for display
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val displayFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
     val formattedDate = try {
@@ -114,19 +111,14 @@ fun FullscreenImageViewer(
         astronomyPicture.date
     }
 
-    // Auto-hide controls after a period of inactivity
     LaunchedEffect(showControls) {
         if (showControls) {
-            // Only hide controls automatically if they're currently shown
             try {
                 delay(3000)
-                // Check if showControls is still true before hiding
-                // This prevents hiding right after a user just showed them
                 if (showControls) {
                     showControls = false
                 }
             } catch (_: Exception) {
-                // Catch any cancellation exceptions when recomposing
             }
         }
     }
@@ -203,18 +195,16 @@ fun FullscreenImageViewer(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .systemBarsPadding() // Handle insets for notches and cutouts
+        .systemBarsPadding()
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onTap = { /* Single tap does nothing - UI toggle only on double tap */ },
+            onTap = { },
                     onDoubleTap = { 
-                        // Double-tap toggles UI controls (like Google Photos)
                         showControls = !showControls 
                     }
                 )
             }
     ) {
-        // The fullscreen image with zoom functionality
         ZoomableImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(astronomyPicture.hdUrl ?: astronomyPicture.url)
@@ -223,7 +213,6 @@ fun FullscreenImageViewer(
             contentDescription = astronomyPicture.title,
         )
 
-        // Top bar with back button - using theme colors for consistency
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -270,7 +259,6 @@ fun FullscreenImageViewer(
             }
         }
 
-        // Bottom action buttons - using theme colors for consistency
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -288,7 +276,6 @@ fun FullscreenImageViewer(
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            // Download button
             FilledTonalIconButton(
                 onClick = {
                     val success = downloadImage(context, astronomyPicture)
@@ -311,7 +298,6 @@ fun FullscreenImageViewer(
                 )
             }
 
-            // Share button
             FilledTonalIconButton(
                 onClick = { shareImageOnly(context, astronomyPicture) },
                 modifier = Modifier.size(48.dp)
@@ -324,7 +310,6 @@ fun FullscreenImageViewer(
                 )
             }
 
-            // Wallpaper button
             FilledTonalIconButton(
                 onClick = { showWallpaperDialog = true },
                 modifier = Modifier.size(48.dp)
@@ -338,7 +323,6 @@ fun FullscreenImageViewer(
             }
         }
 
-        // Snackbar for notifications
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
@@ -359,10 +343,9 @@ fun FullscreenImageViewer(
  */
 private fun downloadImage(context: Context, astronomyPicture: AstronomyPicture): Boolean {
     try {
-        val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
+        val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url ?: return false
         val request = DownloadManager.Request(imageUrl.toUri())
 
-        // Use title and date to create a filename
         val filename = "NASA_${astronomyPicture.title.replace(" ", "_")}_${astronomyPicture.date}.jpg"
 
         request.apply {
@@ -386,9 +369,10 @@ private fun downloadImage(context: Context, astronomyPicture: AstronomyPicture):
  */
 private fun shareImageOnly(context: Context, astronomyPicture: AstronomyPicture) {
     val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
+    if (imageUrl == null) return
+    
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        // Only share the image URL with no additional text
         putExtra(Intent.EXTRA_TEXT, imageUrl)
     }
 
@@ -404,38 +388,30 @@ fun ZoomableImage(
     contentDescription: String?,
     modifier: Modifier = Modifier
 ) {
-    // State for zoom level and offset
     var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     
-    // Image size state for constraining pan limits
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     
-    // Calculate bounds for panning based on scale and image size
     val maxX = (imageSize.width * (scale - 1) / 2f)
     val maxY = (imageSize.height * (scale - 1) / 2f)
     
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
-        // Update scale with zoom limits
         scale = (scale * zoomChange).coerceIn(1f, 5f)
         
-        // Calculate new offset with constraints
         val newOffsetX = offset.x + offsetChange.x
         val newOffsetY = offset.y + offsetChange.y
         
-        // Apply constraints only when zoomed in
         offset = if (scale > 1f) {
             Offset(
                 x = newOffsetX.coerceIn(-maxX, maxX),
                 y = newOffsetY.coerceIn(-maxY, maxY)
             )
         } else {
-            // When at normal scale, reset offset
             Offset.Zero
         }
     }
     
-    // Reset zoom when content changes
     LaunchedEffect(model) {
         scale = 1f
         offset = Offset.Zero
@@ -461,10 +437,7 @@ fun ZoomableImage(
                     translationX = offset.x
                     translationY = offset.y
                 }
-                .onSizeChanged { size ->
-                    // Store the size of the composable for pan constraints
-                    imageSize = size
-                }
+                .onSizeChanged { size -> imageSize = size }
         )
     }
 }
@@ -478,13 +451,11 @@ private suspend fun downloadAndSetWallpaper(
     wallpaperType: Int = WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
 ): Boolean {
     try {
-        val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
+        val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url ?: return false
         val wallpaperManager = WallpaperManager.getInstance(context)
 
-        // Create a unique file name for the temporary wallpaper
         val fileName = "temp_wallpaper_${System.currentTimeMillis()}.jpg"
         
-        // Use app's cache directory instead of external storage to avoid permission issues
         val cacheDir = context.cacheDir
         val wallpaperDir = File(cacheDir, "wallpapers")
         if (!wallpaperDir.exists()) {
@@ -492,27 +463,23 @@ private suspend fun downloadAndSetWallpaper(
         }
         val wallpaperFile = File(wallpaperDir, fileName)
 
-        // Download the image using Coil instead of DownloadManager for better reliability
         withContext(Dispatchers.IO) {
             try {
                 val request = ImageRequest.Builder(context)
                     .data(imageUrl)
-                    .size(Size.ORIGINAL) // Keep original size
-                    .allowHardware(false) // Needed for bitmap extraction
+                    .size(Size.ORIGINAL)
+                    .allowHardware(false)
                     .build()
                 
-                // Get the ImageLoader instance
                 val imageLoader = ImageLoader(context)
                 
                 val result = (imageLoader.execute(request) as SuccessResult).drawable
                 val bitmap = (result as BitmapDrawable).bitmap
                 
-                // Use a safer approach to save bitmap
                 FileOutputStream(wallpaperFile).use { outputStream ->
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                 }
                 
-                // Scale down bitmap if it's too large to avoid OOM errors
                 val scaledBitmap = decodeSampledBitmapFromFile(
                     wallpaperFile.absolutePath,
                     Resources.getSystem().displayMetrics.widthPixels,
@@ -520,24 +487,21 @@ private suspend fun downloadAndSetWallpaper(
                 )
                 
                 try {
-                    // Use the provided wallpaper type flag
                     wallpaperManager.setBitmap(
                         scaledBitmap,
-                        null, // no crop area
-                        true, // allow lock screen
-                        wallpaperType // Use the parameter passed
+                        null,
+                        true,
+                        wallpaperType
                     )
                     return@withContext true
                 } catch (e: IOException) {
                     Log.e("Wallpaper", "Error setting wallpaper", e)
                     return@withContext false
                 } finally {
-                    // Clean up bitmaps to prevent memory leaks
                     scaledBitmap?.recycle()
                     if (bitmap != scaledBitmap) {
                         bitmap.recycle()
                     }
-                    // Delete temp file
                     wallpaperFile.delete()
                 }
             } catch (e: Exception) {
@@ -545,7 +509,6 @@ private suspend fun downloadAndSetWallpaper(
                 return@withContext false
             }
         }
-        // If we made it here without exceptions, return true
         return true
     } catch (e: Exception) {
         Log.e("Wallpaper", "Error in wallpaper process", e)
@@ -558,16 +521,13 @@ private suspend fun downloadAndSetWallpaper(
  */
 private fun decodeSampledBitmapFromFile(filePath: String, reqWidth: Int, reqHeight: Int): Bitmap? {
     return try {
-        // First decode with inJustDecodeBounds=true to check dimensions
         val options = BitmapFactory.Options().apply {
             inJustDecodeBounds = true
         }
         BitmapFactory.decodeFile(filePath, options)
         
-        // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
         
-        // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false
         BitmapFactory.decodeFile(filePath, options)
     } catch (e: Exception) {
@@ -587,8 +547,6 @@ private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int,
         val halfHeight = height / 2
         val halfWidth = width / 2
         
-        // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-        // height and width larger than the requested height and width.
         while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
             inSampleSize *= 2
         }

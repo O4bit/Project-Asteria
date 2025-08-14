@@ -1,6 +1,7 @@
 package space.o4bit.projectasteria.ui.components
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,6 +69,8 @@ fun SettingsScreen(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = modifier.fillMaxWidth()
@@ -95,7 +99,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Theme settings card
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -131,14 +134,11 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Theme preferences
-                    val context = LocalContext.current
                     val themePreferences = remember { ThemePreferencesRepository(context) }
                     val followSystem by themePreferences.followSystem.collectAsState(initial = true)
                     val isDarkMode by themePreferences.isDarkMode.collectAsState(initial = false)
                     val coroutineScope = rememberCoroutineScope()
 
-                    // Follow system theme toggle
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -173,7 +173,6 @@ fun SettingsScreen(
                         )
                     }
 
-                    // Only show manual theme toggle when not following system
                     if (!followSystem) {
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -231,7 +230,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Notifications settings card
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -267,7 +265,6 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Daily astronomy picture notifications
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -300,7 +297,6 @@ fun SettingsScreen(
                 }
             }
 
-            // App information card
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -350,10 +346,22 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    FilledTonalButton(
+                        onClick = {
+                            val githubIssueUrl = "https://github.com/O4bit/Project-Asteria/issues/new/choose"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(githubIssueUrl))
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Report Issues to GitHub")
+                    }
                 }
             }
 
-            // Credits card - Purple spacey themed
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -449,7 +457,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Add some space at the bottom for better scrolling
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
@@ -481,7 +488,6 @@ private fun TeamMemberItem(
             .clickable { context.startActivity(intent) }
             .padding(12.dp)
     ) {
-        // Profile picture with spacey border
         Surface(
             modifier = Modifier.size(52.dp),
             shape = CircleShape,

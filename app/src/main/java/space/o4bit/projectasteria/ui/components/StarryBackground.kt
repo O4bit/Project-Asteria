@@ -30,128 +30,163 @@ import kotlin.random.Random
 @Composable
 fun StarryBackground(
     modifier: Modifier = Modifier,
-    starsCount: Int = 100,
+    starsCount: Int = 80,
     content: @Composable BoxScope.() -> Unit
 ) {
-    // Get theme colors to use for the space background gradient
     val surfaceColor = MaterialTheme.colorScheme.surface
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val onSurface = MaterialTheme.colorScheme.onSurface
 
-    // Background gradient using theme colors for better integration with Material 3
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
-            surfaceColor.copy(alpha = 0.95f),   // Slightly transparent surface color
-            surfaceColor,                       // Base surface color
-            surfaceColor.copy(alpha = 0.9f)     // Slightly different shade for gradient effect
+            surfaceColor.copy(alpha = 0.98f),
+            surfaceVariant.copy(alpha = 0.95f),
+            surfaceColor.copy(alpha = 0.92f),
+            surfaceColor
         )
     )
 
-    // Generate random stars positions
     val stars = remember {
         List(starsCount) {
             Star(
                 x = Random.nextFloat(),
                 y = Random.nextFloat(),
-                size = Random.nextFloat() * 2.5f + 0.5f,
-                alpha = Random.nextFloat() * 0.7f + 0.3f
+                size = Random.nextFloat() * 2.5f + 0.8f,
+                alpha = Random.nextFloat() * 0.6f + 0.4f,
+                twinkleSpeed = Random.nextFloat() * 2000 + 3000
             )
         }
     }
 
-    // Nebula positions for subtle color accents using theme colors
     val nebulae = remember {
-        List(3) {
+        List(5) {
             Nebula(
                 x = Random.nextFloat(),
                 y = Random.nextFloat(),
-                radius = Random.nextFloat() * 0.2f + 0.1f,
-                color = when (it % 3) {
-                    0 -> primaryColor.copy(alpha = 0.1f)     // Very subtle primary color
-                    1 -> secondaryColor.copy(alpha = 0.1f)   // Very subtle secondary color
-                    else -> tertiaryColor.copy(alpha = 0.1f) // Very subtle tertiary color
-                }
+                radius = Random.nextFloat() * 0.15f + 0.05f,
+                color = when (it % 4) {
+                    0 -> primaryColor.copy(alpha = 0.08f)
+                    1 -> secondaryColor.copy(alpha = 0.08f)
+                    2 -> tertiaryColor.copy(alpha = 0.08f)
+                    else -> onSurface.copy(alpha = 0.05f)
+                },
+                pulseSpeed = Random.nextFloat() * 4000 + 6000
             )
         }
     }
 
-    // Animation for twinkling stars
-    val infiniteTransition = rememberInfiniteTransition(label = "starTwinkle")
-    val twinkleAnimation = infiniteTransition.animateFloat(
-        initialValue = 0.7f,
+    val infiniteTransition = rememberInfiniteTransition(label = "starryBackground")
+    val twinkleBase = infiniteTransition.animateFloat(
+        initialValue = 0.3f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(5000, easing = LinearEasing),
+            animation = tween(4000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "twinkle"
+        label = "baseTwinkle"
     )
 
-    // Extract the color for stars here so it can be used in the Canvas
-    val starColor = MaterialTheme.colorScheme.onSurface
+    val nebulaPulse = infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(8000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "nebulaPulse"
+    )
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(brush = backgroundGradient)
     ) {
-        // Draw the starry background
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .alpha(twinkleAnimation.value)
+                .alpha(0.9f)
         ) {
-            // Draw nebulae first (they go behind stars)
             nebulae.forEach { nebula ->
-                drawNebula(nebula)
+                drawNebula(nebula, nebulaPulse.value)
             }
 
-            // Draw stars
             stars.forEach { star ->
-                drawStar(star, starColor)
+                val individualTwinkle = (twinkleBase.value + 
+                    kotlin.math.sin((System.currentTimeMillis() % star.twinkleSpeed.toLong()) / star.twinkleSpeed * 2 * kotlin.math.PI).toFloat() * 0.3f)
+                    .coerceIn(0.4f, 1f)
+                
+                drawStar(star, onSurface, individualTwinkle)
             }
         }
-
-        // Content goes on top of the starry background
         content()
     }
 }
 
+/**
+ * Data class representing a star with twinkling properties
+ */
 private data class Star(
     val x: Float,
     val y: Float,
     val size: Float,
-    val alpha: Float
+    val alpha: Float,
+    val twinkleSpeed: Float
 )
 
+/**
+ * Data class representing a nebula with pulse animation
+ */
 private data class Nebula(
     val x: Float,
     val y: Float,
     val radius: Float,
-    val color: Color
+    val color: Color,
+    val pulseSpeed: Float
 )
 
-private fun DrawScope.drawStar(star: Star, starColor: Color = Color.White) {
+/**
+ * Extension function to draw a star with twinkling effect
+ */
+private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: Float) {
     val x = star.x * size.width
     val y = star.y * size.height
+    val finalAlpha = (star.alpha * twinkleMultiplier).coerceIn(0.1f, 1f)
 
     drawCircle(
-        color = starColor,
+        color = starColor.copy(alpha = finalAlpha),
         radius = star.size,
-        center = Offset(x, y),
-        alpha = star.alpha
+        center = Offset(x, y)
     )
+    
+    if (star.size > 2f) {
+        drawCircle(
+            color = starColor.copy(alpha = finalAlpha * 0.3f),
+            radius = star.size * 1.8f,
+            center = Offset(x, y)
+        )
+    }
 }
 
-private fun DrawScope.drawNebula(nebula: Nebula) {
+/**
+ * Extension function to draw a nebula with pulse effect
+ */
+private fun DrawScope.drawNebula(nebula: Nebula, pulseMultiplier: Float) {
     val x = nebula.x * size.width
     val y = nebula.y * size.height
-    val radius = min(size.width, size.height) * nebula.radius
+    val radius = min(size.width, size.height) * nebula.radius * pulseMultiplier
 
     drawCircle(
         color = nebula.color,
         radius = radius,
+        center = Offset(x, y)
+    )
+    
+    drawCircle(
+        color = nebula.color.copy(alpha = nebula.color.alpha * 0.5f),
+        radius = radius * 1.5f,
         center = Offset(x, y)
     )
 }

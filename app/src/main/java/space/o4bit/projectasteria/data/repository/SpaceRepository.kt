@@ -10,19 +10,12 @@ import java.util.Date
 import java.util.Locale
 import java.util.Random
 
-/**
- * Repository for handling space data operations
- */
 class SpaceRepository(
     private val nasaApodService: NasaApodService = NasaApodService.create()
 ) {
-    /**
-     * Fetch today's astronomy picture with an added space fact
-     */
     suspend fun getTodaysAstronomyPicture(): EnhancedAstronomyPicture = withContext(Dispatchers.IO) {
         val apod = nasaApodService.getAstronomyPictureOfDay()
 
-        // Generate enhanced content with a space fact
         val spaceFact = getRandomSpaceFact()
         val notificationTitle = "Today's Space Discovery: ${apod.title}"
         val notificationBody = createNotificationBody(apod)
@@ -35,18 +28,12 @@ class SpaceRepository(
         )
     }
 
-    /**
-     * Fetch astronomy picture for a specific date with an added space fact
-     * Note: Currently unused but kept for future date-specific features
-     */
     @Suppress("unused")
     internal suspend fun getAstronomyPictureForDate(date: Date): EnhancedAstronomyPicture = withContext(Dispatchers.IO) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val formattedDate = dateFormat.format(date)
 
         val apod = nasaApodService.getAstronomyPictureOfDay(date = formattedDate)
-
-        // Generate enhanced content with a space fact
         val spaceFact = getRandomSpaceFact()
         val notificationTitle = "Space Discovery: ${apod.title}"
         val notificationBody = createNotificationBody(apod)
@@ -59,11 +46,7 @@ class SpaceRepository(
         )
     }
 
-    /**
-     * Create a notification body from the astronomy picture
-     */
     private fun createNotificationBody(apod: AstronomyPicture): String {
-        // Extract first sentence or a short excerpt from the explanation
         val explanation = apod.explanation
         val firstSentence = explanation.split(". ").firstOrNull()?.plus(".") ?: explanation
 
@@ -74,9 +57,6 @@ class SpaceRepository(
         }
     }
 
-    /**
-     * Get a random space fact to enhance the astronomy picture
-     */
     private fun getRandomSpaceFact(): String {
         val facts = listOf(
             "Light from the Sun takes about 8 minutes to reach Earth.",
