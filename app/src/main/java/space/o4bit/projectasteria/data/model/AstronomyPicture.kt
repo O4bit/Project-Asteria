@@ -11,7 +11,7 @@ data class AstronomyPicture(
     @param:Json(name = "media_type") val mediaType: String,
     @param:Json(name = "service_version") val serviceVersion: String,
     @param:Json(name = "title") val title: String,
-    @param:Json(name = "url") val url: String
+    @param:Json(name = "url") val url: String?
 )
 
 /**

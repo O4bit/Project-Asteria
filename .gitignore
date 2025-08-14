@@ -14,3 +14,10 @@
 .cxx
 local.properties
 google-services.json
+app/release/
+
+.kotlin/
+
+.idea/
+
+app/

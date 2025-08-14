@@ -23,10 +23,7 @@ interface NasaApodService {
     ): AstronomyPicture
 
     companion object {
-        // Base URL for NASA's API
         private const val BASE_URL = "https://api.nasa.gov/"
-
-        // API key loaded from BuildConfig, which gets it from local.properties
         private val NASA_API_KEY = BuildConfig.NASA_API_KEY
 
         fun create(): NasaApodService {

@@ -16,20 +16,15 @@ fun ThemedApp(content: @Composable () -> Unit) {
     val context = LocalContext.current
     val themePreferences = ThemePreferencesRepository(context)
 
-    // Get user preferences for theme
     val followSystem by themePreferences.followSystem.collectAsState(initial = true)
     val isDarkMode by themePreferences.isDarkMode.collectAsState(initial = false)
 
-    // Determine if we should use dark theme
     val darkTheme = if (followSystem) {
-        // Follow system default
         isSystemInDarkTheme()
     } else {
-        // Use user preference
         isDarkMode
     }
 
-    // Apply theme with dynamic Material You colors
     ProjectAsteriaTheme(darkTheme = darkTheme) {
         content()
     }

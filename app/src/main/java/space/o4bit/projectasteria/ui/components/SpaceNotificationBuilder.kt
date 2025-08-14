@@ -53,7 +53,8 @@ object SpaceNotificationBuilder {
         )
 
         // Try to load the image for a rich notification
-        val imageBitmap = loadImageBitmap(context, enhancedPicture.astronomyPicture.url)
+        val imageUrl = enhancedPicture.astronomyPicture.url ?: enhancedPicture.astronomyPicture.hdUrl
+        val imageBitmap = if (imageUrl != null) loadImageBitmap(context, imageUrl) else null
 
         // Build the notification with Material 3 styling
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
