@@ -54,6 +54,27 @@
             </intent-filter>
         </service>
 
+        <!-- App Widget Provider -->
+        <receiver
+            android:name=".widget.AsteriaAppWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/asteria_app_widget_info" />
+        </receiver>
+
+        <!-- Receiver to open app from widget with smooth animation -->
+        <receiver
+            android:name=".widget.WidgetClickReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="space.o4bit.projectasteria.ACTION_OPEN_APP_FROM_WIDGET" />
+            </intent-filter>
+        </receiver>
+
         <!-- WorkManager initialization -->
         <provider
             android:name="androidx.startup.InitializationProvider"

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.AstronomyPicture
+import space.o4bit.projectasteria.ui.components.StarryBackground
 
 /**
  * Full screen view for astronomy picture explanation
@@ -74,7 +75,6 @@ fun ExplanationDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Animated starry background
             StarryBackground {
                 Column(
                     modifier = Modifier
@@ -82,7 +82,6 @@ fun ExplanationDetailScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
-                // Image title card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -117,7 +116,6 @@ fun ExplanationDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Explanation card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -148,7 +146,6 @@ fun ExplanationDetailScreen(
                     }
                 }
 
-                // Add some bottom spacing
                 Spacer(modifier = Modifier.height(32.dp))
             }
             }

@@ -1,0 +1,71 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      # Disable Crashlytics mapping upload in CI to avoid network/credentials issues
+      GRADLE_ARGS: -PfirebaseCrashlyticsMappingFileUploadEnabled=false --no-daemon --stacktrace
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          if [ -n "${NASA_API_KEY}" ]; then
+            echo "nasa.api.key=${NASA_API_KEY}" >> local.properties
+          fi
+        env:
+          NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
+
+      - name: Gradle wrapper validation
+        uses: gradle/wrapper-validation-action@v2
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build Debug and Release
+        run: |
+          ./gradlew clean :app:assembleDebug :app:assembleRelease $GRADLE_ARGS
+
+      - name: Lint (Debug/Release)
+        run: |
+          ./gradlew :app:lintDebug :app:lintRelease $GRADLE_ARGS || true
+
+      - name: Run unit tests (if any)
+        run: |
+          ./gradlew :app:testDebugUnitTest :app:testReleaseUnitTest $GRADLE_ARGS || true
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/*.apk

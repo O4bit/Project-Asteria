@@ -20,6 +20,9 @@ workManager = "2.9.0"
 firebase-bom = "34.0.0"
 firebase-analytics = "22.0.0"
 firebase-messaging = "23.1.2"
+firebase-crashlytics = "18.6.3"
+google-services = "4.4.0"
+firebase-crashlytics-gradle = "2.9.9"
 coil = "2.5.0"
 lucide-icons = "1.0.0"
 accompanist = "0.32.0"
@@ -53,7 +56,9 @@ work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics-ktx = { group = "com.google.firebase", name = "firebase-analytics-ktx", version.ref = "firebase-analytics" }
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebase-messaging" }
+firebase-crashlytics-ktx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebase-crashlytics" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-core = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 lucide-icons = { group = "com.composables", name = "icons-lucide", version.ref = "lucide-icons" }
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -67,3 +72,5 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services-plugin = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics-plugin = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }

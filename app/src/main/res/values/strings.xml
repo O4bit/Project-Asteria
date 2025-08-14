@@ -3,4 +3,5 @@
     <string name="default_notification_channel_id">space_discovery_channel</string>
     <string name="notification_channel_name">Space Discoveries</string>
     <string name="notification_channel_description">Daily astronomy pictures and space facts</string>
+    <string name="app_widget_description">Display today\'s astronomy picture and space facts on your home screen</string>
 </resources>

@@ -12,14 +12,10 @@ class AsteriaApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        
-        // Initialize Firebase
+
         FirebaseApp.initializeApp(this)
     }
     
-    /**
-     * Configure WorkManager for background tasks
-     */
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setMinimumLoggingLevel(android.util.Log.INFO)

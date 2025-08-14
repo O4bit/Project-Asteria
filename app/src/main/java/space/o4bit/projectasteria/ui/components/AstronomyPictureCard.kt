@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,11 +42,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import kotlinx.coroutines.delay
+import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 
 /**
@@ -56,7 +59,8 @@ fun AstronomyPictureCard(
     enhancedPicture: EnhancedAstronomyPicture,
     modifier: Modifier = Modifier,
     onShareClick: () -> Unit = {},
-    onCardClick: () -> Unit = {}
+    onCardClick: () -> Unit = {},
+    onAddToHomeScreenClick: () -> Unit = {}
 ) {
     val astronomyPicture = enhancedPicture.astronomyPicture
     var isImageLoaded by remember { mutableStateOf(false) }
@@ -98,20 +102,70 @@ fun AstronomyPictureCard(
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Astronomy image
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(astronomyPicture.url)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = astronomyPicture.title,
-                contentScale = ContentScale.Crop,
-                onSuccess = { isImageLoaded = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(RoundedCornerShape(24.dp))
-            )
+            // Handle different media types
+            val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
+            val isVideo = astronomyPicture.mediaType == "video"
+            
+            if (imageUrl != null && !isVideo) {
+                // Show image
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = astronomyPicture.title,
+                    contentScale = ContentScale.Crop,
+                    onSuccess = { isImageLoaded = true },
+                    onError = { 
+                        isImageLoaded = true // Still show content even if image fails
+                        println("Failed to load image: $imageUrl")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                )
+            } else {
+                // Show placeholder for video or missing image
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = if (isVideo) Icons.Rounded.Info else Icons.Rounded.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = if (isVideo) "Video content" else "Image not available",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (isVideo && imageUrl != null) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Tap to view video",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+                // Trigger content animation even without image
+                LaunchedEffect(Unit) {
+                    delay(300)
+                    isImageLoaded = true
+                }
+            }
 
             // Semi-transparent gradient overlay for better text readability
             Box(
@@ -183,16 +237,33 @@ fun AstronomyPictureCard(
                                 modifier = Modifier.weight(1f)
                             )
 
-                            // Share button
-                            FilledTonalIconButton(
-                                onClick = onShareClick,
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Share,
-                                    contentDescription = "Share",
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+                            // Action buttons row
+                            Row {
+                                // Add to Home Screen button
+                                FilledTonalIconButton(
+                                    onClick = onAddToHomeScreenClick,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_widgets_24),
+                                        contentDescription = "Add to Home Screen",
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(8.dp))
+                                
+                                // Share button
+                                FilledTonalIconButton(
+                                    onClick = onShareClick,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Share,
+                                        contentDescription = "Share",
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
                             }
                         }
 

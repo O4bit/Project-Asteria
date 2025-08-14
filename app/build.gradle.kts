@@ -4,7 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.google.services.plugin)
+    alias(libs.plugins.firebase.crashlytics.plugin)
 }
 
 // More robust solution for test tasks
@@ -40,6 +41,7 @@ android {
         }
 
         val nasaApiKey = localProperties.getProperty("nasa.api.key", "DEMO_KEY")
+        println("BUILD DEBUG: NASA API Key loaded: ${if (nasaApiKey == "DEMO_KEY") "DEMO_KEY (fallback)" else "Custom key (${nasaApiKey.take(8)}...)"}")
         buildConfigField("String", "NASA_API_KEY", "\"$nasaApiKey\"")
     }
 
@@ -50,6 +52,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -134,9 +137,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics.ktx)
     implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.crashlytics.ktx)
 
     // Coil for image loading
     implementation(libs.coil.compose)
+    implementation(libs.coil.core)
 
     // Lucide icons for Jetpack Compose
     implementation(libs.lucide.icons)

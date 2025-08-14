@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -22,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,6 +37,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -62,11 +65,13 @@ import space.o4bit.projectasteria.data.repository.SpaceRepository
 import space.o4bit.projectasteria.data.worker.DailySpaceWorker
 import space.o4bit.projectasteria.ui.components.AstronomyExplanationCard
 import space.o4bit.projectasteria.ui.components.AstronomyPictureCard
+import space.o4bit.projectasteria.widget.WidgetClickReceiver
 import space.o4bit.projectasteria.ui.components.ExplanationDetailScreen
 import space.o4bit.projectasteria.ui.components.FullscreenImageViewer
 import space.o4bit.projectasteria.ui.components.SettingsScreen
 import space.o4bit.projectasteria.ui.components.StarryBackground
 import space.o4bit.projectasteria.ui.theme.ThemedApp
+import space.o4bit.projectasteria.utils.CrashReportingUtils
 
 class MainActivity : ComponentActivity() {
 
@@ -82,14 +87,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        CrashReportingUtils.initialize(this)
 
-        // Schedule the daily worker to fetch space images and send notifications
         DailySpaceWorker.schedule(this)
 
-        // Request notification permission for Android 13+
         requestNotificationPermission()
 
-        // Handle notification dismissal if needed
         if (intent.getBooleanExtra("DISMISS_NOTIFICATION", false)) {
             val notificationId = intent.getIntExtra("NOTIFICATION_ID", 0)
             if (notificationId > 0) {
@@ -101,7 +105,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ThemedApp {
-                // Check if we should open directly to fullscreen from notification
                 val openFullscreen = intent.getBooleanExtra("OPEN_FULLSCREEN", false) || 
                                     (intent.data?.scheme == "asteria" && intent.data?.host == "image")
                 
@@ -109,6 +112,16 @@ class MainActivity : ComponentActivity() {
                     openDirectlyFromNotification = openFullscreen
                 )
             }
+        }
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        if (intent?.getBooleanExtra(WidgetClickReceiver.EXTRA_FROM_WIDGET, false) == true) {
+            overridePendingTransition(
+                space.o4bit.projectasteria.R.anim.widget_open_enter,
+                space.o4bit.projectasteria.R.anim.widget_open_exit
+            )
         }
     }
 
@@ -119,10 +132,8 @@ class MainActivity : ComponentActivity() {
                     this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Permission already granted
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // Show rationale if needed
                     Toast.makeText(
                         this,
                         "Notifications help you stay updated with daily space discoveries",
@@ -131,7 +142,6 @@ class MainActivity : ComponentActivity() {
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
                 else -> {
-                    // Directly request permission
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
@@ -147,7 +157,6 @@ class MainActivity : ComponentActivity() {
 fun AsteriaApp(
     openDirectlyFromNotification: Boolean = false
 ) {
-    // App state
     var showSettings by remember { mutableStateOf(false) }
     var showFullscreenViewer by remember { mutableStateOf(openDirectlyFromNotification) }
     var showExplanationDetail by remember { mutableStateOf(false) }
@@ -158,7 +167,6 @@ fun AsteriaApp(
     val repository = remember { SpaceRepository() }
     val scope = rememberCoroutineScope()
 
-    // Fetch today's astronomy picture
     LaunchedEffect(Unit) {
         scope.launch {
             try {
@@ -173,7 +181,6 @@ fun AsteriaApp(
         }
     }
 
-    // Handle back navigation
     BackHandler(enabled = showSettings || showFullscreenViewer || showExplanationDetail) {
         when {
             showSettings -> showSettings = false
@@ -182,13 +189,11 @@ fun AsteriaApp(
         }
     }
 
-    // UI based on current state
     when {
         showSettings -> {
             SettingsScreen(
                 notificationsEnabled = true,
                 onNotificationsToggled = { _ ->
-                    // Handle notification toggle
                 },
                 onDismiss = { showSettings = false }
             )
@@ -242,6 +247,8 @@ private fun MainScreen(
     onExplanationClick: () -> Unit,
     onRetryClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -273,7 +280,6 @@ private fun MainScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Animated starry background
             StarryBackground {
                 when {
                     isLoading -> {
@@ -286,8 +292,6 @@ private fun MainScreen(
                         )
                     }
                     astronomyPicture != null -> {
-                        val context = LocalContext.current
-                        
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(0.dp)
@@ -297,18 +301,21 @@ private fun MainScreen(
                                     enhancedPicture = astronomyPicture,
                                     onCardClick = onCardClick,
                                     onShareClick = {
-                                        // Create share intent for the image
                                         val shareIntent = Intent().apply {
                                             action = Intent.ACTION_SEND
                                             putExtra(Intent.EXTRA_TEXT, 
                                                 "Check out this amazing astronomy picture: ${astronomyPicture.astronomyPicture.title}\n" +
-                                                "${astronomyPicture.astronomyPicture.url}\n\n" +
+                                                "${astronomyPicture.astronomyPicture.url ?: astronomyPicture.astronomyPicture.hdUrl ?: "NASA APOD"}\n\n" +
                                                 "From Project Asteria"
                                             )
                                             type = "text/plain"
                                         }
                                         val shareChooser = Intent.createChooser(shareIntent, "Share Astronomy Picture")
                                         context.startActivity(shareChooser)
+                                    },
+                                    onAddToHomeScreenClick = {
+                                        space.o4bit.projectasteria.utils.WidgetPinningUtils.showAddToHomeScreenMessage(context)
+                                        space.o4bit.projectasteria.utils.WidgetPinningUtils.pinWidgetToHomeScreen(context)
                                     }
                                 )
                             }
@@ -374,6 +381,8 @@ private fun ErrorScreen(
     message: String,
     onRetryClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -393,12 +402,51 @@ private fun ErrorScreen(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        // Add a retry button
-        FilledTonalButton(
-            onClick = onRetryClick,
-            modifier = Modifier.padding(top = 16.dp)
+        Row(
+            modifier = Modifier.padding(top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Try Again")
+            FilledTonalButton(
+                onClick = onRetryClick
+            ) {
+                Text("Try Again")
+            }
+            
+            OutlinedButton(
+                onClick = {
+                    try {
+                        val errorReport = CrashReportingUtils.formatCrashDataForGitHub(
+                            error = message,
+                            additionalContext = "Error occurred in main astronomy picture loading"
+                        )
+                        
+                        CrashReportingUtils.reportError(
+                            throwable = Exception("User-reported error: $message"),
+                            message = "Manual error report from ErrorScreen",
+                            additionalData = mapOf(
+                                "error_message" to message,
+                                "screen" to "MainActivity",
+                                "user_action" to "manual_report"
+                            )
+                        )
+                        
+                        // Open GitHub issues with pre-filled report
+                        val githubIssueUrl = "https://github.com/O4bit/Project-Asteria/issues/new?" +
+                                "title=${Uri.encode("Error: $message")}&" +
+                                "body=${Uri.encode(errorReport)}&" +
+                                "labels=bug"
+                        
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(githubIssueUrl))
+                        context.startActivity(intent)
+                        
+                        Toast.makeText(context, "Report sent and GitHub opened", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Failed to open GitHub: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            ) {
+                Text("Report Issue")
+            }
         }
     }
 }
