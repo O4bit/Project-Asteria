@@ -5,6 +5,16 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      runLint:
+        description: "Run lint tasks"
+        required: false
+        default: "true"
+      runTests:
+        description: "Run unit tests"
+        required: false
+        default: "true"
 
 permissions:
   contents: read
