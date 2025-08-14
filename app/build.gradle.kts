@@ -76,6 +76,8 @@ android {
         buildConfig = true
     }
 
+    // Crash helper files now have minimal no-op implementations, no CI exclusion needed
+
     testOptions {
         unitTests.all {
             it.enabled = false
