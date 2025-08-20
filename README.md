@@ -10,8 +10,6 @@
 
 ## Badges
 
-Add badges from somewhere like: [shields.io](https://shields.io/)
-
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
 [![Android CI](https://github.com/O4bit/Project-Asteria/actions/workflows/android-ci.yml/badge.svg?branch=main)](https://github.com/O4bit/Project-Asteria/actions/workflows/android-ci.yml)
