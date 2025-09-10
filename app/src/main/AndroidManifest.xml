@@ -8,9 +8,13 @@
 
     <!-- Notification permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Battery optimization exemption for reliable notifications on Android 12+ -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!-- For background work scheduling -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <!-- Permission to set wallpapers -->
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
@@ -74,6 +78,22 @@
                 <action android:name="space.o4bit.projectasteria.ACTION_OPEN_APP_FROM_WIDGET" />
             </intent-filter>
         </receiver>
+        
+        <!-- Boot completed receiver for widget updates -->
+        <receiver
+            android:name=".widget.WidgetBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- AlarmManager receiver for widget updates -->
+        <receiver
+            android:name=".widget.WidgetAlarmReceiver"
+            android:exported="true" />
 
         <!-- WorkManager initialization -->
         <provider

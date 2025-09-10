@@ -56,7 +56,7 @@ class SpaceMessagingService : FirebaseMessagingService() {
         val channelId = getString(R.string.default_notification_channel_id)
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)
@@ -101,7 +101,7 @@ class SpaceMessagingService : FirebaseMessagingService() {
             val channelId = context.getString(R.string.default_notification_channel_id)
 
             val notificationBuilder = NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(enhancedPicture.notificationTitle)
                 .setContentText(enhancedPicture.notificationBody)
                 .setAutoCancel(true)
