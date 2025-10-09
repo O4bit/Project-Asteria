@@ -1,7 +1,7 @@
 ---
 
 # ❗❗❗
-# Due to recent issues with the NASA api Project Asteria uses it's under maintenance till I rewire it to use my own API that pulls from a mirror thanks you for your understanding.
+# Due to recent issues with the NASA api Project Asteria uses I have put the app under maintenance till I rewire it to use my own API that pulls from a mirror. Thank you for your understanding.
 -O4
 # ❗❗❗
 ---
