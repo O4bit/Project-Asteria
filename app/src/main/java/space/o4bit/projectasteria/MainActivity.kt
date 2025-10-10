@@ -44,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -157,6 +158,7 @@ class MainActivity : ComponentActivity() {
 fun AsteriaApp(
     openDirectlyFromNotification: Boolean = false
 ) {
+    val context = LocalContext.current
     var showSettings by remember { mutableStateOf(false) }
     var showFullscreenViewer by remember { mutableStateOf(openDirectlyFromNotification) }
     var showExplanationDetail by remember { mutableStateOf(false) }
@@ -166,6 +168,10 @@ fun AsteriaApp(
 
     val repository = remember { SpaceRepository() }
     val scope = rememberCoroutineScope()
+    
+    // Notification preferences
+    val notificationPrefs = remember { space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository(context) }
+    val notificationsEnabled by notificationPrefs.dailyNotificationsEnabled.collectAsState(initial = true)
 
     LaunchedEffect(Unit) {
         scope.launch {
@@ -192,8 +198,16 @@ fun AsteriaApp(
     when {
         showSettings -> {
             SettingsScreen(
-                notificationsEnabled = true,
-                onNotificationsToggled = { _ ->
+                notificationsEnabled = notificationsEnabled,
+                onNotificationsToggled = { enabled ->
+                    scope.launch {
+                        notificationPrefs.updateDailyNotificationsEnabled(enabled)
+                        if (enabled) {
+                            DailySpaceWorker.schedule(context)
+                        } else {
+                            DailySpaceWorker.cancel(context)
+                        }
+                    }
                 },
                 onDismiss = { showSettings = false }
             )

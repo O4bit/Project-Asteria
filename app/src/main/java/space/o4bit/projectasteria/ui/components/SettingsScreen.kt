@@ -70,6 +70,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -297,6 +298,88 @@ fun SettingsScreen(
                 }
             }
 
+            // Debug section - only visible in debug builds
+            if (space.o4bit.projectasteria.BuildConfig.DEBUG) {
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                    ),
+                    elevation = CardDefaults.elevatedCardElevation(
+                        defaultElevation = 2.dp
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_bug_report_24),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = "Debug Tools",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        FilledTonalButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    try {
+                                        val repository = space.o4bit.projectasteria.data.repository.SpaceRepository()
+                                        val enhancedPicture = repository.getTodaysAstronomyPicture()
+                                        space.o4bit.projectasteria.ui.components.SpaceNotificationBuilder.showAstronomyNotification(
+                                            context,
+                                            enhancedPicture
+                                        )
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            "Test notification sent!",
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    } catch (e: Exception) {
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            "Failed to send notification: ${e.message}",
+                                            android.widget.Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Notifications,
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Send Test Notification")
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "⚠️ Debug build only - This button manually triggers a notification with the latest astronomy picture.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -334,7 +417,7 @@ fun SettingsScreen(
                     )
 
                     Text(
-                        text = "Version 1.0",
+                        text = "Version 3.0",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

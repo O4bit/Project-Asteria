@@ -14,7 +14,8 @@ class SpaceRepository(
     private val nasaApodService: NasaApodService = NasaApodService.create()
 ) {
     suspend fun getTodaysAstronomyPicture(): EnhancedAstronomyPicture = withContext(Dispatchers.IO) {
-        val apod = nasaApodService.getAstronomyPictureOfDay()
+        // Use the new /apod/latest endpoint
+        val apod = nasaApodService.getLatestAstronomyPicture()
 
         val spaceFact = getRandomSpaceFact()
         val notificationTitle = "Today's Space Discovery: ${apod.title}"
@@ -33,7 +34,8 @@ class SpaceRepository(
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val formattedDate = dateFormat.format(date)
 
-        val apod = nasaApodService.getAstronomyPictureOfDay(date = formattedDate)
+        // Use the new /apod/{date} endpoint
+        val apod = nasaApodService.getAstronomyPictureByDate(formattedDate)
         val spaceFact = getRandomSpaceFact()
         val notificationTitle = "Space Discovery: ${apod.title}"
         val notificationBody = createNotificationBody(apod)
