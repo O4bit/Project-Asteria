@@ -29,6 +29,7 @@
         android:roundIcon="@drawable/ic_asteria_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectAsteria"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="33">
 
         <activity

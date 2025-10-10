@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.AstronomyPicture
 import space.o4bit.projectasteria.ui.components.StarryBackground
+import space.o4bit.projectasteria.utils.TextUtils
 
 /**
  * Full screen view for astronomy picture explanation
@@ -138,7 +139,7 @@ fun ExplanationDetailScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = astronomyPicture.explanation,
+                            text = TextUtils.stripHtml(astronomyPicture.explanation),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.4f)

@@ -1,14 +1,7 @@
----
-
-# ❗❗❗
-# Due to recent issues with the NASA api Project Asteria uses I have put the app under maintenance till I rewire it to use my own API that pulls from a mirror. Thank you for your understanding.
--O4
-# ❗❗❗
----
 # Project Asteria 
 <div align="center">
   <img src="http://unishared.pulsedinc.tech/u/EsbhOo.png" alt="Project Asteria Logo"><br>
-  Discover space right from your phone with astronomy pictures from NASA's APOD API.
+  Discover space right from your phone with astronomy pictures powered by the O4bit Space Mirror API.
 </div>
 
 ---
