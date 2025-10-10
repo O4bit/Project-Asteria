@@ -50,6 +50,7 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
+import space.o4bit.projectasteria.utils.TextUtils
 
 /**
  * A card displaying the astronomy picture of the day with its details
@@ -326,6 +327,9 @@ fun AstronomyExplanationCard(
     modifier: Modifier = Modifier,
     onCardClick: () -> Unit = {}
 ) {
+    // Strip HTML tags from explanation
+    val cleanExplanation = TextUtils.stripHtml(explanation)
+    
     ElevatedCard(
         onClick = onCardClick,
         modifier = modifier
@@ -364,16 +368,16 @@ fun AstronomyExplanationCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = if (explanation.length > 150) {
-                    explanation.take(150) + "..."
-                } else explanation,
+                text = if (cleanExplanation.length > 150) {
+                    cleanExplanation.take(150) + "..."
+                } else cleanExplanation,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
             
-            if (explanation.length > 150) {
+            if (cleanExplanation.length > 150) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Tap to read more",

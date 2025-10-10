@@ -7,6 +7,8 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
+import space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 import space.o4bit.projectasteria.ui.components.SpaceNotificationBuilder
 import java.util.Calendar
@@ -25,6 +27,15 @@ class DailySpaceWorker(
 
     override suspend fun doWork(): Result = coroutineScope {
         try {
+            // Check if notifications are enabled
+            val notificationPrefs = NotificationPreferencesRepository(applicationContext)
+            val notificationsEnabled = notificationPrefs.dailyNotificationsEnabled.first()
+            
+            if (!notificationsEnabled) {
+                // Notifications disabled, skip this run
+                return@coroutineScope Result.success()
+            }
+            
             // Fetch today's astronomy picture with space fact
             val enhancedPicture = repository.getTodaysAstronomyPicture()
 
@@ -66,6 +77,13 @@ class DailySpaceWorker(
                 ExistingPeriodicWorkPolicy.REPLACE,
                 request
             )
+        }
+        
+        /**
+         * Cancel the daily worker (when notifications are disabled)
+         */
+        fun cancel(context: Context) {
+            WorkManager.getInstance(context).cancelUniqueWork(DAILY_SPACE_WORK_NAME)
         }
         
         /**

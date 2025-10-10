@@ -58,7 +58,7 @@ object SpaceNotificationBuilder {
 
         // Build the notification with Material 3 styling
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_name) // Your custom monochrome notification icon
             .setContentTitle(enhancedPicture.notificationTitle)
             .setContentText(enhancedPicture.astronomyPicture.title) // Only show title, not random fact
             .setContentIntent(pendingIntent)
