@@ -20,6 +20,11 @@ import space.o4bit.projectasteria.MainActivity
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
+
 /**
  * Helper class to create and show rich, space-themed notifications
  * with Material 3 design elements
@@ -40,75 +45,96 @@ object SpaceNotificationBuilder {
         context: Context,
         enhancedPicture: EnhancedAstronomyPicture
     ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+
         // Create notification channel for Android 8.0+
         createNotificationChannel(context)
 
         // Create intent for when notification is tapped
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            action = Intent.ACTION_VIEW
+            data = "asteria://image/${enhancedPicture.astronomyPicture.date}".toUri()
             putExtra("ASTRONOMY_PICTURE_DATE", enhancedPicture.astronomyPicture.date)
+            putExtra("OPEN_FULLSCREEN", enhancedPicture.astronomyPicture.mediaType == "video")
         }
         val pendingIntent = PendingIntent.getActivity(
             context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // Try to load the image for a rich notification
-        val imageUrl = enhancedPicture.astronomyPicture.url ?: enhancedPicture.astronomyPicture.hdUrl
-        val imageBitmap = if (imageUrl != null) loadImageBitmap(context, imageUrl) else null
+        val apod = enhancedPicture.astronomyPicture
+        val title = apod.title
+        
+        // Strip HTML and truncate sensibly for the notification
+        val rawExplanation = apod.explanation ?: ""
+        val cleanExplanation = space.o4bit.projectasteria.utils.TextUtils.stripHtml(rawExplanation)
+        val snippet = if (cleanExplanation.length > 100) cleanExplanation.take(100) + "..." else cleanExplanation
 
         // Build the notification with Material 3 styling
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_name) // Your custom monochrome notification icon
-            .setContentTitle(enhancedPicture.notificationTitle)
-            .setContentText(enhancedPicture.astronomyPicture.title) // Only show title, not random fact
+            .setContentTitle("Today's Space Discovery")
+            .setContentText(title)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setColor(PRIMARY_COLOR)
             .setColorized(true)
             .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(enhancedPicture.astronomyPicture.title) // Only show title
+
+        if (apod.mediaType == "video") {
+            builder.setStyle(NotificationCompat.BigTextStyle()
+                .bigText("🎥 $title\n\n$snippet")
+            )
+        } else {
+            // Try to load the image for a rich notification
+            val imageUrl = apod.url ?: apod.hdUrl
+            val imageBitmap = if (imageUrl != null) loadImageBitmap(context, imageUrl) else null
+            
+            if (imageBitmap != null) {
+                builder.setLargeIcon(imageBitmap)
+                builder.setStyle(NotificationCompat.BigPictureStyle()
+                    .bigPicture(imageBitmap)
+                    .bigLargeIcon(null as Bitmap?)
+                    .setBigContentTitle(title)
+                    .setSummaryText(snippet)
+                )
+            } else {
+                builder.setStyle(NotificationCompat.BigTextStyle()
+                    .bigText(snippet)
+                )
+            }
+            
+            // Add action buttons for direct fullscreen viewing
+            val viewIntent = Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                data = "asteria://image/${apod.date}".toUri()
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("VIEW_FULL_IMAGE", true)
+                putExtra("ASTRONOMY_PICTURE_DATE", apod.date)
+                putExtra("OPEN_FULLSCREEN", true)
+                putExtra("DISMISS_NOTIFICATION", true)
+                putExtra("NOTIFICATION_ID", NOTIFICATION_ID)
+            }
+            val viewPendingIntent = PendingIntent.getActivity(
+                context, 1, viewIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-        // Add large image if available
-        imageBitmap?.let { bitmap ->
-            builder.setLargeIcon(bitmap)
-            builder.setStyle(NotificationCompat.BigPictureStyle()
-                .bigPicture(bitmap)
-                .bigLargeIcon(null as Bitmap?)
-                .setBigContentTitle(enhancedPicture.notificationTitle)
-                .setSummaryText(enhancedPicture.astronomyPicture.title) // Only show title, not space fact
+            builder.addAction(
+                NotificationCompat.Action.Builder(
+                    IconCompat.createWithResource(context, R.drawable.arrowback),
+                    "View Full Image",
+                    viewPendingIntent
+                ).build()
             )
         }
-
-        // Add action buttons for direct fullscreen viewing
-        val viewIntent = Intent(context, MainActivity::class.java).apply {
-            action = Intent.ACTION_VIEW
-            data = "asteria://image/${enhancedPicture.astronomyPicture.date}".toUri()
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("VIEW_FULL_IMAGE", true)
-            putExtra("ASTRONOMY_PICTURE_DATE", enhancedPicture.astronomyPicture.date)
-            putExtra("OPEN_FULLSCREEN", true)
-            putExtra("DISMISS_NOTIFICATION", true)
-            putExtra("NOTIFICATION_ID", NOTIFICATION_ID)
-        }
-        val viewPendingIntent = PendingIntent.getActivity(
-            context, 1, viewIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        builder.addAction(
-            NotificationCompat.Action.Builder(
-                IconCompat.createWithResource(context, R.drawable.arrowback),
-                "View Full Image",
-                viewPendingIntent
-            ).build()
-        )
 
         try {
             NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
         } catch (e: SecurityException) {
-            // Handle permission not granted
             e.printStackTrace()
         }
     }
@@ -140,8 +166,8 @@ object SpaceNotificationBuilder {
      */
     private fun createNotificationChannel(context: Context) {
         // No need to check SDK version since minSdk is 29 (Android 10) and O is 26
-        val name = context.getString(R.string.notification_channel_name)
-        val description = context.getString(R.string.notification_channel_description)
+        val name = "APOD Updates"
+        val description = "Daily Astronomy Pictures"
         val importance = NotificationManager.IMPORTANCE_HIGH
 
         val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
@@ -153,5 +179,50 @@ object SpaceNotificationBuilder {
 
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(channel)
+
+        val launchChannel = NotificationChannel("launch_reminders", "Launch Reminders", NotificationManager.IMPORTANCE_HIGH).apply {
+            this.description = "Reminders for scheduled orbital launches"
+            enableLights(true)
+            lightColor = PRIMARY_COLOR
+            enableVibration(true)
+        }
+        notificationManager.createNotificationChannel(launchChannel)
+    }
+
+    fun showLaunchReminderNotification(context: Context, launchName: String, launchId: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        createNotificationChannel(context)
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            launchId.hashCode(), // Unique ID per launch
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val builder = NotificationCompat.Builder(context, "launch_reminders")
+            .setSmallIcon(R.drawable.baseline_widgets_24) // Use a generic icon if specific one isn't present
+            .setContentTitle("🚀 Upcoming Launch!")
+            .setContentText("$launchName is launching soon!")
+            .setStyle(NotificationCompat.BigTextStyle().bigText("Get ready! $launchName is launching within 15 minutes! Open app for live timer."))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setColor(PRIMARY_COLOR)
+            .setContentIntent(pendingIntent)
+
+        try {
+            NotificationManagerCompat.from(context).notify(launchId.hashCode(), builder.build())
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
     }
 }

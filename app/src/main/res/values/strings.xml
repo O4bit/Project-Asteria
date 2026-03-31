@@ -4,4 +4,8 @@
     <string name="notification_channel_name">Space Discoveries</string>
     <string name="notification_channel_description">Daily astronomy pictures and space facts</string>
     <string name="app_widget_description">Display today\'s astronomy picture and space facts on your home screen</string>
+    <string name="settings_background_label">Background Animation</string>
+    <string name="settings_background_starry">Starry</string>
+    <string name="settings_background_space">Space</string>
+    <string name="settings_background_none">None</string>
 </resources>

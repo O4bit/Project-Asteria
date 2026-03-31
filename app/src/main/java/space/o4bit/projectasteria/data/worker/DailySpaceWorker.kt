@@ -14,16 +14,21 @@ import space.o4bit.projectasteria.ui.components.SpaceNotificationBuilder
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.BackoffPolicy
+
 /**
  * Worker to fetch daily space data and show notifications
- * Scheduled to run at 8:00 AM local time daily
  */
 class DailySpaceWorker(
     context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
-    private val repository = SpaceRepository()
+    private val repository = SpaceRepository(
+        (context.applicationContext as space.o4bit.projectasteria.AsteriaApplication).database.apodDao()
+    )
 
     override suspend fun doWork(): Result = coroutineScope {
         try {
@@ -56,25 +61,37 @@ class DailySpaceWorker(
         const val DAILY_SPACE_WORK_NAME = "daily_space_work"
 
         /**
-         * Schedule the daily worker to run at 8:00 AM local time every day
+         * Schedule the daily worker
          */
-        fun schedule(context: Context) {
+        suspend fun schedule(context: Context) {
+            val notificationPrefs = NotificationPreferencesRepository(context)
+            val wifiOnly = notificationPrefs.wifiOnlyPrefetch.first()
+            val hour = notificationPrefs.notificationHour.first()
+            val minute = notificationPrefs.notificationMinute.first()
+            
             // Cancel any existing work first
             WorkManager.getInstance(context).cancelUniqueWork(DAILY_SPACE_WORK_NAME)
             
-            // Calculate initial delay to next 8:00 AM
-            val initialDelay = calculateInitialDelayTo8AM()
+            val initialDelay = calculateInitialDelayTo(hour, minute)
+            
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED)
+                .setRequiresBatteryNotLow(true)
+                .build()
             
             val request = PeriodicWorkRequestBuilder<DailySpaceWorker>(
                 repeatInterval = 24,
                 repeatIntervalTimeUnit = TimeUnit.HOURS
             )
+            .setConstraints(constraints)
             .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.HOURS)
             .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 DAILY_SPACE_WORK_NAME,
-                ExistingPeriodicWorkPolicy.REPLACE,
+                // On Android 12+, we should use UPDATE to preserve the interval cleanly
+                ExistingPeriodicWorkPolicy.UPDATE,
                 request
             )
         }
@@ -87,23 +104,22 @@ class DailySpaceWorker(
         }
         
         /**
-         * Calculate the delay in milliseconds until the next 8:00 AM
+         * Calculate the delay in milliseconds until the next target time
          */
-        private fun calculateInitialDelayTo8AM(): Long {
+        private fun calculateInitialDelayTo(hour: Int, minute: Int): Long {
             val now = Calendar.getInstance()
-            val next8AM = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 8)
-                set(Calendar.MINUTE, 0)
+            val nextRun = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
                 
-                // If it's already past 8:00 AM today, schedule for tomorrow's 8:00 AM
                 if (before(now)) {
                     add(Calendar.DAY_OF_MONTH, 1)
                 }
             }
             
-            return next8AM.timeInMillis - now.timeInMillis
+            return nextRun.timeInMillis - now.timeInMillis
         }
     }
 }

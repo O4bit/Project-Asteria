@@ -21,3 +21,11 @@ app/release/
 .idea/
 
 app/
+
+.vscode/
+
+CHANGELOG.md
+
+docs/crash_analytics.md
+
+release/
