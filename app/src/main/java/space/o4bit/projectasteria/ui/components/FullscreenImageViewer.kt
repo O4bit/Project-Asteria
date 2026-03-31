@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.app.DownloadManager
 import android.app.WallpaperManager
 import android.content.Context
@@ -14,20 +13,19 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.gestures.transformable
-import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -44,26 +42,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import coil.compose.AsyncImage
 import coil.ImageLoader
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import coil.size.Size
@@ -71,17 +69,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.o4bit.projectasteria.R
+import space.o4bit.projectasteria.data.model.AstronomyPicture
+import space.o4bit.projectasteria.ui.icons.WallpaperIcon
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
-import space.o4bit.projectasteria.R
-import space.o4bit.projectasteria.data.model.AstronomyPicture
-import space.o4bit.projectasteria.ui.icons.WallpaperIcon
-
 /**
- * Fullscreen viewer for astronomy pictures with options to download and share
+ * Fullscreen viewer for astronomy pictures with options to download and share.
+ * For video media types, opens in external browser/YouTube app and pops back.
  */
 @Composable
 fun FullscreenImageViewer(
@@ -90,17 +88,30 @@ fun FullscreenImageViewer(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    
+    // If this is a video, open it externally and navigate back
+    if (astronomyPicture.mediaType == "video") {
+        LaunchedEffect(Unit) {
+            val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
+            if (videoUrl != null) {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, videoUrl.toUri())
+                    context.startActivity(intent)
+                } catch (_: Exception) { }
+            }
+            onBackPressed()
+        }
+        return
+    }
+    
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-
     var showControls by remember { mutableStateOf(true) }
     val controlsAlpha by animateFloatAsState(
         targetValue = if (showControls) 1f else 0f,
         label = "controlsAlpha"
     )
-
     var showWallpaperDialog by remember { mutableStateOf(false) }
-
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val displayFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
     val formattedDate = try {
@@ -110,7 +121,6 @@ fun FullscreenImageViewer(
     } catch (_: Exception) {
         astronomyPicture.date
     }
-
     LaunchedEffect(showControls) {
         if (showControls) {
             try {
@@ -122,7 +132,6 @@ fun FullscreenImageViewer(
             }
         }
     }
-
     // Wallpaper confirmation dialog
     if (showWallpaperDialog) {
         val wallpaperOptions = listOf(
@@ -131,7 +140,6 @@ fun FullscreenImageViewer(
             "Both Screens" to (WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
         )
         var selectedOption by remember { mutableStateOf(wallpaperOptions[2]) } // Default to both screens
-        
         AlertDialog(
             onDismissRequest = { showWallpaperDialog = false },
             title = { Text("Set as Wallpaper") },
@@ -139,7 +147,6 @@ fun FullscreenImageViewer(
                 Column {
                     Text("Select where to apply the wallpaper:")
                     Spacer(modifier = Modifier.height(16.dp))
-                    
                     wallpaperOptions.forEach { option ->
                         Row(
                             modifier = Modifier
@@ -190,29 +197,48 @@ fun FullscreenImageViewer(
             textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-        .systemBarsPadding()
+            .background(Color.Black)
             .pointerInput(Unit) {
                 detectTapGestures(
-            onTap = { },
-                    onDoubleTap = { 
-                        showControls = !showControls 
+                    onTap = {
+                        showControls = !showControls
                     }
                 )
             }
     ) {
-        ZoomableImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(astronomyPicture.hdUrl ?: astronomyPicture.url)
-                .crossfade(true)
-                .build(),
-            contentDescription = astronomyPicture.title,
-        )
-
+        val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
+        // Zoomable image container
+        var scale by remember { mutableStateOf(1f) }
+        var offset by remember { mutableStateOf(Offset.Zero) }
+        val state = rememberTransformableState { zoomChange, offsetChange, _ ->
+            scale = (scale * zoomChange).coerceIn(1f, 5f)
+            if (scale == 1f) offset = Offset.Zero else offset += offsetChange
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                )
+                .transformable(state = state)
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .diskCachePolicy(coil.request.CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = astronomyPicture.title,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -239,9 +265,7 @@ fun FullscreenImageViewer(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             Spacer(modifier = Modifier.width(16.dp))
-
             Column {
                 Text(
                     text = astronomyPicture.title,
@@ -250,7 +274,6 @@ fun FullscreenImageViewer(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 Text(
                     text = formattedDate,
                     style = MaterialTheme.typography.bodySmall,
@@ -258,7 +281,6 @@ fun FullscreenImageViewer(
                 )
             }
         }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -297,7 +319,6 @@ fun FullscreenImageViewer(
                     modifier = Modifier.size(24.dp)
                 )
             }
-
             FilledTonalIconButton(
                 onClick = { shareImageOnly(context, astronomyPicture) },
                 modifier = Modifier.size(48.dp)
@@ -309,7 +330,6 @@ fun FullscreenImageViewer(
                     modifier = Modifier.size(24.dp)
                 )
             }
-
             FilledTonalIconButton(
                 onClick = { showWallpaperDialog = true },
                 modifier = Modifier.size(48.dp)
@@ -322,7 +342,6 @@ fun FullscreenImageViewer(
                 )
             }
         }
-
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
@@ -337,7 +356,6 @@ fun FullscreenImageViewer(
         }
     }
 }
-
 /**
  * Downloads the image using Android's DownloadManager
  */
@@ -345,16 +363,13 @@ private fun downloadImage(context: Context, astronomyPicture: AstronomyPicture):
     try {
         val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url ?: return false
         val request = DownloadManager.Request(imageUrl.toUri())
-
         val filename = "NASA_${astronomyPicture.title.replace(" ", "_")}_${astronomyPicture.date}.jpg"
-
         request.apply {
             setTitle("Downloading: ${astronomyPicture.title}")
             setDescription("NASA Astronomy Picture")
             setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, "Asteria/$filename")
         }
-
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         downloadManager.enqueue(request)
         return true
@@ -363,22 +378,18 @@ private fun downloadImage(context: Context, astronomyPicture: AstronomyPicture):
         return false
     }
 }
-
 /**
  * Shares the image URL using Android's share intent
  */
 private fun shareImageOnly(context: Context, astronomyPicture: AstronomyPicture) {
     val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
     if (imageUrl == null) return
-    
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, imageUrl)
     }
-
     context.startActivity(Intent.createChooser(shareIntent, "Share Space Image"))
 }
-
 /**
  * Custom composable that supports zoom and pan gestures for images
  */
@@ -390,18 +401,13 @@ fun ZoomableImage(
 ) {
     var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
-    
     val maxX = (imageSize.width * (scale - 1) / 2f)
     val maxY = (imageSize.height * (scale - 1) / 2f)
-    
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         scale = (scale * zoomChange).coerceIn(1f, 5f)
-        
         val newOffsetX = offset.x + offsetChange.x
         val newOffsetY = offset.y + offsetChange.y
-        
         offset = if (scale > 1f) {
             Offset(
                 x = newOffsetX.coerceIn(-maxX, maxX),
@@ -411,12 +417,10 @@ fun ZoomableImage(
             Offset.Zero
         }
     }
-    
     LaunchedEffect(model) {
         scale = 1f
         offset = Offset.Zero
     }
-    
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -441,7 +445,6 @@ fun ZoomableImage(
         )
     }
 }
-
 /**
  * Downloads the image and sets it as wallpaper
  */
@@ -453,16 +456,13 @@ private suspend fun downloadAndSetWallpaper(
     try {
         val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url ?: return false
         val wallpaperManager = WallpaperManager.getInstance(context)
-
         val fileName = "temp_wallpaper_${System.currentTimeMillis()}.jpg"
-        
         val cacheDir = context.cacheDir
         val wallpaperDir = File(cacheDir, "wallpapers")
         if (!wallpaperDir.exists()) {
             wallpaperDir.mkdirs()
         }
         val wallpaperFile = File(wallpaperDir, fileName)
-
         withContext(Dispatchers.IO) {
             try {
                 val request = ImageRequest.Builder(context)
@@ -470,22 +470,17 @@ private suspend fun downloadAndSetWallpaper(
                     .size(Size.ORIGINAL)
                     .allowHardware(false)
                     .build()
-                
                 val imageLoader = ImageLoader(context)
-                
                 val result = (imageLoader.execute(request) as SuccessResult).drawable
                 val bitmap = (result as BitmapDrawable).bitmap
-                
                 FileOutputStream(wallpaperFile).use { outputStream ->
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                 }
-                
                 val scaledBitmap = decodeSampledBitmapFromFile(
                     wallpaperFile.absolutePath,
                     Resources.getSystem().displayMetrics.widthPixels,
                     Resources.getSystem().displayMetrics.heightPixels
                 )
-                
                 try {
                     wallpaperManager.setBitmap(
                         scaledBitmap,
@@ -515,7 +510,6 @@ private suspend fun downloadAndSetWallpaper(
         return false
     }
 }
-
 /**
  * Decodes a bitmap from file with sampling to prevent OutOfMemoryError
  */
@@ -525,9 +519,7 @@ private fun decodeSampledBitmapFromFile(filePath: String, reqWidth: Int, reqHeig
             inJustDecodeBounds = true
         }
         BitmapFactory.decodeFile(filePath, options)
-        
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
-        
         options.inJustDecodeBounds = false
         BitmapFactory.decodeFile(filePath, options)
     } catch (e: Exception) {
@@ -535,22 +527,18 @@ private fun decodeSampledBitmapFromFile(filePath: String, reqWidth: Int, reqHeig
         null
     }
 }
-
 /**
  * Calculate the optimal sampling size for loading a bitmap
  */
 private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
     val (height, width) = options.outHeight to options.outWidth
     var inSampleSize = 1
-    
     if (height > reqHeight || width > reqWidth) {
         val halfHeight = height / 2
         val halfWidth = width / 2
-        
         while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
             inSampleSize *= 2
         }
     }
-    
     return inSampleSize
 }

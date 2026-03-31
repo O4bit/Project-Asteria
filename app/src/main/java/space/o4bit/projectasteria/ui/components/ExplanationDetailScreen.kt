@@ -44,6 +44,7 @@ fun ExplanationDetailScreen(
     modifier: Modifier = Modifier
 ) {
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = {
@@ -69,7 +70,7 @@ fun ExplanationDetailScreen(
                 )
             )
         },
-        modifier = modifier.systemBarsPadding()
+        modifier = modifier
     ) { paddingValues ->
         Box(
             modifier = Modifier

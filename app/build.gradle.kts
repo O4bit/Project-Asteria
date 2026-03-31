@@ -4,11 +4,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.services.plugin)
-    alias(libs.plugins.firebase.crashlytics.plugin)
+    alias(libs.plugins.google.services.plugin) 
+    alias(libs.plugins.firebase.crashlytics.plugin) 
+    alias(libs.plugins.aboutlibraries.plugin)
+    alias(libs.plugins.ksp.plugin)
 }
 
-// More robust solution for test tasks
+// Global build task logic
 gradle.taskGraph.whenReady {
     tasks.forEach { task ->
         if (task.name.contains("test", ignoreCase = true) ||
@@ -24,10 +26,10 @@ android {
 
     defaultConfig {
         applicationId = "space.o4bit.projectasteria"
-        minSdk = 29
+        minSdk = 31
         targetSdk = 36
-        versionCode = 4
-        versionName = "3.0"
+        versionCode = 40
+        versionName = "4.0.0-Release"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -45,9 +47,22 @@ android {
         buildConfigField("String", "NASA_API_KEY", "\"$nasaApiKey\"")
     }
 
+    flavorDimensions.add("distribution")
+    productFlavors {
+        create("foss") {
+            dimension = "distribution"
+            applicationIdSuffix = ".foss"
+            versionNameSuffix = "-foss"
+        }
+        create("play") {
+            dimension = "distribution"
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -102,17 +117,33 @@ android {
         // Set baseline file if you want to suppress existing issues
         // baseline = file("lint-baseline.xml")
     }
+
+    // Disable Google Services for FOSS flavor
+    applicationVariants.all {
+        if (flavorName == "foss") {
+            tasks.matching { 
+                it.name.contains("google", ignoreCase = true) || 
+                it.name.contains("Crashlytics", ignoreCase = true) 
+            }.configureEach {
+                enabled = false
+            }
+        }
+    }
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
@@ -135,11 +166,11 @@ dependencies {
     // WorkManager for background tasks
     implementation(libs.work.runtime.ktx)
 
-    // Firebase Cloud Messaging for notifications
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics.ktx)
-    implementation(libs.firebase.messaging.ktx)
-    implementation(libs.firebase.crashlytics.ktx)
+    // Firebase Cloud Messaging for notifications - Play flavor only
+    "playImplementation"(platform(libs.firebase.bom))
+    "playImplementation"(libs.firebase.analytics.ktx)
+    "playImplementation"(libs.firebase.messaging.ktx)
+    "playImplementation"(libs.firebase.crashlytics.ktx)
 
     // Coil for image loading
     implementation(libs.coil.compose)
@@ -160,4 +191,14 @@ dependencies {
 
     // Better navigation experience
     implementation(libs.compose.destinations.core)
+
+    // Room Database
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
+
+    // Open Source Libraries
+    implementation(libs.aboutlibraries.compose)
 }
