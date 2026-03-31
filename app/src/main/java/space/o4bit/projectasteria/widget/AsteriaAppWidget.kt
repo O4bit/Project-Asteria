@@ -97,7 +97,8 @@ class AsteriaAppWidget : AppWidgetProvider() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val repository = SpaceRepository()
+                val database = (context.applicationContext as space.o4bit.projectasteria.AsteriaApplication).database
+                val repository = SpaceRepository(database.apodDao())
                 val enhancedPicture = repository.getTodaysAstronomyPicture()
 
                 CoroutineScope(Dispatchers.Main).launch {

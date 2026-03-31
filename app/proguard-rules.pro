@@ -1,21 +1,33 @@
 # Add project specific ProGuard rules here.
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Retrofit
+-dontwarn retrofit2.**
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Moshi Data Models (Moshi Kotlin reflection needs fields kept intact)
+-keep class space.o4bit.projectasteria.data.model.** { *; }
+
+# Moshi rules
+-dontwarn com.squareup.moshi.**
+-keep class * extends com.squareup.moshi.JsonAdapter {
+    public <init>(...);
+}
+-keepclassmembers class * {
+    @com.squareup.moshi.Json *;
+}
+
+# AndroidX Navigation/Compose generic rules
+-keep class androidx.navigation.** { *; }
+
+# Keep line numbers for Crashlytics
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Info
@@ -32,6 +34,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.draw.scale
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -85,20 +91,20 @@ fun AstronomyPictureCard(
         }
     }
 
-    ElevatedCard(
-        onClick = onCardClick,
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, label = "scale")
+
+    space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 6.dp,
-            pressedElevation = 8.dp,
-            focusedElevation = 8.dp
-        )
+            .padding(16.dp)
+            .scale(scale)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = androidx.compose.foundation.LocalIndication.current,
+                onClick = onCardClick
+            )
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -106,65 +112,109 @@ fun AstronomyPictureCard(
             // Handle different media types
             val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
             val isVideo = astronomyPicture.mediaType == "video"
+            val context = LocalContext.current
             
-            if (imageUrl != null && !isVideo) {
-                // Show image
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = astronomyPicture.title,
-                    contentScale = ContentScale.Crop,
-                    onSuccess = { isImageLoaded = true },
-                    onError = { 
-                        isImageLoaded = true // Still show content even if image fails
-                        println("Failed to load image: $imageUrl")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                )
-            } else {
-                // Show placeholder for video or missing image
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+            when {
+                // IMAGE type: load async with Coil
+                !isVideo && imageUrl != null -> {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = astronomyPicture.title,
+                        contentScale = ContentScale.Crop,
+                        onSuccess = { isImageLoaded = true },
+                        onError = { 
+                            isImageLoaded = true
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                    )
+                }
+                // VIDEO type: show thumbnail with play overlay, tap opens external browser/YouTube
+                isVideo -> {
+                    val thumbnailUrl = astronomyPicture.thumbnail ?: extractYouTubeThumbnail(imageUrl)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable {
+                                // Open video URL in external browser/YouTube app
+                                if (imageUrl != null) {
+                                    try {
+                                        val intent = android.content.Intent(
+                                            android.content.Intent.ACTION_VIEW,
+                                            android.net.Uri.parse(imageUrl)
+                                        )
+                                        context.startActivity(intent)
+                                    } catch (_: Exception) { }
+                                }
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = if (isVideo) Icons.Rounded.Info else Icons.Rounded.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = if (isVideo) "Video content" else "Image not available",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (isVideo && imageUrl != null) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Tap to view video",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
+                        if (thumbnailUrl != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(thumbnailUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "Video Thumbnail",
+                                contentScale = ContentScale.Crop,
+                                onSuccess = { isImageLoaded = true },
+                                onError = { isImageLoaded = true },
+                                modifier = Modifier.matchParentSize()
+                            )
+                        } else {
+                            LaunchedEffect(Unit) { delay(300); isImageLoaded = true }
+                        }
+                        // Play button overlay
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.6f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Play video",
+                                tint = Color.White,
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                     }
                 }
-                // Trigger content animation even without image
-                LaunchedEffect(Unit) {
-                    delay(300)
-                    isImageLoaded = true
+                // FALLBACK: unknown media type or no URL
+                else -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Rounded.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Media not available",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    LaunchedEffect(Unit) { delay(300); isImageLoaded = true }
                 }
             }
 
@@ -330,18 +380,11 @@ fun AstronomyExplanationCard(
     // Strip HTML tags from explanation
     val cleanExplanation = TextUtils.stripHtml(explanation)
     
-    ElevatedCard(
-        onClick = onCardClick,
+    space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 2.dp
-        )
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(onClick = onCardClick)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -388,4 +431,26 @@ fun AstronomyExplanationCard(
             }
         }
     }
+}
+
+/**
+ * Extract a YouTube video thumbnail URL from a YouTube embed URL.
+ * Supports youtube.com/embed/ID and youtu.be/ID formats.
+ * Returns null if the URL is not a recognized YouTube format.
+ */
+private fun extractYouTubeThumbnail(url: String?): String? {
+    if (url == null) return null
+    val patterns = listOf(
+        Regex("""youtube\.com/embed/([a-zA-Z0-9_-]+)"""),
+        Regex("""youtu\.be/([a-zA-Z0-9_-]+)"""),
+        Regex("""youtube\.com/watch\?v=([a-zA-Z0-9_-]+)""")
+    )
+    for (pattern in patterns) {
+        val match = pattern.find(url)
+        if (match != null) {
+            val videoId = match.groupValues[1]
+            return "https://img.youtube.com/vi/$videoId/hqdefault.jpg"
+        }
+    }
+    return null
 }

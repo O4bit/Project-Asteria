@@ -2,33 +2,34 @@ package space.o4bit.projectasteria.data.api
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.Query
 import space.o4bit.projectasteria.BuildConfig
 import space.o4bit.projectasteria.data.model.AstronomyPicture
 import java.util.concurrent.TimeUnit
 
 /**
  * NASA APOD (Astronomy Picture of the Day) API interface
- * Now using custom O4bit Space Mirror API
  */
 interface NasaApodService {
-    @GET("apod/latest")
-    suspend fun getLatestAstronomyPicture(): AstronomyPicture
+    @GET("planetary/apod")
+    suspend fun getLatestAstronomyPicture(
+        @Query("api_key") apiKey: String = BuildConfig.NASA_API_KEY
+    ): AstronomyPicture
     
-    @GET("apod/{date}")
+    @GET("planetary/apod")
     suspend fun getAstronomyPictureByDate(
-        @Path("date") date: String
+        @Query("date") date: String,
+        @Query("api_key") apiKey: String = BuildConfig.NASA_API_KEY
     ): AstronomyPicture
 
     companion object {
-        private const val BASE_URL = "https://api.o4bit.space/"
-        // No API key needed for the mirror API
-        private val NASA_API_KEY = BuildConfig.NASA_API_KEY  // Kept for backwards compatibility
+        private const val BASE_URL = "https://api.nasa.gov/"
 
         fun create(): NasaApodService {
             val logger = HttpLoggingInterceptor().apply {
