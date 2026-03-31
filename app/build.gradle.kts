@@ -4,10 +4,14 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.services.plugin) 
-    alias(libs.plugins.firebase.crashlytics.plugin) 
     alias(libs.plugins.aboutlibraries.plugin)
     alias(libs.plugins.ksp.plugin)
+}
+
+// Only apply Google/Firebase plugins for Play builds (not scanned by F-Droid)
+if (gradle.startParameter.taskNames.any { it.contains("play", ignoreCase = true) }) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
 }
 
 // Global build task logic
