@@ -1,6 +1,30 @@
 # Project Asteria
 
+<p align="center">
+  <img src="app/src/main/ic_launcher-playstore.png" width="128" height="128" alt="Project Asteria Logo">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+  <img src="https://img.shields.io/badge/F--Droid-Ready-blue.svg" alt="F-Droid Ready">
+  <img src="https://img.shields.io/badge/API-NASA-red.svg" alt="NASA API">
+</p>
+
 A Free and Open Source (FOSS) Android application for space exploration using official NASA APIs.
+
+## Screenshots
+
+<p align="center">
+  <img src="images/Screenshot_20260331-145952.png" width="200" alt="Home Screen">
+  <img src="images/Screenshot_20260331-150007.png" width="200" alt="Details View">
+  <img src="images/Screenshot_20260331-2.png" width="200" alt="Search Gallery">
+</p>
+
+<p align="center">
+  <img src="images/Screenshot_20260331-150129.png" width="200" alt="Settings">
+  <img src="images/Screenshot_20260331-150104.png" width="200" alt="APOD Detail">
+  <img src="images/Screenshot_20260331-150051.png" width="200" alt="NEO Tracker">
+</p>
 
 ## Features
 
