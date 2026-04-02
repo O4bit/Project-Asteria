@@ -23,7 +23,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "space.o4bit.projectasteria"
+        applicationId = "space.o4bit.projectasteria.foss"
         minSdk = 31
         targetSdk = 36
         versionCode = 40
