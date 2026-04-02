@@ -28,6 +28,6 @@
 # AndroidX Navigation/Compose generic rules
 -keep class androidx.navigation.** { *; }
 
-# Keep line numbers for Crashlytics
+# Keep line numbers for debugging
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile

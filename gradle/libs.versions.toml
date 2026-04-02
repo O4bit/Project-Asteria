@@ -1,30 +1,17 @@
 [versions]
 navigationCompose = "2.7.7"
 paging = "3.3.2"
-# Core libraries
 androidGradlePlugin = "8.7.2"
 kotlin = "2.0.21"
 androidxCore = "1.15.0"
 androidxLifecycle = "2.8.7"
 androidxActivity = "1.9.3"
 androidxComposeBom = "2024.10.01"
-
-# Testing libraries - removing since they're unused in the project
-# androidxJunit = "1.3.0"  # Updated from 1.1.5
-# androidxEspresso = "3.7.0"  # Updated from 3.5.1
-
-# Third-party libraries
 retrofit = "2.11.0"
 okhttp = "4.12.0"
 moshi = "1.15.1"
 datastore = "1.1.1"
 workManager = "2.9.1"
-firebase-bom = "33.6.0"
-firebase-analytics = "22.1.2"
-firebase-messaging = "24.0.3"
-firebase-crashlytics = "19.2.1"
-google-services = "4.4.2"
-firebase-crashlytics-gradle = "3.0.2"
 coil = "2.7.0"
 lucide-icons = "1.1.0"
 accompanist = "0.36.0"
@@ -39,7 +26,6 @@ aboutlibraries = "11.2.3"
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-# Android and AndroidX dependencies
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
@@ -53,8 +39,6 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-
-# Third-party libraries
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
 okhttp-core = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
@@ -64,10 +48,6 @@ moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.re
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
-firebase-analytics-ktx = { group = "com.google.firebase", name = "firebase-analytics-ktx", version.ref = "firebase-analytics" }
-firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebase-messaging" }
-firebase-crashlytics-ktx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebase-crashlytics" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-core = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 lucide-icons = { group = "com.composables", name = "icons-lucide", version.ref = "lucide-icons" }
@@ -83,11 +63,8 @@ aboutlibraries-compose = { group = "com.mikepenz", name = "aboutlibraries-compos
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
-# Kept for future library modules - intentionally unused in current build
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-google-services-plugin = { id = "com.google.gms.google-services", version.ref = "google-services" }
-firebase-crashlytics-plugin = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 aboutlibraries-plugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 ksp-plugin = { id = "com.google.devtools.ksp", version.ref = "ksp" }

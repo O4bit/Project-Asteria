@@ -102,7 +102,6 @@ import space.o4bit.projectasteria.ui.components.LaunchDetailScreen
 import space.o4bit.projectasteria.ui.components.ApodDetailScreen
 import space.o4bit.projectasteria.ui.theme.ThemedApp
 import space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository
-import space.o4bit.projectasteria.utils.CrashReportingUtils
 
 import coil.ImageLoader
 import coil.disk.DiskCache
@@ -158,8 +157,6 @@ class MainActivity : ComponentActivity() {
                 .respectCacheHeaders(false) // Cache heavily
                 .build()
             coil.Coil.setImageLoader(imageLoader)
-
-            CrashReportingUtils.initialize(applicationContext)
 
             val prefs = space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository(applicationContext)
             if (prefs.dailyNotificationsEnabled.first()) {
@@ -351,7 +348,7 @@ fun AsteriaApp(
                                                     errorMessage = null
                                                     astronomyPicture = repository.getTodaysAstronomyPicture()
                                                 } catch (e: Exception) {
-                                                    errorMessage = e.message ?: "Failed to load space picture"
+                                                    e.printStackTrace()
                                                 } finally {
                                                     isLoading = false
                                                 }
@@ -710,42 +707,6 @@ private fun ErrorScreen(
                 onClick = onRetryClick
             ) {
                 Text("Try Again")
-            }
-            
-            OutlinedButton(
-                onClick = {
-                    try {
-                        val errorReport = CrashReportingUtils.formatCrashDataForGitHub(
-                            error = message,
-                            additionalContext = "Error occurred in main astronomy picture loading"
-                        )
-                        
-                        CrashReportingUtils.reportError(
-                            throwable = Exception("User-reported error: $message"),
-                            message = "Manual error report from ErrorScreen",
-                            additionalData = mapOf(
-                                "error_message" to message,
-                                "screen" to "MainActivity",
-                                "user_action" to "manual_report"
-                            )
-                        )
-                        
-                        // Open GitHub issues with pre-filled report
-                        val githubIssueUrl = "https://github.com/O4bit/Project-Asteria/issues/new?" +
-                                "title=${Uri.encode("Error: $message")}&" +
-                                "body=${Uri.encode(errorReport)}&" +
-                                "labels=bug"
-                        
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(githubIssueUrl))
-                        context.startActivity(intent)
-                        
-                        Toast.makeText(context, "Report sent and GitHub opened", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Failed to open GitHub: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
-                }
-            ) {
-                Text("Report Issue")
             }
         }
     }
