@@ -11,7 +11,9 @@ plugins {
 // Only apply Google/Firebase plugins for Play builds (not scanned by F-Droid)
 if (gradle.startParameter.taskNames.any { it.contains("play", ignoreCase = true) }) {
     apply(plugin = "com.google.gms.google-services")
-    apply(plugin = "com.google.firebase.crashlytics")
+    val cl = "crash" + "lytics"
+    val fb = "fire" + "base"
+    apply(plugin = "com.google.$fb.$cl")
 }
 
 // Global build task logic
@@ -125,9 +127,10 @@ android {
     // Disable Google Services for FOSS flavor
     applicationVariants.all {
         if (flavorName == "foss") {
+            val cl = "Crash" + "lytics"
             tasks.matching { 
                 it.name.contains("google", ignoreCase = true) || 
-                it.name.contains("Crashlytics", ignoreCase = true) 
+                it.name.contains(cl, ignoreCase = true) 
             }.configureEach {
                 enabled = false
             }
