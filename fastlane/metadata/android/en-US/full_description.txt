@@ -1,0 +1,7 @@
+Project Asteria is a 100% Free and Open Source (FOSS) application for exploring the wonders of the universe. 
+
+Discover the cosmos through:
+- **Astronomy Picture of the Day (APOD)**: Daily high-quality images and explanations from NASA.
+- **Space Facts**: Explore Near-Earth Objects (NEOs) and mission insights.
+- **Privacy First**: No tracking, no ads, and 100% open source.
+- **Modern UI**: Built with Jetpack Compose for a smooth and beautiful experience.

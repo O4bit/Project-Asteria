@@ -8,14 +8,6 @@ plugins {
     alias(libs.plugins.ksp.plugin)
 }
 
-// Only apply Google/Firebase plugins for Play builds (not scanned by F-Droid)
-if (gradle.startParameter.taskNames.any { it.contains("play", ignoreCase = true) }) {
-    apply(plugin = "com.google.gms.google-services")
-    val cl = "crash" + "lytics"
-    val fb = "fire" + "base"
-    apply(plugin = "com.google.$fb.$cl")
-}
-
 // Global build task logic
 gradle.taskGraph.whenReady {
     tasks.forEach { task ->
@@ -53,18 +45,6 @@ android {
         buildConfigField("String", "NASA_API_KEY", "\"$nasaApiKey\"")
     }
 
-    flavorDimensions.add("distribution")
-    productFlavors {
-        create("foss") {
-            dimension = "distribution"
-            applicationIdSuffix = ".foss"
-            versionNameSuffix = "-foss"
-        }
-        create("play") {
-            dimension = "distribution"
-        }
-    }
-
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -80,9 +60,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        // Using compilerOptions DSL instead of deprecated jvmTarget
-    }
     @Suppress("UnstableApiUsage")
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
@@ -97,44 +74,23 @@ android {
         buildConfig = true
     }
 
-    // Crash helper files now have minimal no-op implementations, no CI exclusion needed
-
     testOptions {
         unitTests.all {
             it.enabled = false
             it.ignoreFailures = true
-            // Use setExcludes instead of excludes
             it.setExcludes(setOf("**/*"))
         }
     }
 
-    // Add lint configuration to fix the "Unexpected lint invalid arguments" error
     lint {
         abortOnError = false
         checkReleaseBuilds = false
-        // Disable specific problematic lint checks if needed
         disable += listOf(
             "ObsoleteLintCustomCheck",
             "InvalidPackage",
             "GradleDependency"
         )
-        // Ignore test files in lint checks
         ignoreTestSources = true
-        // Set baseline file if you want to suppress existing issues
-        // baseline = file("lint-baseline.xml")
-    }
-
-    // Disable Google Services for FOSS flavor
-    applicationVariants.all {
-        if (flavorName == "foss") {
-            val cl = "Crash" + "lytics"
-            tasks.matching { 
-                it.name.contains("google", ignoreCase = true) || 
-                it.name.contains(cl, ignoreCase = true) 
-            }.configureEach {
-                enabled = false
-            }
-        }
     }
 }
 
@@ -172,14 +128,6 @@ dependencies {
 
     // WorkManager for background tasks
     implementation(libs.work.runtime.ktx)
-
-    // Firebase Cloud Messaging for notifications - Play flavor only
-    val fb = "fire" + "base"
-    val cl = "crash" + "lytics"
-    "playImplementation"(platform("com.google.$fb:$fb-bom:33.6.0"))
-    "playImplementation"("com.google.$fb:$fb-analytics-ktx")
-    "playImplementation"("com.google.$fb:$fb-messaging-ktx")
-    "playImplementation"("com.google.$fb:$fb-$cl-ktx")
 
     // Coil for image loading
     implementation(libs.coil.compose)

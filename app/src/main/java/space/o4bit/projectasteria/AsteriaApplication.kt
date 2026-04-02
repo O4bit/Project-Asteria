@@ -31,11 +31,6 @@ class AsteriaApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        
-        // CrashReportingUtils.initialize(this) is called in MainActivity
-        // but it's often better to initialize crash reporting as early as possible.
-        // We'll keep it in MainActivity for now to match existing logic, 
-        // but relocating it to the flavor-specific initialize(this) here is also an option.
     }
     
     override val workManagerConfiguration: Configuration
