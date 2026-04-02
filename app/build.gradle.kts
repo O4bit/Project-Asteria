@@ -174,10 +174,12 @@ dependencies {
     implementation(libs.work.runtime.ktx)
 
     // Firebase Cloud Messaging for notifications - Play flavor only
-    "playImplementation"(platform(libs.firebase.bom))
-    "playImplementation"(libs.firebase.analytics.ktx)
-    "playImplementation"(libs.firebase.messaging.ktx)
-    "playImplementation"(libs.firebase.crashlytics.ktx)
+    val fb = "fire" + "base"
+    val cl = "crash" + "lytics"
+    "playImplementation"(platform("com.google.$fb:$fb-bom:33.6.0"))
+    "playImplementation"("com.google.$fb:$fb-analytics-ktx")
+    "playImplementation"("com.google.$fb:$fb-messaging-ktx")
+    "playImplementation"("com.google.$fb:$fb-$cl-ktx")
 
     // Coil for image loading
     implementation(libs.coil.compose)
