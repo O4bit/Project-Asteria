@@ -1,36 +1,44 @@
-# Project Asteria 
-<div align="center">
-  <img src="http://unishared.pulsedinc.tech/u/EsbhOo.png" alt="Project Asteria Logo"><br>
-  Discover space right from your phone with astronomy pictures powered by the O4bit Space Mirror API.
-</div>
+# Project Asteria
 
----
-
-
-## Badges
-
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-
-[![Android CI](https://github.com/O4bit/Project-Asteria/actions/workflows/android-ci.yml/badge.svg?branch=main)](https://github.com/O4bit/Project-Asteria/actions/workflows/android-ci.yml)
+A Free and Open Source (FOSS) Android application for space exploration using official NASA APIs.
 
 ## Features
 
-- Light/dark mode toggle
-- The best daily space images from NASA's APOD API
-- Set the picture as a wallpaper (home, lockscreen or both)
-- Widget (With the daily image and a random spacefact)
-- A Small about this image text
+- Astronomy Picture of the Day (APOD) with high-resolution image support and detailed explanations.
+- Near-Earth Object (NEO) tracking and data visualization.
+- Space mission insights and historical data.
+- Built with Jetpack Compose for a modern, responsive interface.
+- 100% telemetry-free and privacy-focused.
 
-## License
+## Installation
 
-[MIT](https://choosealicense.com/licenses/mit/)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/O4bit/Project-Asteria.git
+   ```
+2. Open the project in Android Studio (Ladybug or newer recommended).
+3. Create a `local.properties` file in the root directory and add your NASA API key:
+   ```properties
+   nasa.api.key=YOUR_API_KEY_HERE
+   ```
+4. Sync Gradle and build the project.
 
+## Usage
+
+Build and run the `app` module on an Android device or emulator (API level 31 or higher).
 
 ## Contributing
 
-Contributions are always welcome!
+Contributions are welcome via GitHub Pull Requests. Please ensure your code follows the project's Kotlin coding standards and includes relevant unit tests where applicable. For major changes, please open an issue first to discuss your proposal.
 
-See `contributing.md` for ways to get started.
+## Code of Conduct
 
-Please adhere to this project's `code of conduct`.
+Everyone participating in this project is expected to treat others with respect and maintain a professional environment. Aggressive, exclusionary, or harassing behavior is not tolerated.
 
+## Security
+
+To report a security vulnerability, please open a confidential issue or contact the maintainer directly. Do not disclose vulnerabilities in public issues until a fix has been prepared.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
