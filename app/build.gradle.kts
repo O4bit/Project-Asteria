@@ -74,10 +74,10 @@ android {
         buildConfig = true
     }
 
-    // Reproducible builds: disable non-deterministic timestamps in generated files
+    // Reproducible builds: exclude non-deterministic generated timestamp from library metadata
     aboutLibraries {
         prettyPrint = false
-        includeMetaData = false
+        excludeFields = arrayOf("ResultContainer.metadata")
     }
 
     testOptions {
