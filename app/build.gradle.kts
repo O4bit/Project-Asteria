@@ -53,7 +53,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = null
         }
     }
     compileOptions {
@@ -72,6 +72,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // Reproducible builds: disable non-deterministic timestamps in generated files
+    aboutLibraries {
+        prettyPrint = false
+        includeMetaData = false
     }
 
     testOptions {
