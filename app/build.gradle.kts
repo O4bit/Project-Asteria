@@ -12,7 +12,9 @@ plugins {
 gradle.taskGraph.whenReady {
     tasks.forEach { task ->
         if (task.name.contains("test", ignoreCase = true) ||
-            task.name.contains("Test", ignoreCase = true)) {
+            task.name.contains("Test", ignoreCase = true) ||
+            task.name.contains("ArtProfile", ignoreCase = true) ||
+            task.name.contains("baselineProfile", ignoreCase = true)) {
             task.enabled = false
         }
     }
@@ -30,6 +32,11 @@ android {
         versionName = "4.0.0-Release"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // F-Droid Reproducible Build requirement: Generated PNGs from vector drawables are not reproducible
+        vectorDrawables {
+            useSupportLibrary = true
+        }
 
         // Load API keys from local.properties
         val localProperties = Properties()
