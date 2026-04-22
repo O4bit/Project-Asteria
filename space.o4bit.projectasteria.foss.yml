@@ -1,0 +1,30 @@
+Categories:
+  - Multimedia
+  - Science & Education
+License: MIT
+AuthorName: Vertronix-Software
+SourceCode: https://github.com/O4bit/Project-Asteria
+IssueTracker: https://github.com/O4bit/Project-Asteria/issues
+
+AutoName: Project Asteria
+
+RepoType: git
+Repo: https://github.com/O4bit/Project-Asteria.git
+Binaries: 
+  https://github.com/O4bit/Project-Asteria/releases/download/%v-foss/app-release.apk
+
+Builds:
+  - versionName: 4.0.0-Release
+    versionCode: 40
+    commit: a0ce77187acc72f1daf9976a9e9175a7e887283b
+    subdir: app
+    gradle:
+      - yes
+    prebuild: find . -name "google-services.json" -delete
+
+AllowedAPKSigningKeys: 93242a0177d92d25f83ce43006b808900f08284300dca35c895509f7823ede19
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 4.0.0-Release
+CurrentVersionCode: 40
