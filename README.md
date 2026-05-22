@@ -6,7 +6,6 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
-  <img src="https://img.shields.io/badge/F--Droid-Ready-blue.svg" alt="F-Droid Ready">
   <img src="https://img.shields.io/badge/API-NASA-red.svg" alt="NASA API">
 </p>
 
