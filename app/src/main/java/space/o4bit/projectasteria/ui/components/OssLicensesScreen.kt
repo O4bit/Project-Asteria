@@ -38,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
+import com.mikepenz.aboutlibraries.ui.compose.chipColors
+import com.mikepenz.aboutlibraries.ui.compose.libraryColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,20 +51,38 @@ fun OssLicensesScreen(
     var isSearchVisible by remember { mutableStateOf(false) }
 
     // M3 Expressive colors derived from the current theme
+    val chipColors = LibraryDefaults.chipColors(
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    )
     val libraryColors = LibraryDefaults.libraryColors(
-        backgroundColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        badgeBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
-        badgeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        libraryBackgroundColor = MaterialTheme.colorScheme.surface,
+        libraryContentColor = MaterialTheme.colorScheme.onSurface,
+        versionChipColors = chipColors,
+        licenseChipColors = chipColors,
+        fundingChipColors = chipColors,
+        dialogBackgroundColor = MaterialTheme.colorScheme.surface,
+        dialogContentColor = MaterialTheme.colorScheme.onSurface,
         dialogConfirmButtonColor = MaterialTheme.colorScheme.primary
     )
 
     // More spacious padding for an expressive feel
+    val chipPadding = LibraryDefaults.chipPadding(
+        containerPadding = PaddingValues(top = 10.dp, end = 6.dp),
+        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+    )
     val libraryPadding = LibraryDefaults.libraryPadding(
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
         namePadding = PaddingValues(top = 6.dp),
-        versionPadding = PaddingValues(start = 12.dp),
-        badgePadding = PaddingValues(top = 10.dp, end = 6.dp),
-        badgeContentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+        versionPadding = LibraryDefaults.chipPadding(
+            containerPadding = PaddingValues(start = 12.dp),
+            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+        ),
+        licensePadding = chipPadding,
+        fundingPadding = chipPadding
+    )
+    val libraryDimensions = LibraryDefaults.libraryDimensions(
+        itemSpacing = 2.dp
     )
 
     Scaffold(
@@ -161,8 +181,7 @@ fun OssLicensesScreen(
                 showLicenseBadges = true,
                 colors = libraryColors,
                 padding = libraryPadding,
-                itemContentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
-                itemSpacing = 2.dp,
+                dimensions = libraryDimensions,
                 contentPadding = PaddingValues(bottom = 24.dp),
                 onLibraryClick = if (searchQuery.isNotBlank()) {
                     // When searching, filter is handled by default — just let clicks through

@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ApplicationExtension
 import java.util.Properties
 
 plugins {
@@ -20,7 +21,7 @@ gradle.taskGraph.whenReady {
     }
 }
 
-android {
+extensions.configure<ApplicationExtension> {
     namespace = "space.o4bit.projectasteria"
     compileSdk = 36
 
@@ -38,7 +39,15 @@ android {
             useSupportLibrary = true
         }
 
-        // Load API keys from local.properties
+        // Load Asteria backend base URL from local.properties.
+        //
+        // The app no longer talks to NASA directly — all NASA traffic is
+        // proxied by our Rust backend (see ../nasamirrorapi). The server
+        // holds NASA_API_KEY; the client must not embed it.
+        //
+        // Configure in local.properties:
+        //     asteria.api.base.url=https://your-worker.example.workers.dev/
+        // Trailing slash is required by Retrofit.
         val localProperties = Properties()
         val localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
@@ -47,9 +56,12 @@ android {
             }
         }
 
-        val nasaApiKey = localProperties.getProperty("nasa.api.key", "DEMO_KEY")
-        println("BUILD DEBUG: NASA API Key loaded: ${if (nasaApiKey == "DEMO_KEY") "DEMO_KEY (fallback)" else "Custom key (${nasaApiKey.take(8)}...)"}")
-        buildConfigField("String", "NASA_API_KEY", "\"$nasaApiKey\"")
+        val asteriaApiBaseUrl = localProperties.getProperty(
+            "asteria.api.base.url",
+            "https://nasamirrorapi.example.workers.dev/"
+        )
+        println("BUILD DEBUG: Asteria API base URL: $asteriaApiBaseUrl")
+        buildConfigField("String", "ASTERIA_API_BASE_URL", "\"$asteriaApiBaseUrl\"")
     }
 
     buildTypes {
@@ -67,24 +79,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    @Suppress("UnstableApiUsage")
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
-    }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-        }
-    }
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    // Reproducible builds: exclude non-deterministic generated timestamp from library metadata
-    aboutLibraries {
-        prettyPrint = false
-        excludeFields = arrayOf("ResultContainer.metadata")
     }
 
     testOptions {
@@ -104,6 +101,19 @@ android {
             "GradleDependency"
         )
         ignoreTestSources = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    }
+}
+
+aboutLibraries {
+    export {
+        prettyPrint.set(false)
+        excludeFields.set(setOf("ResultContainer.metadata"))
     }
 }
 

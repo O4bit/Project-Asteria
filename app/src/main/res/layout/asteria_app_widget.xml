@@ -3,7 +3,9 @@
     android:id="@+id/widget_main_card"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_background">
+    android:background="@drawable/widget_background"
+    android:clipToOutline="true"
+    android:outlineProvider="background">
 
     <!-- Edge to edge image -->
     <ImageView
