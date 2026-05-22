@@ -3,6 +3,7 @@ package space.o4bit.projectasteria.ui.components
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -53,8 +54,14 @@ object SpaceNotificationBuilder {
         // Create notification channel for Android 8.0+
         createNotificationChannel(context)
 
-        // Create intent for when notification is tapped
+        // Create intent for when notification is tapped.
+        // Pin package + component so the Intent is unambiguously explicit
+        // (satisfies CodeQL java/android/implicit-pendingintents on top of
+        // FLAG_IMMUTABLE — the ACTION_VIEW + data URI would otherwise make
+        // the rule treat this as partially implicit).
         val intent = Intent(context, MainActivity::class.java).apply {
+            setPackage(context.packageName)
+            component = ComponentName(context, MainActivity::class.java)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             action = Intent.ACTION_VIEW
             data = "asteria://image/${enhancedPicture.astronomyPicture.date}".toUri()
@@ -108,8 +115,11 @@ object SpaceNotificationBuilder {
                 )
             }
             
-            // Add action buttons for direct fullscreen viewing
+            // Add action buttons for direct fullscreen viewing.
+            // Package + component pinned for the same reason as above.
             val viewIntent = Intent(context, MainActivity::class.java).apply {
+                setPackage(context.packageName)
+                component = ComponentName(context, MainActivity::class.java)
                 action = Intent.ACTION_VIEW
                 data = "asteria://image/${apod.date}".toUri()
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -199,9 +209,11 @@ object SpaceNotificationBuilder {
         createNotificationChannel(context)
 
         val intent = Intent(context, MainActivity::class.java).apply {
+            setPackage(context.packageName)
+            component = ComponentName(context, MainActivity::class.java)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        
+
         val pendingIntent = PendingIntent.getActivity(
             context,
             launchId.hashCode(), // Unique ID per launch

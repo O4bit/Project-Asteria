@@ -22,7 +22,13 @@ object WidgetAlarmManager {
      */
     fun scheduleWidgetUpdate(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, WidgetAlarmReceiver::class.java)
+        val intent = Intent(context, WidgetAlarmReceiver::class.java).apply {
+            // Defensive: pin the resolution target to our package + exact component so
+            // CodeQL's java/android/implicit-pendingintents rule is satisfied and no
+            // other app can ever resolve this PendingIntent's base Intent.
+            setPackage(context.packageName)
+            component = android.content.ComponentName(context, WidgetAlarmReceiver::class.java)
+        }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             WIDGET_UPDATE_REQUEST_CODE,
@@ -108,7 +114,10 @@ object WidgetAlarmManager {
      */
     fun cancelWidgetUpdateAlarm(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, WidgetAlarmReceiver::class.java)
+        val intent = Intent(context, WidgetAlarmReceiver::class.java).apply {
+            setPackage(context.packageName)
+            component = android.content.ComponentName(context, WidgetAlarmReceiver::class.java)
+        }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             WIDGET_UPDATE_REQUEST_CODE,
