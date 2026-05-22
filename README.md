@@ -40,11 +40,7 @@ A Free and Open Source (FOSS) Android application for space exploration using of
    git clone https://github.com/O4bit/Project-Asteria.git
    ```
 2. Open the project in Android Studio (Ladybug or newer recommended).
-3. Create a `local.properties` file in the root directory and add your NASA API key:
-   ```properties
-   nasa.api.key=YOUR_API_KEY_HERE
-   ```
-4. Sync Gradle and build the project.
+3. Sync Gradle and build the project.
 
 ## Usage
 
