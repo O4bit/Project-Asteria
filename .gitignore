@@ -1,18 +1,50 @@
+# --- IDE / OS ---
 *.iml
-.gradle
-/local.properties
 /.idea/
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-google-services.json
-app/release/
-.kotlin/
 .vscode/
+.DS_Store
+Thumbs.db
+
+# --- Gradle / Android build ---
+.gradle/
+.kotlin/
+/build/
+**/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+app/release/
+release/
+unsigned/
+tmp/
+logs/
+*.log
+
+# --- Local config / secrets (never push) ---
+/local.properties
+google-services.json
+API_SETUP.md
+projectasteriakey.jks
+*.jks
+*.keystore
+*.p12
+*.pem
+key.properties
+
+# --- Build artifacts at repo root ---
+*.apk
+*.aab
+*.apk.idsig
+*.dex
+mapping.txt
+
+# --- Rust backend (separate repo / deploy) ---
+nasamirrorapi/target/
+nasamirrorapi/.wrangler/
+nasamirrorapi/node_modules/
+nasamirrorapi/build/
+nasamirrorapi/.dev.vars
+
+# --- Generated docs / changelogs ---
 CHANGELOG.md
 docs/crash_analytics.md
-release/
-API_SETUP.md
-nasamirrorapi

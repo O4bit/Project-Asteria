@@ -1,0 +1,41 @@
+[package]
+name = "nasa-mirror-api"
+version = "0.2.0"
+edition = "2021"
+authors = ["NASA Mirror API Team"]
+description = "Cloudflare Workers proxy to NASA official APIs (APOD + NeoWs) with IP rate limiting, D1 caching, and SSRF protection"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Cloudflare Workers runtime (replaces tokio/reqwest/axum on this platform).
+# Workers' fetch + KV/D1 give us the same building blocks the issue describes
+# (async HTTP, env-backed secrets, caching) without a native runtime.
+worker = { version = "0.3.4", features = ["d1"] }
+
+# JSON (issue: "serde for serialization")
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Dates for APOD/NeoWs date validation
+chrono = { version = "0.4", features = ["serde", "wasmbind"] }
+
+# URL parsing for strict SSRF protection
+url = "2.5"
+
+# WASM-compatible RNG (jitter for retry backoff)
+getrandom = { version = "0.2", features = ["js"] }
+
+# Pin transitive dep that otherwise drags getrandom 0.3 (not WASM-friendly here)
+ahash = "=0.8.11"
+
+# Panic hook for nicer Workers error reporting
+console_error_panic_hook = "0.1"
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

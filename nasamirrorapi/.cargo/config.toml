@@ -1,0 +1,10 @@
+[build]
+# Target for Cloudflare Workers
+target = "wasm32-unknown-unknown"
+
+[target.wasm32-unknown-unknown]
+# Enable getrandom WASM support for both v0.2 and v0.3
+rustflags = [
+  "--cfg", "getrandom_backend=\"wasm_js\"",
+  "--cfg", "feature=\"wasm_js\""
+]

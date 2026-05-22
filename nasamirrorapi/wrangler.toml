@@ -1,0 +1,16 @@
+name = "nasamirrorapi"
+main = "build/worker/shim.mjs"
+compatibility_date = "2024-03-03"
+
+[build]
+command = "worker-build --release"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "apod-db"
+database_id = "76043263-73e3-44c1-ae8e-5e6113a47153"
+
+# Cron removed in v2: the previous hourly job refreshed scraped APOD pages.
+# The v2 proxy is on-demand with a D1 response cache — no cron required.
+# NASA_API_KEY must be configured as a secret:
+#   wrangler secret put NASA_API_KEY
