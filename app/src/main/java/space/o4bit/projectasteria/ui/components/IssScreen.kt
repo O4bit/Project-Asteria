@@ -14,11 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,7 +30,6 @@ fun IssScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -67,14 +61,12 @@ fun IssScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 FloatingActionButton(
-                    onClick = { 
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        viewModel.refresh() 
-                    },
+                    onClick = { viewModel.refresh() },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh ISS Location")
+                    Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                 }
                 FloatingActionButton(
                     onClick = onSettingsClick,
@@ -209,8 +201,7 @@ fun DataItem(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+            fontWeight = FontWeight.SemiBold
         )
     }
 }

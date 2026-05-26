@@ -26,8 +26,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -335,7 +333,6 @@ fun AsteriaBottomNavigation(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -373,8 +370,10 @@ fun AsteriaBottomNavigation(
                     modifier = Modifier
                         .clip(CircleShape)
                         .background(backgroundColor)
-                        .clickable {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             onTabSelected(index)
                         }
                         .padding(horizontal = 16.dp, vertical = 8.dp),

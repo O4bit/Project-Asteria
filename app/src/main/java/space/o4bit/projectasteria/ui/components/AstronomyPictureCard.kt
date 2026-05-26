@@ -48,13 +48,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -120,7 +113,6 @@ fun AstronomyPictureCard(
             val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
             val isVideo = astronomyPicture.mediaType == "video"
             val context = LocalContext.current
-            val haptic = LocalHapticFeedback.current
             
             when {
                 // IMAGE type: load async with Coil
@@ -300,15 +292,12 @@ fun AstronomyPictureCard(
                             Row {
                                 // Add to Home Screen button
                                 FilledTonalIconButton(
-                                    onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onAddToHomeScreenClick()
-                                    },
-                                    modifier = Modifier.size(48.dp)
+                                    onClick = onAddToHomeScreenClick,
+                                    modifier = Modifier.size(40.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.baseline_widgets_24),
-                                        contentDescription = "Add Astronomy Widget to Home Screen",
+                                        contentDescription = "Add to Home Screen",
                                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
@@ -317,15 +306,12 @@ fun AstronomyPictureCard(
                                 
                                 // Share button
                                 FilledTonalIconButton(
-                                    onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onShareClick()
-                                    },
-                                    modifier = Modifier.size(48.dp)
+                                    onClick = onShareClick,
+                                    modifier = Modifier.size(40.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Share,
-                                        contentDescription = "Share this astronomy discovery",
+                                        contentDescription = "Share",
                                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
@@ -343,16 +329,10 @@ fun AstronomyPictureCard(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f))
-                                .clickable(
-                                    onClickLabel = if (factExpanded) "Collapse fact" else "Expand fact"
-                                ) { 
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    factExpanded = !factExpanded 
-                                }
+                                .clickable { factExpanded = !factExpanded }
                                 .padding(12.dp)
-                                .semantics { role = Role.Button }
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
+                            Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Rounded.Info,
@@ -380,13 +360,6 @@ fun AstronomyPictureCard(
                                     )
                                 }
                             }
-                            
-                            Icon(
-                                imageVector = if (factExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
                         }
                     }
                 }
