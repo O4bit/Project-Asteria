@@ -48,3 +48,4 @@ nasamirrorapi/.dev.vars
 # --- Generated docs / changelogs ---
 CHANGELOG.md
 docs/crash_analytics.md
+nasamirrorapi/Cargo.lock

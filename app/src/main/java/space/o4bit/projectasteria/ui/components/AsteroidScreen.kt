@@ -22,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -157,6 +159,7 @@ fun AsteroidCard(asteroid: AsteroidEntity, onClick: () -> Unit) {
     
     val speed = asteroid.relativeVelocityKmh.toDoubleOrNull()?.let { String.format("%.0f", it) } ?: "Unknown"
     val distance = if (asteroid.missDistanceKm < Double.MAX_VALUE) String.format("%,.0f", asteroid.missDistanceKm) else "Unknown"
+    val haptic = LocalHapticFeedback.current
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -169,8 +172,11 @@ fun AsteroidCard(asteroid: AsteroidEntity, onClick: () -> Unit) {
             .clickable(
                 interactionSource = interactionSource,
                 indication = androidx.compose.foundation.LocalIndication.current,
-                onClick = onClick
-            )
+                onClickLabel = "View details on NASA JPL website"
+            ) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -187,13 +193,13 @@ fun AsteroidCard(asteroid: AsteroidEntity, onClick: () -> Unit) {
                 if (asteroid.isPotentiallyHazardous) {
                     Icon(
                         imageVector = Icons.Default.Warning,
-                        contentDescription = "Hazardous",
+                        contentDescription = "Potentially Hazardous Object",
                         tint = Color.Red
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.Info,
-                        contentDescription = "Safe",
+                        contentDescription = "Safe Object",
                         tint = Color.Green
                     )
                 }

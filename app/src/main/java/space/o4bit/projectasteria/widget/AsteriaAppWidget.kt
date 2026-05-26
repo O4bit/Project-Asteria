@@ -58,15 +58,41 @@ class AsteriaAppWidget : AppWidgetProvider() {
                 onUpdate(context, appWidgetManager, appWidgetIds)
             }
             ACTION_SHARE -> {
-                val shareIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "Check out this amazing astronomy discovery from Project Asteria!")
-                    type = "text/plain"
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val database = (context.applicationContext as space.o4bit.projectasteria.AsteriaApplication).database
+                        val repository = SpaceRepository(database.apodDao())
+                        val enhancedPicture = repository.getTodaysAstronomyPicture()
+                        val apod = enhancedPicture.astronomyPicture
+                        
+                        val shareText = "Check out this amazing astronomy discovery: ${apod.title} from Project Asteria!"
+                        
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val shareIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, shareText)
+                                type = "text/plain"
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            val shareChooser = Intent.createChooser(shareIntent, "Share Astronomy Picture")
+                            shareChooser.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(shareChooser)
+                        }
+                    } catch (_: Exception) {
+                        // Fallback if database fetch fails
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val shareIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, "Check out this amazing astronomy discovery from Project Asteria!")
+                                type = "text/plain"
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            val shareChooser = Intent.createChooser(shareIntent, "Share Astronomy Picture")
+                            shareChooser.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(shareChooser)
+                        }
+                    }
                 }
-                val shareChooser = Intent.createChooser(shareIntent, "Share Astronomy Picture")
-                shareChooser.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(shareChooser)
             }
         }
     }
@@ -85,6 +111,22 @@ class AsteriaAppWidget : AppWidgetProvider() {
             context, 0, openAppIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         views.setOnClickPendingIntent(R.id.widget_main_card, openAppPendingIntent)
+
+        val refreshIntent = Intent(context, AsteriaAppWidget::class.java).apply {
+            action = ACTION_REFRESH
+        }
+        val refreshPendingIntent = PendingIntent.getBroadcast(
+            context, 1, refreshIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        views.setOnClickPendingIntent(R.id.widget_refresh_button, refreshPendingIntent)
+
+        val shareIntent = Intent(context, AsteriaAppWidget::class.java).apply {
+            action = ACTION_SHARE
+        }
+        val sharePendingIntent = PendingIntent.getBroadcast(
+            context, 2, shareIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        views.setOnClickPendingIntent(R.id.widget_share_button, sharePendingIntent)
 
         val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
         val currentDate = dateFormat.format(java.util.Date())
@@ -113,7 +155,7 @@ class AsteriaAppWidget : AppWidgetProvider() {
                             val loader = ImageLoader(context)
                             val request = ImageRequest.Builder(context)
                                 .data(imageUrl)
-                .allowHardware(false)
+                                .allowHardware(false)
                                 .build()
                             val result = loader.execute(request)
                             if (result is SuccessResult) {

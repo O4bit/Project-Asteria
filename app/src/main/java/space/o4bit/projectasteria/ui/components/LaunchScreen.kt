@@ -28,6 +28,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -236,7 +239,7 @@ fun LaunchCard(
                         .data(launch.image)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Launch Image",
+                    contentDescription = "Photo of ${launch.name}",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -365,7 +368,7 @@ fun LaunchCard(
                     ) {
                         Icon(
                             imageVector = if (isReminded) Icons.Filled.Notifications else Icons.Outlined.Notifications,
-                            contentDescription = if (isReminded) "Cancel Reminder" else "Set Reminder",
+                            contentDescription = if (isReminded) "Cancel Reminder for ${launch.name}" else "Set Reminder for ${launch.name}",
                             tint = if (isReminded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -418,6 +421,7 @@ fun LaunchCountdownTimer(launchNet: String) {
         text = countdownText,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.tertiary,
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
     )
 }

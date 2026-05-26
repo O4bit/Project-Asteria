@@ -3,22 +3,9 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.aboutlibraries.plugin)
     alias(libs.plugins.ksp.plugin)
-}
-
-// Global build task logic
-gradle.taskGraph.whenReady {
-    tasks.forEach { task ->
-        if (task.name.contains("test", ignoreCase = true) ||
-            task.name.contains("Test", ignoreCase = true) ||
-            task.name.contains("ArtProfile", ignoreCase = true) ||
-            task.name.contains("baselineProfile", ignoreCase = true)) {
-            task.enabled = false
-        }
-    }
 }
 
 extensions.configure<ApplicationExtension> {
@@ -82,14 +69,6 @@ extensions.configure<ApplicationExtension> {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    testOptions {
-        unitTests.all {
-            it.enabled = false
-            it.ignoreFailures = true
-            it.setExcludes(setOf("**/*"))
-        }
     }
 
     lint {
@@ -175,7 +154,7 @@ dependencies {
     // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    add("ksp", libs.androidx.room.compiler)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
 
