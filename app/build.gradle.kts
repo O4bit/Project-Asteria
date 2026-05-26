@@ -9,8 +9,18 @@ plugins {
     alias(libs.plugins.ksp.plugin)
 }
 
-// Global build task logic
-// (Removed task disabling logic to prevent installation issues and allow debugging)
+// Global build task logic to ensure reproducible builds (required for F-Droid)
+// Disabling these tasks prevents non-deterministic output in baseline profiles and tests.
+gradle.taskGraph.whenReady {
+    tasks.forEach { task ->
+        if (task.name.contains("test", ignoreCase = true) ||
+            task.name.contains("Test", ignoreCase = true) ||
+            task.name.contains("ArtProfile", ignoreCase = true) ||
+            task.name.contains("baselineProfile", ignoreCase = true)) {
+            task.enabled = false
+        }
+    }
+}
 
 
 extensions.configure<ApplicationExtension> {
@@ -30,6 +40,9 @@ extensions.configure<ApplicationExtension> {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Disable baseline profiles for deterministic builds
+        experimentalProperties["android.experimental.disable-baseline-profile"] = true
 
         // Load Asteria backend base URL from local.properties.
         //
@@ -64,7 +77,17 @@ extensions.configure<ApplicationExtension> {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = null
+            // Use debug signing for release builds as per previous configuration
+            signingConfig = signingConfigs.getByName("debug")
+
+            packaging {
+                resources {
+                    // Remove all profiles from the APK to ensure reproducibility
+                    excludes += "assets/dexopt/*.prof"
+                    excludes += "assets/dexopt/*.profm"
+                    excludes += "META-INF/*.version"
+                }
+            }
         }
     }
     compileOptions {
@@ -173,13 +196,6 @@ dependencies {
 
     // Open Source Libraries
     implementation(libs.aboutlibraries.compose)
-}
-android {
-    buildTypes {
-        getByName("release") {
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }
 }
 
 androidComponents {
