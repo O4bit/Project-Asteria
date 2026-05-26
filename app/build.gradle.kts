@@ -80,6 +80,9 @@ extensions.configure<ApplicationExtension> {
             // Use debug signing for release builds as per previous configuration
             signingConfig = signingConfigs.getByName("debug")
 
+            // Disable VCS info to remove non-deterministic Git revision from APK
+            vcsInfo.include = false
+
             packaging {
                 resources {
                     // Remove all profiles and non-deterministic metadata from the APK
