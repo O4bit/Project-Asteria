@@ -30,7 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.AstronomyPicture
-import space.o4bit.projectasteria.ui.components.StarryBackground
 import space.o4bit.projectasteria.utils.TextUtils
 
 /**
@@ -77,13 +76,12 @@ fun ExplanationDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            StarryBackground {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp)
-                ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -149,7 +147,6 @@ fun ExplanationDetailScreen(
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
-            }
             }
         }
     }

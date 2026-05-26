@@ -85,6 +85,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.snapshotFlow
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 import space.o4bit.projectasteria.data.worker.DailySpaceWorker
@@ -100,8 +102,10 @@ import space.o4bit.projectasteria.ui.components.OssLicensesScreen
 import space.o4bit.projectasteria.ui.components.HistoryScreen
 import space.o4bit.projectasteria.ui.components.LaunchDetailScreen
 import space.o4bit.projectasteria.ui.components.ApodDetailScreen
+import space.o4bit.projectasteria.ui.components.SwipeHintOverlay
 import space.o4bit.projectasteria.ui.theme.ThemedApp
 import space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository
+import space.o4bit.projectasteria.data.preferences.UiHintsPreferencesRepository
 
 import coil.ImageLoader
 import coil.disk.DiskCache
@@ -263,8 +267,10 @@ fun AsteriaApp(
     
     // Background preferences
     val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
+    val uiHintsPrefs = remember { UiHintsPreferencesRepository(context) }
     val backgroundTypeName by backgroundPrefs.backgroundType.collectAsState(initial = BackgroundType.DEFAULT.name)
     val backgroundType = BackgroundType.fromName(backgroundTypeName)
+    val mainTabsHintShown by uiHintsPrefs.mainTabsHintShown.collectAsState(initial = false)
 
     // Notification preferences
     val notificationPrefs = remember { space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository(context) }
@@ -282,6 +288,15 @@ fun AsteriaApp(
                 isLoading = false
             }
         }
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .collectLatest { page ->
+                if (page != 0 && !mainTabsHintShown) {
+                    uiHintsPrefs.setMainTabsHintShown(true)
+                }
+            }
     }
 
     BackHandler(enabled = showSettings || showFullscreenViewer || showExplanationDetail || showHistory || showLicenses) {
@@ -371,6 +386,15 @@ fun AsteriaApp(
                                     IssScreen(onSettingsClick = { showSettings = true })
                                 }
                             }
+                        }
+
+                        if (!mainTabsHintShown) {
+                            SwipeHintOverlay(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 96.dp),
+                                text = "Swipe to change tabs"
+                            )
                         }
                     }
                 }
@@ -711,3 +735,4 @@ private fun ErrorScreen(
         }
     }
 }
+

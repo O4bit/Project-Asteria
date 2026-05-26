@@ -13,7 +13,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import space.o4bit.projectasteria.util.toHexString
 import androidx.compose.foundation.pager.HorizontalPager
@@ -46,9 +45,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.snapshotFlow
 import space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository
 import space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository
 import space.o4bit.projectasteria.data.preferences.ThemePreferencesRepository
+import space.o4bit.projectasteria.data.preferences.UiHintsPreferencesRepository
 import space.o4bit.projectasteria.ui.components.settings.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -60,9 +62,18 @@ fun SettingsScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 3 })
-    val tabs = listOf("Appearance", "General", "About")
-    val iconsSelected = listOf(Icons.Filled.Star, Icons.Filled.Settings, Icons.Filled.Info)
-    val iconsUnselected = listOf(Icons.Outlined.Star, Icons.Outlined.Settings, Icons.Outlined.Info)
+    val context = LocalContext.current
+    val uiHintsPrefs = remember { UiHintsPreferencesRepository(context) }
+    val settingsTabsHintShown by uiHintsPrefs.settingsTabsHintShown.collectAsState(initial = false)
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .collectLatest { page ->
+                if (page != 0 && !settingsTabsHintShown) {
+                    uiHintsPrefs.setSettingsTabsHintShown(true)
+                }
+            }
+    }
 
     Scaffold(
         topBar = {
@@ -80,9 +91,9 @@ fun SettingsScreen(
         },
         bottomBar = {
             AsteriaBottomNavigation(
-                tabs = tabs,
-                selectedIcons = iconsSelected,
-                unselectedIcons = iconsUnselected,
+                tabs = listOf("Appearance", "General", "About"),
+                selectedIcons = listOf(Icons.Filled.Star, Icons.Filled.Settings, Icons.Filled.Info),
+                unselectedIcons = listOf(Icons.Outlined.Star, Icons.Outlined.Settings, Icons.Outlined.Info),
                 selectedIndex = pagerState.currentPage,
                 onTabSelected = { index ->
                     coroutineScope.launch {
@@ -91,19 +102,30 @@ fun SettingsScreen(
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) { page ->
-            when (page) {
-                0 -> AppearanceTabContent()
-                1 -> GeneralTabContent()
-                2 -> AboutTabContent(onShowLicenses = onShowLicenses)
+        Box(modifier = Modifier.fillMaxSize()) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) { page ->
+                when (page) {
+                    0 -> AppearanceTabContent()
+                    1 -> GeneralTabContent()
+                    2 -> AboutTabContent(onShowLicenses = onShowLicenses)
+                }
+            }
+
+            if (!settingsTabsHintShown) {
+                SwipeHintOverlay(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 96.dp),
+                    text = "Swipe to change tabs"
+                )
             }
         }
     }

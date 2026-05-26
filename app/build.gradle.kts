@@ -10,16 +10,8 @@ plugins {
 }
 
 // Global build task logic
-gradle.taskGraph.whenReady {
-    tasks.forEach { task ->
-        if (task.name.contains("test", ignoreCase = true) ||
-            task.name.contains("Test", ignoreCase = true) ||
-            task.name.contains("ArtProfile", ignoreCase = true) ||
-            task.name.contains("baselineProfile", ignoreCase = true)) {
-            task.enabled = false
-        }
-    }
-}
+// (Removed task disabling logic to prevent installation issues and allow debugging)
+
 
 extensions.configure<ApplicationExtension> {
     namespace = "space.o4bit.projectasteria"
@@ -58,7 +50,7 @@ extensions.configure<ApplicationExtension> {
 
         val asteriaApiBaseUrl = localProperties.getProperty(
             "asteria.api.base.url",
-            "https://nasamirrorapi.example.workers.dev/"
+            "https://asteria.o4bit.space/"
         )
         println("BUILD DEBUG: Asteria API base URL: $asteriaApiBaseUrl")
         buildConfigField("String", "ASTERIA_API_BASE_URL", "\"$asteriaApiBaseUrl\"")
@@ -181,4 +173,15 @@ dependencies {
 
     // Open Source Libraries
     implementation(libs.aboutlibraries.compose)
+}
+android {
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+}
+
+androidComponents {
+    // Re-enabled debug variant for development
 }

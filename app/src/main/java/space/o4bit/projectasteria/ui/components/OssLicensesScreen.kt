@@ -34,8 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mikepenz.aboutlibraries.Libs
+import com.mikepenz.aboutlibraries.util.withContext
 import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.chipColors
@@ -49,6 +52,8 @@ fun OssLicensesScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var searchQuery by remember { mutableStateOf("") }
     var isSearchVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val libs = remember<Libs> { Libs.Builder().withContext(context).build() }
 
     // M3 Expressive colors derived from the current theme
     val chipColors = LibraryDefaults.chipColors(
@@ -112,7 +117,7 @@ fun OssLicensesScreen(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
@@ -175,6 +180,7 @@ fun OssLicensesScreen(
             }
 
             LibrariesContainer(
+                libraries = libs,
                 modifier = Modifier.fillMaxSize(),
                 showAuthor = true,
                 showVersion = true,
