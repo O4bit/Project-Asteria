@@ -375,7 +375,7 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
         SectionCard {
             RichSettingsItem(
                 title = "Version",
-                subtitle = "4.0.0-Release"
+                subtitle = "4.1.0-Release"
             )
             AsteriaSettingsDivider()
             RichSettingsItem(
