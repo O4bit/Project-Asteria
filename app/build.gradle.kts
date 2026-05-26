@@ -82,10 +82,11 @@ extensions.configure<ApplicationExtension> {
 
             packaging {
                 resources {
-                    // Remove all profiles from the APK to ensure reproducibility
-                    excludes += "assets/dexopt/*.prof"
-                    excludes += "assets/dexopt/*.profm"
+                    // Remove all profiles and non-deterministic metadata from the APK
+                    excludes += "assets/dexopt/*"
                     excludes += "META-INF/*.version"
+                    excludes += "META-INF/version-control-info.textproto"
+                    excludes += "META-INF/com.android.tools.r8.metadata"
                 }
             }
         }
