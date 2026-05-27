@@ -74,7 +74,17 @@ jobs:
 
       - name: Build Debug and Release
         run: |
-          ./gradlew clean :app:assembleDebug :app:assembleRelease $GRADLE_ARGS
+          ./gradlew clean :app:assembleDebug :app:assembleRelease \
+            -Dfile.encoding=UTF-8 \
+            -Dorg.gradle.project.SOURCE_DATE_EPOCH=315532800 \
+            $GRADLE_ARGS
+
+      - name: Calculate APK Hash
+        run: |
+          echo "Release APK SHA-256:"
+          sha256sum app/build/outputs/apk/release/*.apk | tee release_apk_hash.txt
+          echo "Debug APK SHA-256:"
+          sha256sum app/build/outputs/apk/debug/*.apk
 
       - name: Lint (Debug/Release)
         run: |
