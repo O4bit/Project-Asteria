@@ -1,5 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
-import java.util.Properties
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
 plugins {
     alias(libs.plugins.android.application)
@@ -22,6 +22,11 @@ gradle.taskGraph.whenReady {
     }
 }
 
+// Enforce deterministic archive ordering and timestamps across packaging tasks.
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
 
 extensions.configure<ApplicationExtension> {
     namespace = "space.o4bit.projectasteria"
@@ -44,29 +49,16 @@ extensions.configure<ApplicationExtension> {
         // Disable baseline profiles for deterministic builds
         experimentalProperties["android.experimental.disable-baseline-profile"] = true
 
-        // Load Asteria backend base URL from local.properties.
-        //
         // The app no longer talks to NASA directly — all NASA traffic is
         // proxied by our Rust backend (see ../nasamirrorapi). The server
         // holds NASA_API_KEY; the client must not embed it.
         //
-        // Configure in local.properties:
-        //     asteria.api.base.url=https://your-worker.example.workers.dev/
-        // Trailing slash is required by Retrofit.
-        val localProperties = Properties()
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localPropertiesFile.inputStream().use { stream ->
-                localProperties.load(stream)
-            }
-        }
-
-        val asteriaApiBaseUrl = localProperties.getProperty(
-            "asteria.api.base.url",
-            "https://asteria.o4bit.space/"
+        // Hardcode the F-Droid default for deterministic builds.
+        buildConfigField(
+            "String",
+            "ASTERIA_API_BASE_URL",
+            "\"https://asteria.o4bit.space/\""
         )
-        println("BUILD DEBUG: Asteria API base URL: $asteriaApiBaseUrl")
-        buildConfigField("String", "ASTERIA_API_BASE_URL", "\"$asteriaApiBaseUrl\"")
     }
 
     buildTypes {

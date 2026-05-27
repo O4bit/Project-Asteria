@@ -5,22 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
 }
 
-// -----------------------------------------------------------------------------
-// Security dependency constraints (Dependabot High-severity alerts)
-//
-// All vulnerable jars below come in transitively via AGP / lint / KSP build
-// tooling, NOT runtime app code. We pin safe versions on the buildscript
-// classpath so the Gradle build itself no longer pulls vulnerable artifacts.
-//
-// Covers the 12 High-severity GitHub Dependabot alerts as of 2026-05:
-//   - netty (CVE-2025-55163 MadeYouReset, CONTINUATION flood,
-//     HttpContentDecompressor bomb x2, Lz4FrameDecoder, request smuggling,
-//     SslHandler native crash, HTTP/2 Rapid Reset, HttpClientCodec desync)
-//     → 4.1.132.Final
-//   - org.bouncycastle:bc*-jdk18on (covert timing channel) → 1.84
-//   - org.jdom:jdom2 (XXE CVE-2021-33813) → 2.0.6.1
-//   - org.bitbucket.b_c:jose4j (DoS via compressed JWE) → 0.9.6
-// -----------------------------------------------------------------------------
+
 buildscript {
     dependencies {
         constraints {
