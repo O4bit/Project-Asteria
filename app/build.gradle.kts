@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -26,6 +27,14 @@ gradle.taskGraph.whenReady {
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
+}
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { stream ->
+        keystoreProperties.load(stream)
+    }
 }
 
 extensions.configure<ApplicationExtension> {
@@ -59,6 +68,18 @@ extensions.configure<ApplicationExtension> {
             "ASTERIA_API_BASE_URL",
             "\"https://asteria.o4bit.space/\""
         )
+
+    }
+
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
+        }
     }
 
     buildTypes {
@@ -69,8 +90,8 @@ extensions.configure<ApplicationExtension> {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Use debug signing for release builds as per previous configuration
-            signingConfig = signingConfigs.getByName("debug")
+            // Use release signing for GitHub release builds.
+            signingConfig = signingConfigs.getByName("release")
 
             // Disable VCS info to remove non-deterministic Git revision from APK
             vcsInfo.include = false

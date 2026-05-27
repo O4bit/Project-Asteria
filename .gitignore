@@ -22,6 +22,7 @@ logs/
 
 # --- Local config / secrets (never push) ---
 /local.properties
+keystore.properties
 google-services.json
 API_SETUP.md
 projectasteriakey.jks
