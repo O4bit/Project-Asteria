@@ -38,6 +38,7 @@ key.properties
 *.apk.idsig
 *.dex
 mapping.txt
+nasamirrorapi.tar.xz
 
 # --- Rust backend (separate repo / deploy) ---
 nasamirrorapi/target/
@@ -50,3 +51,6 @@ nasamirrorapi/.dev.vars
 CHANGELOG.md
 docs/crash_analytics.md
 /nasamirrorapi
+README.md
+README_HANDOFF.md
+REPRODUCIBLE_BUILDS.md

@@ -90,8 +90,13 @@ extensions.configure<ApplicationExtension> {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Use release signing for GitHub release builds.
-            signingConfig = signingConfigs.getByName("release")
+            // Use release signing for GitHub release builds when a keystore is present.
+            // F-Droid builds remain unsigned and are signed by F-Droid later.
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                null
+            }
 
             // Disable VCS info to remove non-deterministic Git revision from APK
             vcsInfo.include = false
