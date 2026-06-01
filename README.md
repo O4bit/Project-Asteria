@@ -45,7 +45,7 @@ A Free and Open Source (FOSS) Android application for space exploration using of
 
 ## Usage
 
-Build and run the `app` module on an Android device or emulator (API level 31 or higher).
+Build and run the `app` module on an Android device or emulator (API level 31 / A12 or higher).
 
 ## Contributing
 
