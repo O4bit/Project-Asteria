@@ -15,7 +15,7 @@ Binaries:
 Builds:
   - versionName: 4.1.0-Release
     versionCode: 41
-    commit: ef204403cd6479e3f6475335bae3021b921ae753
+    commit: 783d12e5c08b00c301e65f98ddc5566b8bedfc71
     subdir: app
     gradle:
       - yes
