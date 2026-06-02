@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -83,7 +84,6 @@ fun ModernIconOptionCard(
     }
 }
 
-private fun Modifier.alpha(alpha: Float) = this.then(Modifier.background(Color.Transparent.copy(alpha = alpha)))
 
 @Composable
 fun CompactOptionCard(

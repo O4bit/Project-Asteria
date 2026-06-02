@@ -14,8 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
+import space.o4bit.projectasteria.ui.components.backgrounds.rememberParallaxState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -31,8 +34,18 @@ import kotlin.random.Random
 fun StarryBackground(
     modifier: Modifier = Modifier,
     starsCount: Int = 80,
+    enableParallax: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val parallaxState = rememberParallaxState(
+        enableParallax = enableParallax,
+        sensitivity = 0.4f,
+        context = context,
+        coroutineScope = coroutineScope
+    )
+    
     val surfaceColor = MaterialTheme.colorScheme.surface
     val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -109,16 +122,25 @@ fun StarryBackground(
                 .fillMaxSize()
                 .alpha(0.9f)
         ) {
-            nebulae.forEach { nebula ->
-                drawNebula(nebula, nebulaPulse.value)
+            val tiltX = parallaxState.tiltX.value
+            val tiltY = parallaxState.tiltY.value
+            
+            nebulae.forEachIndexed { index, nebula ->
+                val depth = 0.2f + (index * 0.1f)
+                val pX = tiltX * 100f * depth
+                val pY = tiltY * 100f * depth
+                drawNebula(nebula, nebulaPulse.value, pX, pY)
             }
 
-            stars.forEach { star ->
+            stars.forEachIndexed { index, star ->
+                val depth = 0.5f + (index % 5) * 0.1f
+                val pX = tiltX * 150f * depth
+                val pY = tiltY * 150f * depth
                 val individualTwinkle = (twinkleBase.value + 
                     kotlin.math.sin((System.currentTimeMillis() % star.twinkleSpeed.toLong()) / star.twinkleSpeed * 2 * kotlin.math.PI).toFloat() * 0.3f)
                     .coerceIn(0.4f, 1f)
                 
-                drawStar(star, onSurface, individualTwinkle)
+                drawStar(star, onSurface, individualTwinkle, pX, pY)
             }
         }
         content()
@@ -150,9 +172,9 @@ private data class Nebula(
 /**
  * Extension function to draw a star with twinkling effect
  */
-private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: Float) {
-    val x = star.x * size.width
-    val y = star.y * size.height
+private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
+    val x = star.x * size.width + offsetX
+    val y = star.y * size.height + offsetY
     val finalAlpha = (star.alpha * twinkleMultiplier).coerceIn(0.1f, 1f)
 
     drawCircle(
@@ -173,9 +195,9 @@ private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: 
 /**
  * Extension function to draw a nebula with pulse effect
  */
-private fun DrawScope.drawNebula(nebula: Nebula, pulseMultiplier: Float) {
-    val x = nebula.x * size.width
-    val y = nebula.y * size.height
+private fun DrawScope.drawNebula(nebula: Nebula, pulseMultiplier: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
+    val x = nebula.x * size.width + offsetX
+    val y = nebula.y * size.height + offsetY
     val radius = min(size.width, size.height) * nebula.radius * pulseMultiplier
 
     drawCircle(

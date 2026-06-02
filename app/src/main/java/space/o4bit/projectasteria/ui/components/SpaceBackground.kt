@@ -17,8 +17,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import space.o4bit.projectasteria.ui.components.backgrounds.rememberParallaxState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -36,8 +39,18 @@ import kotlin.random.Random
 @Composable
 fun SpaceBackground(
     modifier: Modifier = Modifier,
+    enableParallax: Boolean = true,
+    speedMultiplier: Float = 1f,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val parallaxState = rememberParallaxState(
+        enableParallax = enableParallax,
+        sensitivity = 0.5f,
+        context = context,
+        coroutineScope = coroutineScope
+    )
     val surfaceColor = MaterialTheme.colorScheme.surface
     val isDarkTheme = surfaceColor.luminance() < 0.5f
     val starColor = if (isDarkTheme) Color.White else Color(0xFF1A2530)
@@ -58,12 +71,23 @@ fun SpaceBackground(
     }
 
     var baseProgress by remember { mutableFloatStateOf(0f) }
+    val currentSpeedMultiplier = remember { Animatable(1f) }
+    
+    LaunchedEffect(speedMultiplier) {
+        currentSpeedMultiplier.animateTo(
+            targetValue = speedMultiplier,
+            animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+        )
+    }
 
     // Continuous star animation loop
     LaunchedEffect(Unit) {
+        var lastFrameMs = 0L
         while (true) {
-            withInfiniteAnimationFrameMillis {
-                baseProgress += 0.0008f
+            withInfiniteAnimationFrameMillis { frameMs ->
+                val delta = if (lastFrameMs == 0L) 16L else (frameMs - lastFrameMs)
+                lastFrameMs = frameMs
+                baseProgress += (delta / 16f) * 0.0008f * currentSpeedMultiplier.value
 
                 // Regenerate stars that have passed the camera
                 stars.forEachIndexed { index, star ->
@@ -140,6 +164,8 @@ fun SpaceBackground(
             val height = size.height
             val centerX = width / 2f
             val centerY = height / 2f
+            val tiltX = parallaxState.tiltX.value
+            val tiltY = parallaxState.tiltY.value
 
             // Render stars with 3D perspective
             stars.forEach { star ->
@@ -156,8 +182,16 @@ fun SpaceBackground(
                 val projectedX = baseX * perspectiveFactor
                 val projectedY = baseY * perspectiveFactor
 
-                val finalX = centerX + projectedX
-                val finalY = centerY + projectedY
+                val sizeFactor = perspectiveFactor * 0.65f
+                val finalSize = star.size * sizeFactor
+                
+                // Far stars move less with parallax, close stars move more
+                val parallaxFactor = 1f / z.coerceAtLeast(0.1f)
+                val parallaxX = tiltX * 250f * parallaxFactor
+                val parallaxY = tiltY * 250f * parallaxFactor
+
+                val finalX = centerX + projectedX + parallaxX
+                val finalY = centerY + projectedY + parallaxY
 
                 // Cull stars outside screen bounds
                 if (finalX < -150 || finalX > width + 150 ||
@@ -166,8 +200,6 @@ fun SpaceBackground(
                     return@forEach
                 }
 
-                val sizeFactor = perspectiveFactor * 0.65f
-                val finalSize = star.size * sizeFactor
 
                 // Smooth fade in from distance
                 val fadeIn = when {

@@ -106,6 +106,7 @@ import space.o4bit.projectasteria.ui.components.SwipeHintOverlay
 import space.o4bit.projectasteria.ui.theme.ThemedApp
 import space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository
 import space.o4bit.projectasteria.data.preferences.UiHintsPreferencesRepository
+import space.o4bit.projectasteria.data.repository.LaunchRepository
 
 import coil.ImageLoader
 import coil.disk.DiskCache
@@ -263,6 +264,13 @@ fun AsteriaApp(
     val application = context.applicationContext as AsteriaApplication
     val database = application.database
     val repository = remember { SpaceRepository(database.apodDao()) }
+    val launchRepository = remember { 
+        LaunchRepository(
+            launchDao = database.launchDao(),
+            sortingPreferences = application.sortingPreferences
+        ) 
+    }
+    val launches by launchRepository.launches.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     
     // Background preferences
@@ -275,6 +283,21 @@ fun AsteriaApp(
     // Notification preferences
     val notificationPrefs = remember { space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository(context) }
     val notificationsEnabled by notificationPrefs.dailyNotificationsEnabled.collectAsState(initial = true)
+
+    // Launch Speed State
+    var launchSpeedMultiplier by remember { mutableFloatStateOf(1f) }
+
+    LaunchedEffect(launches) {
+        while (true) {
+            val now = System.currentTimeMillis()
+            val isLaunchActive = launches.any { launch ->
+                launch.statusName.equals("In Flight", ignoreCase = true) ||
+                    (now >= launch.netMillis - 60 * 1000 && now - launch.netMillis < 15 * 60 * 1000)
+            }
+            launchSpeedMultiplier = if (isLaunchActive) 15f else 1f
+            kotlinx.coroutines.delay(1000L)
+        }
+    }
 
     LaunchedEffect(Unit) {
         scope.launch {
@@ -311,7 +334,8 @@ fun AsteriaApp(
 
     AnimatedBackground(
         type = backgroundType,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        launchSpeedMultiplier = launchSpeedMultiplier
     ) {
         NavHost(
             navController = navController,

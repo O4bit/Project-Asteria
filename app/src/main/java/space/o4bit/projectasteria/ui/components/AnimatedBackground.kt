@@ -29,6 +29,7 @@ import space.o4bit.projectasteria.ui.components.backgrounds.ShapesBackground
 fun AnimatedBackground(
     type: BackgroundType = BackgroundType.DEFAULT,
     modifier: Modifier = Modifier,
+    launchSpeedMultiplier: Float = 1f,
     content: @Composable BoxScope.() -> Unit
 ) {
     val context = LocalContext.current
@@ -45,10 +46,13 @@ fun AnimatedBackground(
             // Render the background layer
             when (type) {
             BackgroundType.STARRY -> StarryBackground(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                enableParallax = enableParallax
             ) {}
             BackgroundType.SPACE -> SpaceBackground(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                enableParallax = enableParallax,
+                speedMultiplier = launchSpeedMultiplier
             ) {}
             BackgroundType.CIRCLES -> CirclesBackground(
                 modifier = Modifier.fillMaxSize(),
