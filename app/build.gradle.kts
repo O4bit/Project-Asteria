@@ -41,6 +41,11 @@ extensions.configure<ApplicationExtension> {
     namespace = "space.o4bit.projectasteria"
     compileSdk = 36
 
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     defaultConfig {
         applicationId = "space.o4bit.projectasteria.foss"
         minSdk = 31
