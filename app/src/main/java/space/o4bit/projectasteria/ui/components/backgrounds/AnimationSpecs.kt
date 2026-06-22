@@ -61,7 +61,7 @@ data class ParallaxState(
 @Composable
 fun rememberParallaxState(
     enableParallax: Boolean,
-    sensitivity: Float = 0.3f,
+    sensitivity: Float = 0.15f,
     context: Context,
     coroutineScope: CoroutineScope
 ): ParallaxState {

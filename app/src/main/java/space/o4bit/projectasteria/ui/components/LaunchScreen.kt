@@ -132,7 +132,7 @@ fun LaunchScreen(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = errorMessage!!)
+                    Text(text = errorMessage ?: "")
                     Spacer(Modifier.height(16.dp))
                     Button(onClick = {
                         scope.launch {
@@ -301,7 +301,7 @@ fun LaunchCard(
                     Spacer(modifier = Modifier.height(12.dp))
                     var isExpanded by rememberSaveable { mutableStateOf(false) }
                     Text(
-                        text = launch.missionDescription!!,
+                        text = launch.missionDescription,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = if (isExpanded) Int.MAX_VALUE else 3,

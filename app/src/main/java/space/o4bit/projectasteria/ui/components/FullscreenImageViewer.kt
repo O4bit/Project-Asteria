@@ -213,6 +213,7 @@ fun FullscreenImageViewer(
         // Zoomable image container
         var scale by remember { mutableStateOf(1f) }
         var offset by remember { mutableStateOf(Offset.Zero) }
+        @Suppress("DEPRECATION")
         val state = rememberTransformableState { zoomChange, offsetChange, _ ->
             scale = (scale * zoomChange).coerceIn(1f, 5f)
             if (scale == 1f) offset = Offset.Zero else offset += offsetChange
@@ -404,6 +405,7 @@ fun ZoomableImage(
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     val maxX = (imageSize.width * (scale - 1) / 2f)
     val maxY = (imageSize.height * (scale - 1) / 2f)
+    @Suppress("DEPRECATION")
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         scale = (scale * zoomChange).coerceIn(1f, 5f)
         val newOffsetX = offset.x + offsetChange.x

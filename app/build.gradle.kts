@@ -4,7 +4,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.aboutlibraries.plugin)
     alias(libs.plugins.ksp.plugin)
@@ -50,8 +49,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "space.o4bit.projectasteria.foss"
         minSdk = 31
         targetSdk = 36
-        versionCode = 41
-        versionName = "4.1.0-Release"
+        versionCode = 43
+        versionName = "4.2.1-Release"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -149,6 +148,7 @@ extensions.configure<ApplicationExtension> {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }
 

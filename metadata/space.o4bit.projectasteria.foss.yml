@@ -1,7 +1,17 @@
+AntiFeatures:
+  NonFreeNet:
+    en-US: Relies on the "Where The ISS At?" API (api.wheretheiss.at) for real-time
+      ISS location tracking and The Space Devs API (thespacedevs.com) for space launch
+      data and imagery. Both are free to use but their server-side code is not open
+      source.
+  TetheredNet:
+    en-US: Relies on the NASA APOD API (apod.nasa.gov) for daily space pictures and
+      a self-hosted proxy (asteria.o4bit.space) to serve the data. The proxy source
+      code is open source (MIT) but the app depends on that specific server instance.
 Categories:
   - Science & Education
 License: MIT
-AuthorName: Vertronix-Software
+AuthorName: O4bit
 SourceCode: https://github.com/O4bit/Project-Asteria
 IssueTracker: https://github.com/O4bit/Project-Asteria/issues
 
@@ -23,5 +33,5 @@ AllowedAPKSigningKeys: 93242a0177d92d25f83ce43006b808900f08284300dca35c895509f78
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 4.1.0-Release
-CurrentVersionCode: 41
+CurrentVersion: 4.2.1-Release
+CurrentVersionCode: 43

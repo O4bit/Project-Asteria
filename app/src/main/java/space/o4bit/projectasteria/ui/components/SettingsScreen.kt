@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.sp
 
 import android.content.Intent
 import android.net.Uri
+import coil.compose.AsyncImage
+import androidx.compose.material.icons.outlined.RocketLaunch
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -267,6 +269,9 @@ fun GeneralTabContent() {
     val notificationHour by notificationPrefs.notificationHour.collectAsState(initial = 9)
     val notificationMinute by notificationPrefs.notificationMinute.collectAsState(initial = 0)
     
+    val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
+    val hyperdriveThreshold by backgroundPrefs.hyperdriveThresholdMinutes.collectAsState(initial = 1)
+    
     var showTimePicker by remember { mutableStateOf(false) }
 
     Column(
@@ -315,6 +320,24 @@ fun GeneralTabContent() {
                     Switch(
                         checked = wifiOnlyPrefetch,
                         onCheckedChange = { coroutineScope.launch { notificationPrefs.updateWifiOnlyPrefetch(it) } }
+                    )
+                }
+            )
+        }
+        
+        SectionTitle(title = "Launch Alerts")
+        SectionCard {
+            RichSettingsItem(
+                title = "Hyperdrive Threshold",
+                subtitle = "T-minus $hyperdriveThreshold minute(s) before launch",
+                icon = Icons.Outlined.RocketLaunch,
+                action = {
+                    Slider(
+                        value = hyperdriveThreshold.toFloat(),
+                        onValueChange = { coroutineScope.launch { backgroundPrefs.updateHyperdriveThresholdMinutes(it.toInt()) } },
+                        valueRange = 1f..120f,
+                        steps = 118,
+                        modifier = Modifier.width(120.dp)
                     )
                 }
             )
@@ -375,23 +398,36 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
         SectionCard {
             RichSettingsItem(
                 title = "Version",
-                subtitle = "4.1.0-Release"
+                subtitle = "4.2.0-Release"
             )
             AsteriaSettingsDivider()
-            RichSettingsItem(
-                title = "Developed By",
-                subtitleContent = {
-                    val annotatedString = buildAnnotatedString {
-                        append("Vertronix-Software")
-                        withStyle(style = SpanStyle(fontSize = 12.sp)) {
-                            append("\n(Vertronix-System-subdevison)")
-                        }
-                    }
-                    Text(
-                        text = annotatedString,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            BaseSettingsItem(
+                title = "O4bit",
+                subtitle = "Creator & Developer",
+                icon = {
+                    AsyncImage(
+                        model = "https://github.com/O4bit.png",
+                        contentDescription = "O4bit Profile Picture",
+                        modifier = Modifier.size(40.dp).clip(CircleShape)
                     )
+                },
+                onClick = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/O4bit")))
+                }
+            )
+            AsteriaSettingsDivider()
+            BaseSettingsItem(
+                title = "Vertronix-Systems",
+                subtitle = "Software Subdivision",
+                icon = {
+                    AsyncImage(
+                        model = "https://github.com/vertronix-systems.png",
+                        contentDescription = "Vertronix Profile Picture",
+                        modifier = Modifier.size(40.dp).clip(CircleShape)
+                    )
+                },
+                onClick = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/vertronix-systems")))
                 }
             )
             AsteriaSettingsDivider()

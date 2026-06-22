@@ -76,7 +76,7 @@ object SpaceNotificationBuilder {
         val title = apod.title
         
         // Strip HTML and truncate sensibly for the notification
-        val rawExplanation = apod.explanation ?: ""
+        val rawExplanation = apod.explanation
         val cleanExplanation = space.o4bit.projectasteria.utils.TextUtils.stripHtml(rawExplanation)
         val snippet = if (cleanExplanation.length > 100) cleanExplanation.take(100) + "..." else cleanExplanation
 
@@ -98,7 +98,7 @@ object SpaceNotificationBuilder {
             )
         } else {
             // Try to load the image for a rich notification
-            val imageUrl = apod.url ?: apod.hdUrl
+            val imageUrl = apod.url
             val imageBitmap = if (imageUrl != null) loadImageBitmap(context, imageUrl) else null
             
             if (imageBitmap != null) {

@@ -273,12 +273,12 @@ fun AsteriaApp(
     val launches by launchRepository.launches.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     
-    // Background preferences
     val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
     val uiHintsPrefs = remember { UiHintsPreferencesRepository(context) }
-    val backgroundTypeName by backgroundPrefs.backgroundType.collectAsState(initial = BackgroundType.DEFAULT.name)
+    val backgroundTypeName by backgroundPrefs.backgroundType.collectAsState(initial = BackgroundType.SPACE.name)
     val backgroundType = BackgroundType.fromName(backgroundTypeName)
     val mainTabsHintShown by uiHintsPrefs.mainTabsHintShown.collectAsState(initial = false)
+    val hyperdriveThresholdMinutes by backgroundPrefs.hyperdriveThresholdMinutes.collectAsState(initial = 1)
 
     // Notification preferences
     val notificationPrefs = remember { space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository(context) }
@@ -287,12 +287,12 @@ fun AsteriaApp(
     // Launch Speed State
     var launchSpeedMultiplier by remember { mutableFloatStateOf(1f) }
 
-    LaunchedEffect(launches) {
+    LaunchedEffect(launches, hyperdriveThresholdMinutes) {
         while (true) {
             val now = System.currentTimeMillis()
             val isLaunchActive = launches.any { launch ->
                 launch.statusName.equals("In Flight", ignoreCase = true) ||
-                    (now >= launch.netMillis - 60 * 1000 && now - launch.netMillis < 15 * 60 * 1000)
+                    (now >= launch.netMillis - hyperdriveThresholdMinutes * 60 * 1000L && now - launch.netMillis < 15 * 60 * 1000L)
             }
             launchSpeedMultiplier = if (isLaunchActive) 15f else 1f
             kotlinx.coroutines.delay(1000L)

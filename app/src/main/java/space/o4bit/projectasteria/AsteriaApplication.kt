@@ -17,7 +17,7 @@ class AsteriaApplication : Application(), Configuration.Provider {
             ApodDatabase::class.java,
             "apod_database"
         )
-        .fallbackToDestructiveMigration() // Useful for this dev phase where we changed the schema
+        .fallbackToDestructiveMigration(true) // Useful for this dev phase where we changed the schema
         .build()
     }
 
