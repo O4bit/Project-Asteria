@@ -1,0 +1,10 @@
+Project Asteria is a stunning, open-source Android application designed for space enthusiasts. Explore the cosmos through official NASA APIs and discover real-time astronomy data right from your pocket.
+
+Features:
+- Astronomy Picture of the Day (APOD): Enjoy daily high-resolution space images and detailed explanations directly from NASA.
+- Live Space Backgrounds: Personalize your home screen with interactive, dynamic space-themed live backgrounds with smooth parallax effects.
+- Launch Tracker: Keep up to date with upcoming rocket launches globally, complete with countdowns and hyperdrive effects.
+- Near Earth Objects (NEO): Track asteroids passing near Earth in real-time.
+- Open Source: Built for the community, completely free of trackers, ads, and telemetry.
+
+Immerse yourself in the universe with Project Asteria.
