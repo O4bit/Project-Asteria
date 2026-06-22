@@ -104,7 +104,6 @@ fun HistoryScreen(
             ) {
                 items(
                     count = lazyPagingItems.itemCount,
-                    key = lazyPagingItems.itemKey { it.astronomyPicture.date },
                     contentType = lazyPagingItems.itemContentType { "ApodItem" }
                 ) { index ->
                     val item = lazyPagingItems[index]
