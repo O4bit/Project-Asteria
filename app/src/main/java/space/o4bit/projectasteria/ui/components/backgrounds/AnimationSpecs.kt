@@ -111,7 +111,7 @@ fun rememberParallaxState(
 
                 coroutineScope.launch {
                     smoothTiltX.animateTo(
-                        targetValue = rawTiltX * sensitivity,
+                        targetValue = rawTiltX * (sensitivity * 0.2f),
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
                             stiffness = Spring.StiffnessLow
@@ -120,7 +120,7 @@ fun rememberParallaxState(
                 }
                 coroutineScope.launch {
                     smoothTiltY.animateTo(
-                        targetValue = rawTiltY * sensitivity,
+                        targetValue = rawTiltY * (sensitivity * 0.2f),
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
                             stiffness = Spring.StiffnessLow

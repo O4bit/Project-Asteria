@@ -33,5 +33,5 @@ AllowedAPKSigningKeys: 93242a0177d92d25f83ce43006b808900f08284300dca35c895509f78
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 4.2.1-Release
-CurrentVersionCode: 43
+CurrentVersion: 4.2.2-Release
+CurrentVersionCode: 44
