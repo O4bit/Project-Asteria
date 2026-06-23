@@ -109,9 +109,14 @@ fun rememberParallaxState(
                 val rawTiltX = event.values[0] - baselineX
                 val rawTiltY = event.values[1] - baselineY
 
+                // Deadzone logic: ignore movements smaller than 0.6 m/s^2
+                val deadzone = 0.6f
+                val finalTiltX = if (kotlin.math.abs(rawTiltX) < deadzone) 0f else rawTiltX - kotlin.math.sign(rawTiltX) * deadzone
+                val finalTiltY = if (kotlin.math.abs(rawTiltY) < deadzone) 0f else rawTiltY - kotlin.math.sign(rawTiltY) * deadzone
+
                 coroutineScope.launch {
                     smoothTiltX.animateTo(
-                        targetValue = rawTiltX * (sensitivity * 0.2f),
+                        targetValue = finalTiltX * (sensitivity * 0.2f),
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
                             stiffness = Spring.StiffnessLow
@@ -120,7 +125,7 @@ fun rememberParallaxState(
                 }
                 coroutineScope.launch {
                     smoothTiltY.animateTo(
-                        targetValue = rawTiltY * (sensitivity * 0.2f),
+                        targetValue = finalTiltY * (sensitivity * 0.2f),
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
                             stiffness = Spring.StiffnessLow
