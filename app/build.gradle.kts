@@ -49,8 +49,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "space.o4bit.projectasteria.foss"
         minSdk = 31
         targetSdk = 36
-        versionCode = 45
-        versionName = "4.2.3-Release"
+        versionCode = 46
+        versionName = "4.2.4-Release"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -117,8 +117,8 @@ extensions.configure<ApplicationExtension> {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
@@ -146,8 +146,9 @@ extensions.configure<ApplicationExtension> {
 }
 
 kotlin {
+    jvmToolchain(17)
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }
