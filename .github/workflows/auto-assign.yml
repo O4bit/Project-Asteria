@@ -9,7 +9,9 @@ jobs:
     permissions:
       issues: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Assign to Repo Owner
-        run: gh issue edit ${{ github.event.issue.number }} --add-assignee "${{ github.repository_owner }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --add-assignee "${{ github.repository_owner }}"
