@@ -35,7 +35,7 @@ fun IssScreen(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Live ISS Tracker")
                         if (state.isLive) {
@@ -84,15 +84,13 @@ fun IssScreen(
                 .padding(innerPadding)
         ) {
             if (state.location == null && state.errorMessage == null) {
-                // Initial Loading
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    
-                    // Status Banner for stale / error states
+
                     if (state.errorMessage != null) {
                         Surface(
                             color = MaterialTheme.colorScheme.errorContainer,
@@ -140,7 +138,7 @@ fun IssScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                                
+
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -148,9 +146,9 @@ fun IssScreen(
                                     DataItem("Latitude", String.format("%.4f°", position.latitude))
                                     DataItem("Longitude", String.format("%.4f°", position.longitude))
                                 }
-                                
+
                                 Spacer(modifier = Modifier.height(16.dp))
-                                
+
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceEvenly

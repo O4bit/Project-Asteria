@@ -29,11 +29,6 @@ import coil.request.ImageRequest
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 
-/**
- * Self-contained detail screen for a specific APOD, navigated from History.
- * Handles its own fullscreen image viewer and explanation view internally.
- * Does NOT mutate any parent state — completely isolated.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApodDetailScreen(
@@ -45,8 +40,7 @@ fun ApodDetailScreen(
 
     var currentApod by remember { mutableStateOf<EnhancedAstronomyPicture?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    
-    // Internal sub-screen state
+
     var showFullscreen by remember { mutableStateOf(false) }
     var showExplanation by remember { mutableStateOf(false) }
 
@@ -58,7 +52,6 @@ fun ApodDetailScreen(
         isLoading = false
     }
 
-    // Handle back from internal sub-screens before popping the nav stack
     BackHandler(enabled = showFullscreen || showExplanation) {
         when {
             showExplanation -> showExplanation = false
@@ -66,7 +59,6 @@ fun ApodDetailScreen(
         }
     }
 
-    // Internal sub-screens
     when {
         showExplanation && currentApod != null -> {
             ExplanationDetailScreen(
@@ -81,7 +73,6 @@ fun ApodDetailScreen(
             )
         }
         else -> {
-            // Main detail view
             Scaffold(
                 containerColor = Color.Transparent,
                 topBar = {
@@ -149,7 +140,6 @@ fun ApodDetailScreen(
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        // Media header
                         item {
                             ApodMediaHeader(
                                 mediaType = pic.mediaType,
@@ -161,7 +151,6 @@ fun ApodDetailScreen(
                             )
                         }
 
-                        // Title + Date
                         item {
                             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
                                 Text(
@@ -192,7 +181,6 @@ fun ApodDetailScreen(
                             }
                         }
 
-                        // Explanation
                         item {
                             Card(
                                 modifier = Modifier
@@ -230,7 +218,6 @@ fun ApodDetailScreen(
                             }
                         }
 
-                        // Bottom spacer
                         item { Spacer(modifier = Modifier.height(32.dp)) }
                     }
                 }
@@ -239,9 +226,6 @@ fun ApodDetailScreen(
     }
 }
 
-/**
- * Media header that handles image, video (with YouTube thumbnail + play overlay), and fallback.
- */
 @Composable
 private fun ApodMediaHeader(
     mediaType: String,
@@ -330,9 +314,6 @@ private fun ApodMediaHeader(
     }
 }
 
-/**
- * Extract YouTube thumbnail from embed/watch/shorts URL.
- */
 private fun extractYouTubeThumbnailUrl(url: String?): String? {
     if (url == null) return null
     val patterns = listOf(

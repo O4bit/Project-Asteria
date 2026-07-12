@@ -16,11 +16,11 @@ class SortingPreferencesRepository(private val context: Context) {
     }
 
     val isLaunchesAscending: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[SORT_LAUNCHES_ASC] ?: true // true = Oldest first
+        preferences[SORT_LAUNCHES_ASC] ?: true
     }
 
     val isAsteroidsClosest: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[SORT_ASTEROIDS_CLOSE] ?: true // true = Closest first
+        preferences[SORT_ASTEROIDS_CLOSE] ?: true
     }
 
     suspend fun toggleLaunchSort() {

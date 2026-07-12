@@ -45,9 +45,6 @@ private val LightColorScheme = lightColorScheme(
     onSurface = SpaceBlack
 )
 
-/**
- * Enhanced theme with dynamic accent/theme color engine.
- */
 @Composable
 fun ProjectAsteriaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -76,14 +73,12 @@ fun ProjectAsteriaTheme(
         } else it
     }
 
-    // Apply custom accent color (HSL derivation)
     val schemeWithAccent = if (!dynamicColor) {
         customAccentHex.toColorOrNull()?.let {
             applyCustomAccent(baseScheme, it, darkTheme)
         } ?: baseScheme
     } else baseScheme
 
-    // Apply custom theme color (surface derivation)
     val finalScheme = if (!dynamicColor) {
         customThemeColorHex.toColorOrNull()?.let {
             applyCustomThemeColor(schemeWithAccent, it, darkTheme)
@@ -110,10 +105,6 @@ fun ProjectAsteriaTheme(
     )
 }
 
-/**
- * Custom accent color application.
- * Derives primary, secondary, tertiary and their containers from a single accent using HSL.
- */
 private fun applyCustomAccent(
     colorScheme: ColorScheme,
     accent: Color,
@@ -143,10 +134,6 @@ private fun applyCustomAccent(
     )
 }
 
-/**
- * Custom theme color application.
- * Derives all surface/background colors from a single theme color using HSL.
- */
 private fun applyCustomThemeColor(
     colorScheme: ColorScheme,
     themeColor: Color,

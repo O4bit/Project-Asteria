@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Σχετικά με αυτήν την εικόνα"</string>
+  <string name="add_to_home_screen">"Προσθήκη στην Αρχική οθόνη"</string>
+  <string name="altitude">"Υψόμετρο"</string>
+  <string name="apod_title_fallback">"ΑΠΟΔ"</string>
+  <string name="app_name">"Έργο Αστερία"</string>
+  <string name="app_widget_description">"Εμφανίστε την σημερινή εικόνα αστρονομίας και τα διαστημικά δεδομένα στην αρχική σας οθόνη"</string>
+  <string name="back">"Πίσω"</string>
+  <string name="bg_circles">"Κύκλοι"</string>
+  <string name="bg_grid">"Πλέγμα"</string>
+  <string name="bg_mesh">"Πλέγμα"</string>
+  <string name="bg_none">"Κανένας"</string>
+  <string name="bg_particles">"Σωματίδια"</string>
+  <string name="bg_rings">"Δαχτυλίδια"</string>
+  <string name="bg_shapes">"Σχήματα"</string>
+  <string name="bg_space">"Χώρος"</string>
+  <string name="bg_starry">"Εναστρος"</string>
+  <string name="both_screens">"Και οι δύο οθόνες"</string>
+  <string name="calculating">"Υπολογιστικός..."</string>
+  <string name="cancel">"Ματαίωση"</string>
+  <string name="cancel_reminder">"Ακύρωση υπενθύμισης"</string>
+  <string name="change">"Αλλαγή"</string>
+  <string name="clear_search">"Εκκαθάριση αναζήτησης"</string>
+  <string name="close_approach">"Κοντινή προσέγγιση: %1$s χλμ. μακριά"</string>
+  <string name="close_search">"Κλείσιμο αναζήτησης"</string>
+  <string name="creator_developer">"Δημιουργός &amp;amp; Προγραμματιστής"</string>
+  <string name="current_location">"Τρέχουσα τοποθεσία"</string>
+  <string name="daily_notifications_desc">"Λάβετε ενημερώσεις αποστολών και ειδοποιήσεις αστρονομίας"</string>
+  <string name="daily_space_notifications">"Καθημερινές ειδοποιήσεις χώρου"</string>
+  <string name="dark_mode">"Σκοτεινή λειτουργία"</string>
+  <string name="dark_mode_desc">"Επιβολή σκοτεινών στοιχείων σε όλη την εφαρμογή"</string>
+  <string name="date_unknown">"Άγνωστη ημερομηνία"</string>
+  <string name="debug_crash_scenarios">"Δοκιμάστε διάφορα σενάρια σύγκρουσης"</string>
+</resources>

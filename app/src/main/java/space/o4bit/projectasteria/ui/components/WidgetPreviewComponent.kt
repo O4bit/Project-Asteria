@@ -75,7 +75,7 @@ fun WidgetPreviewComponent(
         ) {
             val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
             val isVideo = astronomyPicture.mediaType == "video"
-            
+
             if (imageUrl != null && !isVideo) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)

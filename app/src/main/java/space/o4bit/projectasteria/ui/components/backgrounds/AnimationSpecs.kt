@@ -22,10 +22,6 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-/**
- * Frame-based time accumulator that respects a [speedMultiplier].
- * Returns a State<Float> that increases every frame by (deltaMs * speedMultiplier).
- */
 @Composable
 fun rememberAnimatedTime(speedMultiplier: Float): State<Float> {
     val time = remember { mutableFloatStateOf(0f) }
@@ -47,17 +43,11 @@ fun rememberAnimatedTime(speedMultiplier: Float): State<Float> {
     return time
 }
 
-/**
- * Parallax sensor state holder
- */
 data class ParallaxState(
     val tiltX: State<Float>,
     val tiltY: State<Float>
 )
 
-/**
- * Reusable parallax effect using device accelerometer.
- */
 @Composable
 fun rememberParallaxState(
     enableParallax: Boolean,
@@ -109,7 +99,6 @@ fun rememberParallaxState(
                 val rawTiltX = event.values[0] - baselineX
                 val rawTiltY = event.values[1] - baselineY
 
-                // Deadzone logic: ignore movements smaller than 0.6 m/s^2
                 val deadzone = 0.6f
                 val finalTiltX = if (kotlin.math.abs(rawTiltX) < deadzone) 0f else rawTiltX - kotlin.math.sign(rawTiltX) * deadzone
                 val finalTiltY = if (kotlin.math.abs(rawTiltY) < deadzone) 0f else rawTiltY - kotlin.math.sign(rawTiltY) * deadzone

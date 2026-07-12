@@ -7,9 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import space.o4bit.projectasteria.data.preferences.ThemePreferencesRepository
 
-/**
- * A composable wrapper that applies the user's full theme preferences.
- */
 @Composable
 fun ThemedApp(content: @Composable () -> Unit) {
     val context = LocalContext.current

@@ -20,7 +20,7 @@ class ApodPagingSource(
         val position = params.key ?: 1
         return try {
             val response = repository.getPagedHistory(page = position, pageSize = params.loadSize)
-            
+
             LoadResult.Page(
                 data = response,
                 prevKey = if (position == 1) null else position - 1,

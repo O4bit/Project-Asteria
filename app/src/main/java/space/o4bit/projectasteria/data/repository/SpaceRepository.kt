@@ -15,15 +15,12 @@ class SpaceRepository(
     private val nasaApodService: NasaApodService = NasaApodService.create()
 ) {
 
-    // Cache for today's picture to avoid unnecessary DB hits
     private var memoryCache: EnhancedAstronomyPicture? = null
 
     suspend fun getTodaysAstronomyPicture(): EnhancedAstronomyPicture = withContext(Dispatchers.IO) {
-        // Return memory cache if available
         memoryCache?.let { return@withContext it }
 
         try {
-            // Try network first
             val apod = nasaApodService.getLatestAstronomyPicture()
             val spaceFact = getRandomSpaceFact()
             val notificationTitle = "Today's Space Discovery: ${apod.title}"
@@ -36,13 +33,11 @@ class SpaceRepository(
                 notificationBody = notificationBody
             )
 
-            // Save to DB
             apodDao.insertApod(space.o4bit.projectasteria.data.local.ApodEntity.from(enhanced))
             memoryCache = enhanced
 
             enhanced
         } catch (e: Exception) {
-            // Fallback to local DB
             val cached = apodDao.getLatestApod()
             if (cached != null) {
                 val enhanced = cached.toEnhancedAstronomyPicture()
@@ -57,13 +52,7 @@ class SpaceRepository(
     suspend fun getHistory(limit: Int = 20, offset: Int = 0): List<EnhancedAstronomyPicture> = withContext(Dispatchers.IO) {
         val cached = apodDao.getPagedApods(limit, offset)
         if (cached.isEmpty() && offset == 0) {
-            // If empty cache on first load, try to fetch last 10 days as a seed
-            // This is a simple implementation. For production, Paging 3 RemoteMediator is better.
             try {
-                // Fetching a range is complicated with this API service structure,
-                // so we rely on the worker or individual fetches for now.
-                // Or if the API supports it, we could add range support.
-                // For now, return empty or what we have.
                 emptyList()
             } catch (e: Exception) {
                 emptyList()
@@ -73,21 +62,17 @@ class SpaceRepository(
         }
     }
 
-    // Helper to fetch range from API (if we add the endpoint support)
-    // suspend fun fetchRange(...)
 
     @Suppress("unused")
     internal suspend fun getAstronomyPictureForDate(date: Date): EnhancedAstronomyPicture = withContext(Dispatchers.IO) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val formattedDate = dateFormat.format(date)
 
-        // Check DB first
         val cached = apodDao.getApodByDate(formattedDate)
         if (cached != null) {
             return@withContext cached.toEnhancedAstronomyPicture()
         }
 
-        // Use the new /apod/{date} endpoint
         val apod = nasaApodService.getAstronomyPictureByDate(formattedDate)
         val spaceFact = getRandomSpaceFact()
         val notificationTitle = "Space Discovery: ${apod.title}"
@@ -100,22 +85,17 @@ class SpaceRepository(
             notificationBody = notificationBody
         )
 
-        // Save to DB
         apodDao.insertApod(space.o4bit.projectasteria.data.local.ApodEntity.from(enhanced))
 
         enhanced
     }
 
-    /**
-     * Get an APOD by date string (yyyy-MM-dd). Checks DB first, then network.
-     */
     suspend fun getApodByDate(dateString: String): EnhancedAstronomyPicture? = withContext(Dispatchers.IO) {
         try {
             val cached = apodDao.getApodByDate(dateString)
             if (cached != null) {
                 return@withContext cached.toEnhancedAstronomyPicture()
             }
-            // Try network
             val apod = nasaApodService.getAstronomyPictureByDate(dateString)
             val enhanced = EnhancedAstronomyPicture(
                 astronomyPicture = apod,
@@ -135,21 +115,17 @@ class SpaceRepository(
         val calendar = java.util.Calendar.getInstance()
         calendar.time = today
 
-        // Fetch last 'days' days in parallel
         val jobs = (0 until days).map { i ->
             val date = calendar.time
             calendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
             date
         }
 
-        // We use supervisorScope to allow individual failures
         withContext(Dispatchers.IO) {
             jobs.forEach { date ->
                 try {
-                    // This already checks DB and saves result
                     getAstronomyPictureForDate(date)
                 } catch (e: Exception) {
-                    // Ignore failure for individual day in history fetch
                     e.printStackTrace()
                 }
             }

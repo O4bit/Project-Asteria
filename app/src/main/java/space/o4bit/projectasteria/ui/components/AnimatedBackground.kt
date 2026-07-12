@@ -21,10 +21,6 @@ import space.o4bit.projectasteria.ui.components.backgrounds.ParticlesBackground
 import space.o4bit.projectasteria.ui.components.backgrounds.RingsBackground
 import space.o4bit.projectasteria.ui.components.backgrounds.ShapesBackground
 
-/**
- * Coordinator composable that dispatches to the selected background animation type.
- * Wraps content with the chosen animated background.
- */
 @Composable
 fun AnimatedBackground(
     type: BackgroundType = BackgroundType.DEFAULT,
@@ -43,7 +39,6 @@ fun AnimatedBackground(
         color = MaterialTheme.colorScheme.background
     ) {
         androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
-            // Render the background layer
             when (type) {
             BackgroundType.STARRY -> StarryBackground(
                 modifier = Modifier.fillMaxSize(),
@@ -78,10 +73,9 @@ fun AnimatedBackground(
                 modifier = Modifier.fillMaxSize(),
                 enableParallax = enableParallax
             )
-            BackgroundType.NONE -> { /* No background */ }
+            BackgroundType.NONE -> {  }
         }
 
-            // Render content on top
             content()
         }
     }

@@ -19,7 +19,6 @@ interface SpaceLaunchService {
     ): LaunchResponse
 
     companion object {
-        // We use the dev URL since the production has high rate restrictions and this works beautifully for standard access.
         private const val BASE_URL = "https://lldev.thespacedevs.com/2.2.0/"
 
         fun create(): SpaceLaunchService {

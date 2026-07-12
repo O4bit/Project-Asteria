@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">"პროექტი ასტერია"</string>
+  <string name="app_widget_description">"აჩვენეთ დღევანდელი ასტრონომიის სურათი და კოსმოსური ფაქტები თქვენს მთავარ ეკრანზე"</string>
+  <string name="back">"უკან"</string>
+  <string name="cancel">"გაუქმება"</string>
+  <string name="daily_space_notifications">"ყოველდღიური სივრცის შეტყობინებები"</string>
+  <string name="dark_mode">"ბნელი რეჟიმი"</string>
+</resources>

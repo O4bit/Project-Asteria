@@ -6,18 +6,15 @@ import android.content.Intent
 import android.util.Log
 import space.o4bit.projectasteria.utils.WidgetPinningUtils
 
-/**
- * Widget test utilities to help debug widget registration
- */
 object WidgetTestUtils {
-    
+
     fun logWidgetInfo(context: Context) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val installedProviders = appWidgetManager.installedProviders
-        
+
         Log.d("WidgetTest", "Total installed providers: ${installedProviders.size}")
         Log.d("WidgetTest", "Widget pinning supported: ${WidgetPinningUtils.isWidgetPinningSupported(context)}")
-        
+
         installedProviders.forEach { provider ->
             Log.d("WidgetTest", "Provider: ${provider.provider.className}")
             if (provider.provider.packageName == context.packageName) {
@@ -26,7 +23,7 @@ object WidgetTestUtils {
             }
         }
     }
-    
+
     fun testWidgetUpdate(context: Context) {
         val widget = AsteriaAppWidget()
         val intent = Intent().apply {
@@ -35,7 +32,7 @@ object WidgetTestUtils {
         widget.onReceive(context, intent)
         Log.d("WidgetTest", "Widget update test completed")
     }
-    
+
     fun testWidgetPinning(context: Context) {
         Log.d("WidgetTest", "Testing widget pinning functionality")
         WidgetPinningUtils.pinWidgetToHomeScreen(context)

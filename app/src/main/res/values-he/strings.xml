@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"אודות תמונה זו"</string>
+  <string name="add_to_home_screen">"הוסף למסך הבית"</string>
+  <string name="altitude">"גוֹבַה"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"פרויקט אסטריה"</string>
+  <string name="app_widget_description">"הצג תמונות אסטרונומיה ועובדות חלל של היום על מסך הבית שלך"</string>
+  <string name="back">"בְּחֲזָרָה"</string>
+  <string name="bg_circles">"מעגלים"</string>
+  <string name="bg_grid">"רֶשֶׁת"</string>
+  <string name="bg_mesh">"רֶשֶׁת"</string>
+  <string name="bg_none">"אַף לֹא אֶחָד"</string>
+  <string name="bg_particles">"חלקיקים"</string>
+  <string name="bg_rings">"טבעות"</string>
+  <string name="bg_shapes">"צורות"</string>
+  <string name="bg_space">"מֶרחָב"</string>
+  <string name="bg_starry">"זָרוּעַ כּוֹכָבִים"</string>
+  <string name="both_screens">"שני המסכים"</string>
+  <string name="calculating">"מחשב..."</string>
+  <string name="cancel">"לְבַטֵל"</string>
+  <string name="cancel_reminder">"ביטול תזכורת"</string>
+  <string name="change">"לְשַׁנוֹת"</string>
+  <string name="clear_search">"נקה חיפוש"</string>
+  <string name="close_approach">"גישה קרובה: %1$s ק&quot;מ משם"</string>
+  <string name="close_search">"סגור חיפוש"</string>
+  <string name="creator_developer">"יוצר ומפתח"</string>
+  <string name="current_location">"מיקום נוכחי"</string>
+  <string name="daily_notifications_desc">"קבל עדכוני משימה והתראות אסטרונומיה"</string>
+  <string name="daily_space_notifications">"התראות יומיות על החלל"</string>
+  <string name="dark_mode">"מצב כהה"</string>
+  <string name="dark_mode_desc">"כפיית אלמנטים כהים ברחבי האפליקציה"</string>
+  <string name="date_unknown">"תאריך לא ידוע"</string>
+  <string name="debug_crash_scenarios">"נסה תרחישי קריסה שונים"</string>
+</resources>

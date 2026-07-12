@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Par šo attēlu"</string>
+  <string name="add_to_home_screen">"Pievienot sākuma ekrānam"</string>
+  <string name="altitude">"Augstums"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Projekts Asteria"</string>
+  <string name="app_widget_description">"Parādiet šodienas astronomijas attēlus un kosmosa faktus savā sākuma ekrānā"</string>
+  <string name="back">"Atpakaļ"</string>
+  <string name="bg_circles">"Apļi"</string>
+  <string name="bg_grid">"Režģis"</string>
+  <string name="bg_mesh">"Acs"</string>
+  <string name="bg_none">"Neviens"</string>
+  <string name="bg_particles">"Daļiņas"</string>
+  <string name="bg_rings">"Gredzeni"</string>
+  <string name="bg_shapes">"Formas"</string>
+  <string name="bg_space">"Kosmoss"</string>
+  <string name="bg_starry">"Zvaigžņots"</string>
+  <string name="both_screens">"Abi ekrāni"</string>
+  <string name="calculating">"Aprēķina..."</string>
+  <string name="cancel">"Atcelt"</string>
+  <string name="cancel_reminder">"Atcelt atgādinājumu"</string>
+  <string name="change">"Mainīt"</string>
+  <string name="clear_search">"Notīrīt meklēšanu"</string>
+  <string name="close_approach">"Tuva pieeja: %1$s km attālumā"</string>
+  <string name="close_search">"Aizvērt meklēšanu"</string>
+  <string name="creator_developer">"Radītājs un izstrādātājs"</string>
+  <string name="current_location">"Pašreizējā atrašanās vieta"</string>
+  <string name="daily_notifications_desc">"Saņemiet misijas atjauninājumus un astronomijas brīdinājumus"</string>
+  <string name="daily_space_notifications">"Dienas paziņojumi par telpu"</string>
+  <string name="dark_mode">"Tumšais režīms"</string>
+  <string name="dark_mode_desc">"Piespiedu kārtā ievietot tumšos elementus visā lietotnē"</string>
+  <string name="date_unknown">"Datums nav zināms"</string>
+  <string name="debug_crash_scenarios">"Izmēģiniet dažādus avārijas scenārijus"</string>
+</resources>

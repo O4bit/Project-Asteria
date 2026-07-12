@@ -12,10 +12,6 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.coroutineScope
 import java.util.concurrent.TimeUnit
 
-/**
- * WorkManager-based solution for widget updates
- * Provides a reliable way to update widgets daily
- */
 class WidgetUpdateWorker(
     context: Context,
     params: WorkerParameters
@@ -24,14 +20,13 @@ class WidgetUpdateWorker(
     override suspend fun doWork(): Result = coroutineScope {
         try {
             Log.d(TAG, "WidgetUpdateWorker running")
-            
+
             val appWidgetManager = AppWidgetManager.getInstance(applicationContext)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(
                 android.content.ComponentName(applicationContext, AsteriaAppWidget::class.java)
             )
-            
+
             if (appWidgetIds.isNotEmpty()) {
-                // Trigger widget update
                 val updateIntent = Intent(applicationContext, AsteriaAppWidget::class.java).apply {
                     action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
@@ -41,47 +36,41 @@ class WidgetUpdateWorker(
             } else {
                 Log.d(TAG, "No widgets to update")
             }
-            
+
             Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "Error updating widget", e)
             Result.retry()
         }
     }
-    
+
     companion object {
         private const val TAG = "WidgetUpdateWorker"
         private const val WIDGET_UPDATE_WORK_NAME = "widget_update_work"
-        
-        /**
-         * Schedule periodic widget updates using WorkManager
-         */
+
         fun schedulePeriodicUpdates(context: Context) {
             Log.d(TAG, "Scheduling periodic widget updates")
-            
+
             val request = PeriodicWorkRequestBuilder<WidgetUpdateWorker>(
                 repeatInterval = 6,
                 repeatIntervalTimeUnit = TimeUnit.HOURS
             ).build()
-            
+
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WIDGET_UPDATE_WORK_NAME,
                 ExistingPeriodicWorkPolicy.REPLACE,
                 request
             )
         }
-        
-        /**
-         * Schedule a one-time update for immediate widget refresh
-         */
+
         fun requestImmediateUpdate(context: Context) {
             Log.d(TAG, "Requesting immediate widget update")
-            
+
             val appWidgetManager = AppWidgetManager.getInstance(context)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(
                 android.content.ComponentName(context, AsteriaAppWidget::class.java)
             )
-            
+
             if (appWidgetIds.isNotEmpty()) {
                 val updateIntent = Intent(context, AsteriaAppWidget::class.java).apply {
                     action = AppWidgetManager.ACTION_APPWIDGET_UPDATE

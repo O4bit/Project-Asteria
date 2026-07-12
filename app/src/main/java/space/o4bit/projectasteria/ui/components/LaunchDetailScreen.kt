@@ -41,11 +41,6 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
-/**
- * Full-screen detail view for a specific launch.
- * Features an efficient countdown using produceState (single coroutine ticker)
- * and a haptic reminder toggle button backed by DataStore.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaunchDetailScreen(
@@ -59,10 +54,8 @@ fun LaunchDetailScreen(
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    // Collect the launch from Room
     val launch by launchDao.getLaunchByIdFlow(launchId).collectAsState(initial = null)
 
-    // Collect reminder state
     val remindedIds by reminderPrefs.remindedLaunchIds.collectAsState(initial = emptySet())
     val isReminded = remindedIds.contains(launchId)
 
@@ -100,7 +93,6 @@ fun LaunchDetailScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Hero image
                 if (!currentLaunch.image.isNullOrEmpty()) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
@@ -116,7 +108,6 @@ fun LaunchDetailScreen(
                 }
 
                 Column(modifier = Modifier.padding(20.dp)) {
-                    // Title
                     Text(
                         text = currentLaunch.name,
                         style = MaterialTheme.typography.headlineMedium,
@@ -125,12 +116,10 @@ fun LaunchDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Efficient countdown using produceState — single coroutine ticker
                     EfficientCountdown(launchNet = currentLaunch.net)
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Reminder toggle button with haptic feedback
                     ReminderButton(
                         isReminded = isReminded,
                         onToggle = {
@@ -138,7 +127,6 @@ fun LaunchDetailScreen(
                             scope.launch {
                                 if (isReminded) {
                                     reminderPrefs.removeReminder(launchId)
-                                    // Cancel the work if possible
                                     WorkManager.getInstance(context)
                                         .cancelAllWorkByTag("launch_reminder_$launchId")
                                 } else {
@@ -151,7 +139,6 @@ fun LaunchDetailScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Status
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -188,12 +175,10 @@ fun LaunchDetailScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Provider
                     if (!currentLaunch.providerName.isNullOrEmpty()) {
                         DetailRow(label = "Provider", value = currentLaunch.providerName)
                     }
 
-                    // Scheduled time
                     val formattedDate = remember(currentLaunch.net) {
                         try {
                             val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
@@ -214,7 +199,6 @@ fun LaunchDetailScreen(
                     }
                     DetailRow(label = "Scheduled", value = formattedDate)
 
-                    // Location
                     if (!currentLaunch.locationName.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -233,12 +217,10 @@ fun LaunchDetailScreen(
                         }
                     }
 
-                    // Pad
                     if (!currentLaunch.padName.isNullOrEmpty()) {
                         DetailRow(label = "Pad", value = currentLaunch.padName)
                     }
 
-                    // Mission
                     if (!currentLaunch.missionName.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
@@ -263,11 +245,6 @@ fun LaunchDetailScreen(
     }
 }
 
-/**
- * Efficient countdown timer using produceState — runs a single coroutine
- * that produces a countdown string. Coarse updates (hourly) for distant launches,
- * fine-grained (1s) for launches within 24h.
- */
 @Composable
 fun EfficientCountdown(launchNet: String) {
     val countdownText by produceState(initialValue = "Calculating...", key1 = launchNet) {
@@ -297,7 +274,6 @@ fun EfficientCountdown(launchNet: String) {
                 else -> "T-${hours}h ${minutes}m ${seconds}s"
             }
 
-            // Adaptive delay: if >1 day away, update every minute. Else every second.
             delay(if (days > 0) 60_000L else 1_000L)
         }
     }
@@ -326,10 +302,6 @@ fun EfficientCountdown(launchNet: String) {
     }
 }
 
-/**
- * Animated reminder toggle button with haptic feedback.
- * Shows filled bell when active, outlined when inactive.
- */
 @Composable
 fun ReminderButton(
     isReminded: Boolean,
@@ -368,9 +340,6 @@ private fun DetailRow(label: String, value: String) {
     )
 }
 
-/**
- * Schedules a WorkManager reminder for 15 minutes before the launch.
- */
 private fun scheduleLaunchReminder(context: android.content.Context, launch: LaunchEntity) {
     val data = Data.Builder()
         .putString("launch_id", launch.id)

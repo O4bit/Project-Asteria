@@ -186,7 +186,7 @@ fun HistoryItemCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ) // Material 3 expressive usage
+        )
     ) {
         Row(
             modifier = Modifier

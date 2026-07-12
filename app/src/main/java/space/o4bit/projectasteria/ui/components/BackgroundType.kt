@@ -1,9 +1,5 @@
 package space.o4bit.projectasteria.ui.components
 
-/**
- * Types of animated backgrounds available in the app.
- * Expanded with more animated background types.
- */
 enum class BackgroundType(val displayName: String) {
     STARRY("Starry"),
     SPACE("Space"),

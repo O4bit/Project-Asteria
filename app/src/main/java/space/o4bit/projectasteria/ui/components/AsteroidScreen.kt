@@ -36,18 +36,18 @@ fun AsteroidScreen(
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as AsteriaApplication
-    val repository = remember { 
+    val repository = remember {
         AsteroidRepository(
             asteroidDao = application.database.asteroidDao(),
             sortingPreferences = application.sortingPreferences
-        ) 
+        )
     }
-    
+
     val asteroids by repository.asteroids.collectAsState(initial = emptyList())
     var isLoading by remember { mutableStateOf(asteroids.isEmpty()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    
+
     val isClosest by application.sortingPreferences.isAsteroidsClosest.collectAsState(initial = true)
     val listState = rememberLazyListState()
 
@@ -78,7 +78,6 @@ fun AsteroidScreen(
                         onClick = {
                             scope.launch {
                                 application.sortingPreferences.toggleAsteroidSort()
-                                // Snap to top so cards reorder in place
                                 listState.scrollToItem(0)
                             }
                         },
@@ -152,9 +151,9 @@ fun AsteroidScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AsteroidCard(asteroid: AsteroidEntity, onClick: () -> Unit) {
-    val diameterMin = asteroid.estimatedDiameterMinKm * 1000 // To meters
-    val diameterMax = asteroid.estimatedDiameterMaxKm * 1000 // To meters
-    
+    val diameterMin = asteroid.estimatedDiameterMinKm * 1000
+    val diameterMax = asteroid.estimatedDiameterMaxKm * 1000
+
     val speed = asteroid.relativeVelocityKmh.toDoubleOrNull()?.let { String.format("%.0f", it) } ?: "Unknown"
     val distance = if (asteroid.missDistanceKm < Double.MAX_VALUE) String.format("%,.0f", asteroid.missDistanceKm) else "Unknown"
 

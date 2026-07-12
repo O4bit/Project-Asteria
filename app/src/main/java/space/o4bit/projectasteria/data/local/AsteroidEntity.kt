@@ -13,11 +13,10 @@ data class AsteroidEntity(
     val estimatedDiameterMaxKm: Double,
     val isPotentiallyHazardous: Boolean,
     val isSentryObject: Boolean,
-    
-    // Nearest approach data
+
     val closeApproachDate: String,
     val relativeVelocityKms: String,
     val relativeVelocityKmh: String,
-    val missDistanceKm: Double, // Double for sorting
+    val missDistanceKm: Double,
     val missDistanceLunar: String
 )

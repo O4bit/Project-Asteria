@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Selle pildi kohta"</string>
+  <string name="add_to_home_screen">"Lisa avakuvale"</string>
+  <string name="altitude">"Kõrgus merepinnast"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Projekt Asteria"</string>
+  <string name="app_widget_description">"Kuva tänase päeva astronoomiapilt ja kosmosefaktid oma avakuval"</string>
+  <string name="back">"Tagasi"</string>
+  <string name="bg_circles">"Ringid"</string>
+  <string name="bg_grid">"Ruudustik"</string>
+  <string name="bg_mesh">"Võrk"</string>
+  <string name="bg_none">"Puudub"</string>
+  <string name="bg_particles">"Osakesed"</string>
+  <string name="bg_rings">"Sõrmused"</string>
+  <string name="bg_shapes">"Kujundid"</string>
+  <string name="bg_space">"Kosmos"</string>
+  <string name="bg_starry">"Tähistaevas"</string>
+  <string name="both_screens">"Mõlemad ekraanid"</string>
+  <string name="calculating">"Arvutamine..."</string>
+  <string name="cancel">"Tühista"</string>
+  <string name="cancel_reminder">"Tühista meeldetuletus"</string>
+  <string name="change">"Muutus"</string>
+  <string name="clear_search">"Tühjenda otsing"</string>
+  <string name="close_approach">"Lähedalt lähenedes: %1$s km kaugusel"</string>
+  <string name="close_search">"Sulge otsing"</string>
+  <string name="creator_developer">"Looja ja arendaja"</string>
+  <string name="current_location">"Praegune asukoht"</string>
+  <string name="daily_notifications_desc">"Saate missiooni värskendusi ja astronoomiateateid"</string>
+  <string name="daily_space_notifications">"Igapäevased ruumi märguanded"</string>
+  <string name="dark_mode">"Tume režiim"</string>
+  <string name="dark_mode_desc">"Sunni tumedad elemendid kogu rakenduses"</string>
+  <string name="date_unknown">"Kuupäev teadmata"</string>
+  <string name="debug_crash_scenarios">"Proovige erinevaid krahhistsenaariume"</string>
+</resources>

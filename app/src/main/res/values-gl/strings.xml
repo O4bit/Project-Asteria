@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Acerca desta imaxe"</string>
+  <string name="add_to_home_screen">"Engadir á pantalla de inicio"</string>
+  <string name="altitude">"Altitude"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Proxecto Asteria"</string>
+  <string name="app_widget_description">"Mostra imaxes de astronomía e datos espaciais de hoxe na pantalla de inicio"</string>
+  <string name="back">"Volver"</string>
+  <string name="bg_circles">"Círculos"</string>
+  <string name="bg_grid">"Grella"</string>
+  <string name="bg_mesh">"Malla"</string>
+  <string name="bg_none">"Ningún"</string>
+  <string name="bg_particles">"Partículas"</string>
+  <string name="bg_rings">"Aneis"</string>
+  <string name="bg_shapes">"Formas"</string>
+  <string name="bg_space">"Espazo"</string>
+  <string name="bg_starry">"Estrelado"</string>
+  <string name="both_screens">"Ambas as dúas pantallas"</string>
+  <string name="calculating">"Calculando..."</string>
+  <string name="cancel">"Cancelar"</string>
+  <string name="cancel_reminder">"Cancelar recordatorio"</string>
+  <string name="change">"Cambio"</string>
+  <string name="clear_search">"Limpar busca"</string>
+  <string name="close_approach">"Aproximación próxima: %1$s km de distancia"</string>
+  <string name="close_search">"Pechar busca"</string>
+  <string name="creator_developer">"Creador e desenvolvedor"</string>
+  <string name="current_location">"Localización actual"</string>
+  <string name="daily_notifications_desc">"Recibir actualizacións de misións e alertas de astronomía"</string>
+  <string name="daily_space_notifications">"Notificacións diarias do espazo"</string>
+  <string name="dark_mode">"Modo escuro"</string>
+  <string name="dark_mode_desc">"Forzar elementos escuros en toda a aplicación"</string>
+  <string name="date_unknown">"Data descoñecida"</string>
+  <string name="debug_crash_scenarios">"Proba varios escenarios de accidente"</string>
+</resources>

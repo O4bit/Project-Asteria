@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Apie šį paveikslėlį"</string>
+  <string name="add_to_home_screen">"Pridėti prie pagrindinio ekrano"</string>
+  <string name="altitude">"Aukštis"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Projektas Asteria"</string>
+  <string name="app_widget_description">"Rodykite šiandienos astronomijos paveikslėlius ir kosmoso faktus savo pagrindiniame ekrane"</string>
+  <string name="back">"Atgal"</string>
+  <string name="bg_circles">"Apskritimai"</string>
+  <string name="bg_grid">"Tinklelis"</string>
+  <string name="bg_mesh">"Tinklelis"</string>
+  <string name="bg_none">"Nėra"</string>
+  <string name="bg_particles">"Dalelės"</string>
+  <string name="bg_rings">"Žiedai"</string>
+  <string name="bg_shapes">"Formos"</string>
+  <string name="bg_space">"Erdvė"</string>
+  <string name="bg_starry">"Žvaigždėtas"</string>
+  <string name="both_screens">"Abu ekranai"</string>
+  <string name="calculating">"Skaičiuojama..."</string>
+  <string name="cancel">"Atšaukti"</string>
+  <string name="cancel_reminder">"Atšaukti priminimą"</string>
+  <string name="change">"Pakeisti"</string>
+  <string name="clear_search">"Išvalyti paiešką"</string>
+  <string name="close_approach">"Artimas privažiavimas: %1$s km atstumu"</string>
+  <string name="close_search">"Uždaryti paiešką"</string>
+  <string name="creator_developer">"Kūrėjas ir vystytojas"</string>
+  <string name="current_location">"Dabartinė vieta"</string>
+  <string name="daily_notifications_desc">"Gaukite misijos atnaujinimus ir astronomijos įspėjimus"</string>
+  <string name="daily_space_notifications">"Kasdieniai pranešimai apie erdvę"</string>
+  <string name="dark_mode">"Tamsusis režimas"</string>
+  <string name="dark_mode_desc">"Priverstinai įjungti tamsius elementus visoje programoje"</string>
+  <string name="date_unknown">"Data nežinoma"</string>
+  <string name="debug_crash_scenarios">"Išbandykite įvairius avarijos scenarijus"</string>
+</resources>

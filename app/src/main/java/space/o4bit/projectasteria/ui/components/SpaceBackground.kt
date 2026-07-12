@@ -32,10 +32,6 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-/**
- * Animated space background with stars moving towards the viewer and occasional meteors.
- * Stars fly in 3D perspective from the distance towards the camera, creating a warp-speed effect.
- */
 @Composable
 fun SpaceBackground(
     modifier: Modifier = Modifier,
@@ -72,7 +68,7 @@ fun SpaceBackground(
 
     var baseProgress by remember { mutableFloatStateOf(0f) }
     val currentSpeedMultiplier = remember { Animatable(1f) }
-    
+
     LaunchedEffect(speedMultiplier) {
         currentSpeedMultiplier.animateTo(
             targetValue = speedMultiplier,
@@ -80,7 +76,6 @@ fun SpaceBackground(
         )
     }
 
-    // Continuous star animation loop
     LaunchedEffect(Unit) {
         var lastFrameMs = 0L
         while (true) {
@@ -89,7 +84,6 @@ fun SpaceBackground(
                 lastFrameMs = frameMs
                 baseProgress += (delta / 16f) * 0.0008f * currentSpeedMultiplier.value
 
-                // Regenerate stars that have passed the camera
                 stars.forEachIndexed { index, star ->
                     val adjustedProgress = ((baseProgress * star.speed) + star.initialOffset) % 1f
 
@@ -122,7 +116,6 @@ fun SpaceBackground(
     var meteor by remember { mutableStateOf<SpaceMeteorState?>(null) }
     val meteorProgress = remember { Animatable(0f) }
 
-    // Meteor spawner
     LaunchedEffect(Unit) {
         while (true) {
             delay(Random.nextLong(40_000, 60_000))
@@ -167,7 +160,6 @@ fun SpaceBackground(
             val tiltX = parallaxState.tiltX.value
             val tiltY = parallaxState.tiltY.value
 
-            // Render stars with 3D perspective
             stars.forEach { star ->
                 val adjustedProgress = ((baseProgress * star.speed) + star.initialOffset) % 1f
                 val z = 1f - adjustedProgress
@@ -184,8 +176,7 @@ fun SpaceBackground(
 
                 val sizeFactor = perspectiveFactor * 0.65f
                 val finalSize = star.size * sizeFactor
-                
-                // Far stars move less with parallax, close stars move more
+
                 val parallaxFactor = 1f / z.coerceAtLeast(0.1f)
                 val parallaxX = tiltX * 250f * parallaxFactor
                 val parallaxY = tiltY * 250f * parallaxFactor
@@ -193,7 +184,6 @@ fun SpaceBackground(
                 val finalX = centerX + projectedX + parallaxX
                 val finalY = centerY + projectedY + parallaxY
 
-                // Cull stars outside screen bounds
                 if (finalX < -150 || finalX > width + 150 ||
                     finalY < -150 || finalY > height + 150
                 ) {
@@ -201,13 +191,11 @@ fun SpaceBackground(
                 }
 
 
-                // Smooth fade in from distance
                 val fadeIn = when {
                     z > 1.0f -> ((1.2f - z) / 0.2f).coerceIn(0f, 1f)
                     else -> 1f
                 }
 
-                // Smooth fade out when approaching camera
                 val fadeOut = when {
                     z < 0.15f -> (z / 0.15f).coerceIn(0f, 1f)
                     else -> 1f
@@ -221,7 +209,6 @@ fun SpaceBackground(
 
                 val combinedAlpha = (star.baseAlpha * distanceAlpha * fadeIn * fadeOut).coerceIn(0f, 1f)
 
-                // Outer glow
                 drawCircle(
                     color = starColor,
                     radius = finalSize * 1.8f,
@@ -229,7 +216,6 @@ fun SpaceBackground(
                     alpha = combinedAlpha * 0.2f
                 )
 
-                // Main star body
                 drawCircle(
                     color = starColor,
                     radius = finalSize * 1.1f,
@@ -238,7 +224,6 @@ fun SpaceBackground(
                 )
             }
 
-            // Render meteor
             meteor?.let { m ->
                 val p = meteorProgress.value
                 val angleRad = m.angle * (Math.PI / 180f).toFloat()
@@ -254,7 +239,6 @@ fun SpaceBackground(
                 val tailX = curX - (m.length * cosAngle)
                 val tailY = curY - (m.length * sinAngle)
 
-                // Outer glow
                 drawLine(
                     brush = Brush.linearGradient(
                         0.0f to starColor.copy(alpha = 0.3f),
@@ -269,7 +253,6 @@ fun SpaceBackground(
                     cap = StrokeCap.Round
                 )
 
-                // Core trail
                 drawLine(
                     brush = Brush.linearGradient(
                         0.0f to starColor.copy(alpha = 0.95f),
@@ -289,16 +272,10 @@ fun SpaceBackground(
     }
 }
 
-/**
- * Simple luminance check for Color
- */
 private fun Color.luminance(): Float {
     return 0.299f * red + 0.587f * green + 0.114f * blue
 }
 
-/**
- * Generates initial pool of stars with varied properties
- */
 private fun generateStarPool(): List<SpaceStarData> {
     return List(300) { index ->
         val depthLayer = index / 300f

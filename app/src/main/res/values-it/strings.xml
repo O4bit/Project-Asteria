@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Informazioni su questa immagine"</string>
+  <string name="add_to_home_screen">"Aggiungi alla schermata iniziale"</string>
+  <string name="altitude">"Altitudine"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Progetto Asteria"</string>
+  <string name="app_widget_description">"Mostra l&#39;immagine astronomica di oggi e curiosità sullo spazio sulla schermata iniziale"</string>
+  <string name="back">"Indietro"</string>
+  <string name="bg_circles">"Cerchi"</string>
+  <string name="bg_grid">"Griglia"</string>
+  <string name="bg_mesh">"Maglia"</string>
+  <string name="bg_none">"Nessuno"</string>
+  <string name="bg_particles">"Particelle"</string>
+  <string name="bg_rings">"Anelli"</string>
+  <string name="bg_shapes">"Forme"</string>
+  <string name="bg_space">"Spazio"</string>
+  <string name="bg_starry">"Stellato"</string>
+  <string name="both_screens">"Entrambi gli schermi"</string>
+  <string name="calculating">"Calcolo in corso..."</string>
+  <string name="cancel">"Cancellare"</string>
+  <string name="cancel_reminder">"Annulla promemoria"</string>
+  <string name="change">"Modifica"</string>
+  <string name="clear_search">"Cancella ricerca"</string>
+  <string name="close_approach">"Distanza minima: %1$s km di distanza"</string>
+  <string name="close_search">"Chiudi ricerca"</string>
+  <string name="creator_developer">"Creatore e sviluppatore"</string>
+  <string name="current_location">"Posizione attuale"</string>
+  <string name="daily_notifications_desc">"Ricevi aggiornamenti sulle missioni e avvisi astronomici"</string>
+  <string name="daily_space_notifications">"Notifiche giornaliere sullo spazio"</string>
+  <string name="dark_mode">"Modalità scura"</string>
+  <string name="dark_mode_desc">"Forza gli elementi scuri in tutta l&#39;app"</string>
+  <string name="date_unknown">"Data sconosciuta"</string>
+  <string name="debug_crash_scenarios">"Prova vari scenari di incidente"</string>
+</resources>

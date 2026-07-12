@@ -23,7 +23,6 @@ interface ApodDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertApods(apods: List<ApodEntity>)
 
-    // For paging support later if needed, we can add offset/limit
     @Query("SELECT * FROM apods ORDER BY date DESC LIMIT :limit OFFSET :offset")
     suspend fun getPagedApods(limit: Int, offset: Int): List<ApodEntity>
 }

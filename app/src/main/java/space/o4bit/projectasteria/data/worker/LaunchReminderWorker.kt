@@ -14,15 +14,15 @@ class LaunchReminderWorker(
     override suspend fun doWork(): Result {
         val launchId = inputData.getString("launch_id") ?: return Result.failure()
         val launchName = inputData.getString("launch_name") ?: "Upcoming Launch"
-        
+
         Log.d("LaunchReminderWorker", "Triggering reminder for $launchName ($launchId)")
-        
+
         SpaceNotificationBuilder.showLaunchReminderNotification(
             context = applicationContext,
             launchName = launchName,
             launchId = launchId
         )
-        
+
         return Result.success()
     }
 }

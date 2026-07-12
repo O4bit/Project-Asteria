@@ -55,7 +55,6 @@ fun OssLicensesScreen(
     val context = LocalContext.current
     val libs = remember<Libs> { Libs.Builder().withContext(context).build() }
 
-    // M3 Expressive colors derived from the current theme
     val chipColors = LibraryDefaults.chipColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -71,7 +70,6 @@ fun OssLicensesScreen(
         dialogConfirmButtonColor = MaterialTheme.colorScheme.primary
     )
 
-    // More spacious padding for an expressive feel
     val chipPadding = LibraryDefaults.chipPadding(
         containerPadding = PaddingValues(top = 10.dp, end = 6.dp),
         contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
@@ -132,7 +130,6 @@ fun OssLicensesScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Animated search field
             AnimatedVisibility(
                 visible = isSearchVisible,
                 enter = slideInVertically { -it } + fadeIn(),
@@ -190,7 +187,6 @@ fun OssLicensesScreen(
                 dimensions = libraryDimensions,
                 contentPadding = PaddingValues(bottom = 24.dp),
                 onLibraryClick = if (searchQuery.isNotBlank()) {
-                    // When searching, filter is handled by default — just let clicks through
                     null
                 } else {
                     null

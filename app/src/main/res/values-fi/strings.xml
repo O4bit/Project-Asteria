@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Tietoja tästä kuvasta"</string>
+  <string name="add_to_home_screen">"Lisää aloitusnäyttöön"</string>
+  <string name="altitude">"Korkeus"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Asteria-projekti"</string>
+  <string name="app_widget_description">"Näytä tämän päivän tähtitieteen kuvia ja avaruustietoja aloitusnäytölläsi"</string>
+  <string name="back">"Takaisin"</string>
+  <string name="bg_circles">"Ympyrät"</string>
+  <string name="bg_grid">"Ruudukko"</string>
+  <string name="bg_mesh">"Verkko"</string>
+  <string name="bg_none">"Ei mitään"</string>
+  <string name="bg_particles">"Hiukkaset"</string>
+  <string name="bg_rings">"Sormukset"</string>
+  <string name="bg_shapes">"Muodot"</string>
+  <string name="bg_space">"Avaruus"</string>
+  <string name="bg_starry">"Tähtikirkas"</string>
+  <string name="both_screens">"Molemmat näytöt"</string>
+  <string name="calculating">"Lasketaan..."</string>
+  <string name="cancel">"Peruuttaa"</string>
+  <string name="cancel_reminder">"Peruuta muistutus"</string>
+  <string name="change">"Muuttaa"</string>
+  <string name="clear_search">"Tyhjennä haku"</string>
+  <string name="close_approach">"Läheinen lähestymistapa: %1$s km päässä"</string>
+  <string name="close_search">"Sulje haku"</string>
+  <string name="creator_developer">"Luoja ja kehittäjä"</string>
+  <string name="current_location">"Nykyinen sijainti"</string>
+  <string name="daily_notifications_desc">"Vastaanota tehtäväpäivityksiä ja tähtitieteellisiä hälytyksiä"</string>
+  <string name="daily_space_notifications">"Päivittäiset avaruusilmoitukset"</string>
+  <string name="dark_mode">"Tumma tila"</string>
+  <string name="dark_mode_desc">"Pakota tummat elementit koko sovellukseen"</string>
+  <string name="date_unknown">"Päivämäärä tuntematon"</string>
+  <string name="debug_crash_scenarios">"Kokeile erilaisia ​​törmäystilanteita"</string>
+</resources>

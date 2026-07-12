@@ -19,7 +19,6 @@ class LaunchRepository(
     private val sortingPreferences: SortingPreferencesRepository,
     private val launchService: SpaceLaunchService = SpaceLaunchService.create()
 ) {
-    // Single Source of Truth: Observe the database sorted by the user's preference
     val launches: Flow<List<LaunchEntity>> = sortingPreferences.isLaunchesAscending.flatMapLatest { isAscending ->
         if (isAscending) {
             launchDao.getOldestLaunches()
@@ -32,7 +31,6 @@ class LaunchRepository(
         try {
             val response = launchService.getUpcomingLaunches(limit = limit)
             val entities = response.results.map { launch ->
-                // Parse the ISO date to timestamp for the Room query
                 val netMillis = try {
                     val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
                     format.timeZone = TimeZone.getTimeZone("UTC")
@@ -56,12 +54,11 @@ class LaunchRepository(
                     netMillis = netMillis
                 )
             }
-            
-            // Replaces the old cache with the newest data
+
             launchDao.clearLaunches()
             launchDao.insertLaunches(entities)
         } catch (e: Exception) {
-            throw e // the UI wrapper will catch and display error state or read from cache
+            throw e
         }
     }
 }

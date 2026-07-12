@@ -26,10 +26,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import kotlin.math.min
 import kotlin.random.Random
 
-/**
- * A composable that creates a starry space background with subtle animation
- * that aligns with Material 3 theming
- */
 @Composable
 fun StarryBackground(
     modifier: Modifier = Modifier,
@@ -45,7 +41,7 @@ fun StarryBackground(
         context = context,
         coroutineScope = coroutineScope
     )
-    
+
     val surfaceColor = MaterialTheme.colorScheme.surface
     val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -124,7 +120,7 @@ fun StarryBackground(
         ) {
             val tiltX = parallaxState.tiltX.value
             val tiltY = parallaxState.tiltY.value
-            
+
             nebulae.forEachIndexed { index, nebula ->
                 val depth = 0.2f + (index * 0.1f)
                 val pX = tiltX * 100f * depth
@@ -136,10 +132,10 @@ fun StarryBackground(
                 val depth = 0.5f + (index % 5) * 0.1f
                 val pX = tiltX * 150f * depth
                 val pY = tiltY * 150f * depth
-                val individualTwinkle = (twinkleBase.value + 
+                val individualTwinkle = (twinkleBase.value +
                     kotlin.math.sin((System.currentTimeMillis() % star.twinkleSpeed.toLong()) / star.twinkleSpeed * 2 * kotlin.math.PI).toFloat() * 0.3f)
                     .coerceIn(0.4f, 1f)
-                
+
                 drawStar(star, onSurface, individualTwinkle, pX, pY)
             }
         }
@@ -147,9 +143,6 @@ fun StarryBackground(
     }
 }
 
-/**
- * Data class representing a star with twinkling properties
- */
 private data class Star(
     val x: Float,
     val y: Float,
@@ -158,9 +151,6 @@ private data class Star(
     val twinkleSpeed: Float
 )
 
-/**
- * Data class representing a nebula with pulse animation
- */
 private data class Nebula(
     val x: Float,
     val y: Float,
@@ -169,9 +159,6 @@ private data class Nebula(
     val pulseSpeed: Float
 )
 
-/**
- * Extension function to draw a star with twinkling effect
- */
 private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
     val x = star.x * size.width + offsetX
     val y = star.y * size.height + offsetY
@@ -182,7 +169,7 @@ private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: 
         radius = star.size,
         center = Offset(x, y)
     )
-    
+
     if (star.size > 2f) {
         drawCircle(
             color = starColor.copy(alpha = finalAlpha * 0.3f),
@@ -192,9 +179,6 @@ private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: 
     }
 }
 
-/**
- * Extension function to draw a nebula with pulse effect
- */
 private fun DrawScope.drawNebula(nebula: Nebula, pulseMultiplier: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
     val x = nebula.x * size.width + offsetX
     val y = nebula.y * size.height + offsetY
@@ -205,7 +189,7 @@ private fun DrawScope.drawNebula(nebula: Nebula, pulseMultiplier: Float, offsetX
         radius = radius,
         center = Offset(x, y)
     )
-    
+
     drawCircle(
         color = nebula.color.copy(alpha = nebula.color.alpha * 0.5f),
         radius = radius * 1.5f,

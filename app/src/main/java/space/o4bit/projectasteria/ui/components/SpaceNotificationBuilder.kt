@@ -26,22 +26,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 
-/**
- * Helper class to create and show rich, space-themed notifications
- * with Material 3 design elements
- */
 object SpaceNotificationBuilder {
 
     private const val CHANNEL_ID = "space_discovery_channel"
     private const val NOTIFICATION_ID = 1
 
-    // Material 3 color values for notifications
-    private val PRIMARY_COLOR = "#00B0FF".toColorInt() // CosmicAccent
+    private val PRIMARY_COLOR = "#00B0FF".toColorInt()
 
-    /**
-     * Creates and displays a rich notification with the astronomy picture
-     * styled with Material 3 design principles
-     */
     suspend fun showAstronomyNotification(
         context: Context,
         enhancedPicture: EnhancedAstronomyPicture
@@ -51,7 +42,6 @@ object SpaceNotificationBuilder {
             return
         }
 
-        // Create notification channel for Android 8.0+
         createNotificationChannel(context)
 
         // Create intent for when notification is tapped.
@@ -74,15 +64,13 @@ object SpaceNotificationBuilder {
 
         val apod = enhancedPicture.astronomyPicture
         val title = apod.title
-        
-        // Strip HTML and truncate sensibly for the notification
+
         val rawExplanation = apod.explanation
         val cleanExplanation = space.o4bit.projectasteria.utils.TextUtils.stripHtml(rawExplanation)
         val snippet = if (cleanExplanation.length > 100) cleanExplanation.take(100) + "..." else cleanExplanation
 
-        // Build the notification with Material 3 styling
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_name) // Your custom monochrome notification icon
+            .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle("Today's Space Discovery")
             .setContentText(title)
             .setContentIntent(pendingIntent)
@@ -97,10 +85,9 @@ object SpaceNotificationBuilder {
                 .bigText("🎥 $title\n\n$snippet")
             )
         } else {
-            // Try to load the image for a rich notification
             val imageUrl = apod.url
             val imageBitmap = if (imageUrl != null) loadImageBitmap(context, imageUrl) else null
-            
+
             if (imageBitmap != null) {
                 builder.setLargeIcon(imageBitmap)
                 builder.setStyle(NotificationCompat.BigPictureStyle()
@@ -114,9 +101,7 @@ object SpaceNotificationBuilder {
                     .bigText(snippet)
                 )
             }
-            
-            // Add action buttons for direct fullscreen viewing.
-            // Package + component pinned for the same reason as above.
+
             val viewIntent = Intent(context, MainActivity::class.java).apply {
                 setPackage(context.packageName)
                 component = ComponentName(context, MainActivity::class.java)
@@ -149,16 +134,13 @@ object SpaceNotificationBuilder {
         }
     }
 
-    /**
-     * Load image bitmap asynchronously for the notification
-     */
     private suspend fun loadImageBitmap(context: Context, imageUrl: String): Bitmap? {
         return withContext(Dispatchers.IO) {
             try {
                 val loader = ImageLoader(context)
                 val request = ImageRequest.Builder(context)
                     .data(imageUrl)
-                    .allowHardware(false) // Needed for .toBitmap()
+                    .allowHardware(false)
                     .build()
 
                 val result = loader.execute(request)
@@ -170,12 +152,7 @@ object SpaceNotificationBuilder {
         }
     }
 
-    /**
-     * Create the notification channel for Android 8.0+
-     * with Material 3 theming
-     */
     private fun createNotificationChannel(context: Context) {
-        // No need to check SDK version since minSdk is 29 (Android 10) and O is 26
         val name = "APOD Updates"
         val description = "Daily Astronomy Pictures"
         val importance = NotificationManager.IMPORTANCE_HIGH
@@ -216,13 +193,13 @@ object SpaceNotificationBuilder {
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            launchId.hashCode(), // Unique ID per launch
+            launchId.hashCode(),
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val builder = NotificationCompat.Builder(context, "launch_reminders")
-            .setSmallIcon(R.drawable.baseline_widgets_24) // Use a generic icon if specific one isn't present
+            .setSmallIcon(R.drawable.baseline_widgets_24)
             .setContentTitle("🚀 Upcoming Launch!")
             .setContentText("$launchName is launching soon!")
             .setStyle(NotificationCompat.BigTextStyle().bigText("Get ready! $launchName is launching within 15 minutes! Open app for live timer."))

@@ -56,18 +56,18 @@ fun LaunchScreen(
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as AsteriaApplication
-    val repository = remember { 
+    val repository = remember {
         LaunchRepository(
             launchDao = application.database.launchDao(),
             sortingPreferences = application.sortingPreferences
-        ) 
+        )
     }
-    
+
     val launches by repository.launches.collectAsState(initial = emptyList())
     var isLoading by remember { mutableStateOf(launches.isEmpty()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    
+
     val isAscending by application.sortingPreferences.isLaunchesAscending.collectAsState(initial = true)
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -96,13 +96,11 @@ fun LaunchScreen(
             TopAppBar(
                 title = { Text("Upcoming Launches") },
                 actions = {
-                    // Sort chip: captures first visible key before toggling, then scrolls back to it
                     FilterChip(
                         selected = !isAscending,
                         onClick = {
                             scope.launch {
                                 application.sortingPreferences.toggleLaunchSort()
-                                // Snap to top so cards reorder in place
                                 listState.scrollToItem(0)
                             }
                         },
@@ -190,12 +188,10 @@ fun LaunchCard(
     val reminderPrefs = remember { application.reminderPreferences }
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-    
-    // Collect reminder state
+
     val remindedIds by reminderPrefs.remindedLaunchIds.collectAsState(initial = emptySet())
     val isReminded = remindedIds.contains(launch.id)
 
-    // Parse UTC Date
     val formattedDate = remember(launch.net) {
         try {
             val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
@@ -204,8 +200,8 @@ fun LaunchCard(
             val date = parser.parse(launch.net)
             date?.let {
                 val formatter = java.text.DateFormat.getDateTimeInstance(
-                    java.text.DateFormat.MEDIUM, 
-                    java.text.DateFormat.SHORT, 
+                    java.text.DateFormat.MEDIUM,
+                    java.text.DateFormat.SHORT,
                     java.util.Locale.getDefault()
                 )
                 formatter.format(it)
@@ -244,7 +240,7 @@ fun LaunchCard(
                         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 )
             }
-            
+
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = launch.name,
@@ -253,9 +249,9 @@ fun LaunchCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Info,
@@ -273,12 +269,12 @@ fun LaunchCard(
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = "Scheduled: $formattedDate",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                
+
                 if (!launch.locationName.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -316,8 +312,7 @@ fun LaunchCard(
                         Text(if (isExpanded) "Less" else "More")
                     }
                 }
-                
-                // Add Countdown Timer & Haptic Reminder Bell
+
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -325,8 +320,7 @@ fun LaunchCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     LaunchCountdownTimer(launchNet = launch.net)
-                    
-                    // Interactive haptic reminder bell
+
                     IconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -338,7 +332,6 @@ fun LaunchCard(
                                     onShowSnackbar("Reminder removed")
                                 } else {
                                     reminderPrefs.setReminder(launch.id)
-                                    // Schedule WorkManager reminder
                                     val data = Data.Builder()
                                         .putString("launch_id", launch.id)
                                         .putString("launch_name", launch.name)
@@ -401,11 +394,10 @@ fun LaunchCountdownTimer(launchNet: String) {
             val seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60
 
             countdownText = when {
-                days > 0 -> "T-Minus: ${days}d ${hours}h" // coarse updates for days
+                days > 0 -> "T-Minus: ${days}d ${hours}h"
                 else -> "T-Minus: ${hours}h ${minutes}m ${seconds}s"
             }
 
-            // Optimize delay: if more than a day away, update every hour. Else update every second.
             if (days > 0) {
                 delay(TimeUnit.HOURS.toMillis(1))
             } else {

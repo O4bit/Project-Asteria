@@ -77,10 +77,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
-/**
- * Fullscreen viewer for astronomy pictures with options to download and share.
- * For video media types, opens in external browser/YouTube app and pops back.
- */
 @Composable
 fun FullscreenImageViewer(
     astronomyPicture: AstronomyPicture,
@@ -88,8 +84,7 @@ fun FullscreenImageViewer(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    
-    // If this is a video, open it externally and navigate back
+
     if (astronomyPicture.mediaType == "video") {
         LaunchedEffect(Unit) {
             val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
@@ -103,7 +98,7 @@ fun FullscreenImageViewer(
         }
         return
     }
-    
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var showControls by remember { mutableStateOf(true) }
@@ -115,8 +110,8 @@ fun FullscreenImageViewer(
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val displayFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
     val formattedDate = try {
-        dateFormat.parse(astronomyPicture.date)?.let { 
-            displayFormat.format(it) 
+        dateFormat.parse(astronomyPicture.date)?.let {
+            displayFormat.format(it)
         } ?: astronomyPicture.date
     } catch (_: Exception) {
         astronomyPicture.date
@@ -132,14 +127,13 @@ fun FullscreenImageViewer(
             }
         }
     }
-    // Wallpaper confirmation dialog
     if (showWallpaperDialog) {
         val wallpaperOptions = listOf(
             "Home Screen" to WallpaperManager.FLAG_SYSTEM,
             "Lock Screen" to WallpaperManager.FLAG_LOCK,
             "Both Screens" to (WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
         )
-        var selectedOption by remember { mutableStateOf(wallpaperOptions[2]) } // Default to both screens
+        var selectedOption by remember { mutableStateOf(wallpaperOptions[2]) }
         AlertDialog(
             onDismissRequest = { showWallpaperDialog = false },
             title = { Text("Set as Wallpaper") },
@@ -171,9 +165,9 @@ fun FullscreenImageViewer(
                         showWallpaperDialog = false
                         coroutineScope.launch {
                             val success = downloadAndSetWallpaper(
-                                context, 
+                                context,
                                 astronomyPicture,
-                                selectedOption.second // Pass the selected wallpaper flag
+                                selectedOption.second
                             )
                             val message = if (success) {
                                 "Wallpaper set successfully"
@@ -210,7 +204,6 @@ fun FullscreenImageViewer(
             }
     ) {
         val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
-        // Zoomable image container
         var scale by remember { mutableStateOf(1f) }
         var offset by remember { mutableStateOf(Offset.Zero) }
         @Suppress("DEPRECATION")
@@ -357,9 +350,6 @@ fun FullscreenImageViewer(
         }
     }
 }
-/**
- * Downloads the image using Android's DownloadManager
- */
 private fun downloadImage(context: Context, astronomyPicture: AstronomyPicture): Boolean {
     try {
         val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url ?: return false
@@ -379,9 +369,6 @@ private fun downloadImage(context: Context, astronomyPicture: AstronomyPicture):
         return false
     }
 }
-/**
- * Shares the image URL using Android's share intent
- */
 private fun shareImageOnly(context: Context, astronomyPicture: AstronomyPicture) {
     val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
     if (imageUrl == null) return
@@ -391,9 +378,6 @@ private fun shareImageOnly(context: Context, astronomyPicture: AstronomyPicture)
     }
     context.startActivity(Intent.createChooser(shareIntent, "Share Space Image"))
 }
-/**
- * Custom composable that supports zoom and pan gestures for images
- */
 @Composable
 fun ZoomableImage(
     model: Any,
@@ -447,11 +431,8 @@ fun ZoomableImage(
         )
     }
 }
-/**
- * Downloads the image and sets it as wallpaper
- */
 private suspend fun downloadAndSetWallpaper(
-    context: Context, 
+    context: Context,
     astronomyPicture: AstronomyPicture,
     wallpaperType: Int = WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
 ): Boolean {
@@ -512,9 +493,6 @@ private suspend fun downloadAndSetWallpaper(
         return false
     }
 }
-/**
- * Decodes a bitmap from file with sampling to prevent OutOfMemoryError
- */
 private fun decodeSampledBitmapFromFile(filePath: String, reqWidth: Int, reqHeight: Int): Bitmap? {
     return try {
         val options = BitmapFactory.Options().apply {
@@ -529,9 +507,6 @@ private fun decodeSampledBitmapFromFile(filePath: String, reqWidth: Int, reqHeig
         null
     }
 }
-/**
- * Calculate the optimal sampling size for loading a bitmap
- */
 private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
     val (height, width) = options.outHeight to options.outWidth
     var inSampleSize = 1

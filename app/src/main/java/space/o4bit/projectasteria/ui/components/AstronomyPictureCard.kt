@@ -58,9 +58,6 @@ import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.utils.TextUtils
 
-/**
- * A card displaying the astronomy picture of the day with its details
- */
 @Composable
 fun AstronomyPictureCard(
     enhancedPicture: EnhancedAstronomyPicture,
@@ -73,7 +70,6 @@ fun AstronomyPictureCard(
     var isImageLoaded by remember { mutableStateOf(false) }
     var showContent by remember { mutableStateOf(false) }
 
-    // Format the date
     val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
     val displayFormat = java.text.SimpleDateFormat("MMMM d, yyyy", java.util.Locale.US)
     val formattedDate = try {
@@ -83,7 +79,6 @@ fun AstronomyPictureCard(
         astronomyPicture.date
     }
 
-    // Staggered animations
     LaunchedEffect(isImageLoaded) {
         if (isImageLoaded) {
             delay(300)
@@ -109,13 +104,11 @@ fun AstronomyPictureCard(
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Handle different media types
             val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
             val isVideo = astronomyPicture.mediaType == "video"
             val context = LocalContext.current
-            
+
             when {
-                // IMAGE type: load async with Coil
                 !isVideo && imageUrl != null -> {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
@@ -125,7 +118,7 @@ fun AstronomyPictureCard(
                         contentDescription = astronomyPicture.title,
                         contentScale = ContentScale.Crop,
                         onSuccess = { isImageLoaded = true },
-                        onError = { 
+                        onError = {
                             isImageLoaded = true
                         },
                         modifier = Modifier
@@ -134,7 +127,6 @@ fun AstronomyPictureCard(
                             .clip(RoundedCornerShape(24.dp))
                     )
                 }
-                // VIDEO type: show thumbnail with play overlay, tap opens external browser/YouTube
                 isVideo -> {
                     val thumbnailUrl = astronomyPicture.thumbnail ?: extractYouTubeThumbnail(imageUrl)
                     Box(
@@ -144,7 +136,6 @@ fun AstronomyPictureCard(
                             .clip(RoundedCornerShape(24.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable {
-                                // Open video URL in external browser/YouTube app
                                 if (imageUrl != null) {
                                     try {
                                         val intent = android.content.Intent(
@@ -172,7 +163,6 @@ fun AstronomyPictureCard(
                         } else {
                             LaunchedEffect(Unit) { delay(300); isImageLoaded = true }
                         }
-                        // Play button overlay
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
@@ -189,7 +179,6 @@ fun AstronomyPictureCard(
                         }
                     }
                 }
-                // FALLBACK: unknown media type or no URL
                 else -> {
                     Box(
                         modifier = Modifier
@@ -218,7 +207,6 @@ fun AstronomyPictureCard(
                 }
             }
 
-            // Semi-transparent gradient overlay for better text readability
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -235,14 +223,12 @@ fun AstronomyPictureCard(
                     .clip(RoundedCornerShape(24.dp))
             )
 
-            // Content
             Column(
                 modifier = Modifier
                     .matchParentSize()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Top section with date
                 AnimatedVisibility(
                     visible = showContent,
                     enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }
@@ -269,7 +255,6 @@ fun AstronomyPictureCard(
                     }
                 }
 
-                // Bottom section with title and actions
                 AnimatedVisibility(
                     visible = showContent,
                     enter = fadeIn(tween(700)) + slideInVertically(tween(700)) { it / 2 }
@@ -280,7 +265,6 @@ fun AstronomyPictureCard(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.Bottom
                         ) {
-                            // Title
                             Text(
                                 text = astronomyPicture.title,
                                 style = MaterialTheme.typography.titleLarge,
@@ -288,9 +272,7 @@ fun AstronomyPictureCard(
                                 modifier = Modifier.weight(1f)
                             )
 
-                            // Action buttons row
                             Row {
-                                // Add to Home Screen button
                                 FilledTonalIconButton(
                                     onClick = onAddToHomeScreenClick,
                                     modifier = Modifier.size(40.dp)
@@ -301,10 +283,9 @@ fun AstronomyPictureCard(
                                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
-                                
+
                                 Spacer(modifier = Modifier.width(8.dp))
-                                
-                                // Share button
+
                                 FilledTonalIconButton(
                                     onClick = onShareClick,
                                     modifier = Modifier.size(40.dp)
@@ -320,10 +301,8 @@ fun AstronomyPictureCard(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Space fact
-                        // Random Space Facts section with expandable functionality
                         var factExpanded by remember { mutableStateOf(false) }
-                        
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -349,7 +328,7 @@ fun AstronomyPictureCard(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
-                                
+
                                 if (factExpanded || enhancedPicture.shortFact.length > 80) {
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
@@ -368,18 +347,14 @@ fun AstronomyPictureCard(
     }
 }
 
-/**
- * A card displaying the explanation for an astronomy picture
- */
 @Composable
 fun AstronomyExplanationCard(
     explanation: String,
     modifier: Modifier = Modifier,
     onCardClick: () -> Unit = {}
 ) {
-    // Strip HTML tags from explanation
     val cleanExplanation = TextUtils.stripHtml(explanation)
-    
+
     space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
@@ -399,7 +374,7 @@ fun AstronomyExplanationCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = "Read more",
@@ -419,7 +394,7 @@ fun AstronomyExplanationCard(
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
-            
+
             if (cleanExplanation.length > 150) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -433,11 +408,6 @@ fun AstronomyExplanationCard(
     }
 }
 
-/**
- * Extract a YouTube video thumbnail URL from a YouTube embed URL.
- * Supports youtube.com/embed/ID and youtu.be/ID formats.
- * Returns null if the URL is not a recognized YouTube format.
- */
 private fun extractYouTubeThumbnail(url: String?): String? {
     if (url == null) return null
     val patterns = listOf(

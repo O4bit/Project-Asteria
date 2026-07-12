@@ -12,12 +12,6 @@ import space.o4bit.projectasteria.BuildConfig
 import space.o4bit.projectasteria.data.model.neo.NeoWsResponse
 import java.util.concurrent.TimeUnit
 
-/**
- * NeoWs (Near-Earth Object) feed exposed by the Asteria Rust proxy
- * at `/v2/nasa/neows/feed`. The proxy enforces NASA's 7-day cap, attaches
- * the server-side NASA_API_KEY, and rate-limits per IP. Response shape
- * matches NASA's native feed, so [NeoWsResponse] is unchanged.
- */
 interface NasaNeoWsService {
     @GET("v2/nasa/neows/feed")
     suspend fun getNearEarthObjects(

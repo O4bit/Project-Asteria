@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Tungkol sa Larawang Ito"</string>
+  <string name="add_to_home_screen">"Idagdag sa Home Screen"</string>
+  <string name="altitude">"Altitude"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Proyekto Asteria"</string>
+  <string name="app_widget_description">"Ipakita ang larawan ng astronomiya ngayon at mga katotohanan tungkol sa kalawakan sa iyong home screen"</string>
+  <string name="back">"Balik"</string>
+  <string name="bg_circles">"Mga Bilog"</string>
+  <string name="bg_grid">"Grid"</string>
+  <string name="bg_mesh">"lambat"</string>
+  <string name="bg_none">"Wala"</string>
+  <string name="bg_particles">"Mga partikulo"</string>
+  <string name="bg_rings">"Mga singsing"</string>
+  <string name="bg_shapes">"Mga Hugis"</string>
+  <string name="bg_space">"Kalawakan"</string>
+  <string name="bg_starry">"Mabituin"</string>
+  <string name="both_screens">"Parehong Screen"</string>
+  <string name="calculating">"Kinakalkula..."</string>
+  <string name="cancel">"Kanselahin"</string>
+  <string name="cancel_reminder">"Paalala sa Kanselahin"</string>
+  <string name="change">"Pagbabago"</string>
+  <string name="clear_search">"I-clear ang paghahanap"</string>
+  <string name="close_approach">"Malapit na Paglapit: %1$s km ang layo"</string>
+  <string name="close_search">"Isara ang paghahanap"</string>
+  <string name="creator_developer">"Tagalikha at Developer"</string>
+  <string name="current_location">"Kasalukuyang Lokasyon"</string>
+  <string name="daily_notifications_desc">"Tumanggap ng mga update sa misyon at mga alerto sa astronomiya"</string>
+  <string name="daily_space_notifications">"Mga Pang-araw-araw na Abiso sa Espasyo"</string>
+  <string name="dark_mode">"Madilim na Mode"</string>
+  <string name="dark_mode_desc">"Pilitin ang mga madilim na elemento sa buong app"</string>
+  <string name="date_unknown">"Hindi alam ang petsa"</string>
+  <string name="debug_crash_scenarios">"Subukan ang iba&#39;t ibang senaryo ng pag-crash"</string>
+</resources>

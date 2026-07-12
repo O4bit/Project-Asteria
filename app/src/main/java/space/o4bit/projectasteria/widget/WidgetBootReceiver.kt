@@ -5,10 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
-/**
- * Receiver that gets called when device boots up or app is updated
- * Ensures widget updates are properly scheduled after device restarts
- */
 class WidgetBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {

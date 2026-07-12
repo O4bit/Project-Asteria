@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"この画像について"</string>
+  <string name="add_to_home_screen">"ホーム画面に追加"</string>
+  <string name="altitude">"高度"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"プロジェクト・アステリア"</string>
+  <string name="app_widget_description">"今日の天体写真と宇宙に関する豆知識をホーム画面に表示します。"</string>
+  <string name="back">"戻る"</string>
+  <string name="bg_circles">"円"</string>
+  <string name="bg_grid">"グリッド"</string>
+  <string name="bg_mesh">"メッシュ"</string>
+  <string name="bg_none">"なし"</string>
+  <string name="bg_particles">"粒子"</string>
+  <string name="bg_rings">"リング"</string>
+  <string name="bg_shapes">"形状"</string>
+  <string name="bg_space">"空間"</string>
+  <string name="bg_starry">"星空"</string>
+  <string name="both_screens">"両方の画面"</string>
+  <string name="calculating">"計算中..."</string>
+  <string name="cancel">"キャンセル"</string>
+  <string name="cancel_reminder">"リマインダーをキャンセルする"</string>
+  <string name="change">"変化"</string>
+  <string name="clear_search">"検索をクリアする"</string>
+  <string name="close_approach">"接近距離：%1$s km"</string>
+  <string name="close_search">"検索を閉じる"</string>
+  <string name="creator_developer">"クリエイター＆開発者"</string>
+  <string name="current_location">"現在地"</string>
+  <string name="daily_notifications_desc">"ミッションの最新情報や天文学に関するアラートを受け取る"</string>
+  <string name="daily_space_notifications">"毎日の宇宙情報"</string>
+  <string name="dark_mode">"ダークモード"</string>
+  <string name="dark_mode_desc">"アプリ全体にダーク要素を強制的に適用する"</string>
+  <string name="date_unknown">"日付不明"</string>
+  <string name="debug_crash_scenarios">"さまざまなクラッシュシナリオを試してみてください"</string>
+</resources>

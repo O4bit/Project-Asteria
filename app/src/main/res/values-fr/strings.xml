@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"À propos de cette image"</string>
+  <string name="add_to_home_screen">"Ajouter à l&#39;écran d&#39;accueil"</string>
+  <string name="altitude">"Altitude"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Projet Astéria"</string>
+  <string name="app_widget_description">"Affichez l&#39;image astronomique du jour et des informations spatiales sur votre écran d&#39;accueil."</string>
+  <string name="back">"Dos"</string>
+  <string name="bg_circles">"Cercles"</string>
+  <string name="bg_grid">"Grille"</string>
+  <string name="bg_mesh">"Engrener"</string>
+  <string name="bg_none">"Aucun"</string>
+  <string name="bg_particles">"Particules"</string>
+  <string name="bg_rings">"Anneaux"</string>
+  <string name="bg_shapes">"Formes"</string>
+  <string name="bg_space">"Espace"</string>
+  <string name="bg_starry">"Étoilé"</string>
+  <string name="both_screens">"Les deux écrans"</string>
+  <string name="calculating">"Calculateur..."</string>
+  <string name="cancel">"Annuler"</string>
+  <string name="cancel_reminder">"Annuler le rappel"</string>
+  <string name="change">"Changement"</string>
+  <string name="clear_search">"Recherche propre"</string>
+  <string name="close_approach">"Approche rapprochée : %1$s à km"</string>
+  <string name="close_search">"Fermer la recherche"</string>
+  <string name="creator_developer">"Créateur et développeur"</string>
+  <string name="current_location">"Emplacement actuel"</string>
+  <string name="daily_notifications_desc">"Recevez des mises à jour sur les missions et des alertes astronomiques"</string>
+  <string name="daily_space_notifications">"Notifications quotidiennes concernant l&#39;espace"</string>
+  <string name="dark_mode">"Mode sombre"</string>
+  <string name="dark_mode_desc">"Forcer les éléments sombres dans toute l&#39;application"</string>
+  <string name="date_unknown">"Date inconnue"</string>
+  <string name="debug_crash_scenarios">"Essayez différents scénarios de plantage"</string>
+</resources>

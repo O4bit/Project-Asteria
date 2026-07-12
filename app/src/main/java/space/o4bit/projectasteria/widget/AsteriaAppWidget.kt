@@ -18,10 +18,6 @@ import space.o4bit.projectasteria.data.repository.SpaceRepository
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-/**
- * Implementation of App Widget functionality for Project Asteria
- * Exactly replicates the main screen's astronomy picture component
- */
 class AsteriaAppWidget : AppWidgetProvider() {
 
     companion object {
@@ -48,7 +44,7 @@ class AsteriaAppWidget : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-        
+
         when (intent.action) {
             ACTION_REFRESH -> {
                 val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -125,14 +121,14 @@ class AsteriaAppWidget : AppWidgetProvider() {
             } catch (_: Exception) {
                         }
                     }
-                    
+
                     appWidgetManager.updateAppWidget(appWidgetId, views)
                 }
             } catch (e: Exception) {
                 CoroutineScope(Dispatchers.Main).launch {
                     views.setTextViewText(R.id.widget_title, "Project Asteria")
                     views.setTextViewText(R.id.widget_fact, "Tap to explore space discoveries")
-                    
+
                     appWidgetManager.updateAppWidget(appWidgetId, views)
                 }
             }

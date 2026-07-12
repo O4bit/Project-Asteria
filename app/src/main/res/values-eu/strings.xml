@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Irudi honi buruz"</string>
+  <string name="add_to_home_screen">"Gehitu hasierako pantailara"</string>
+  <string name="altitude">"Altitudea"</string>
+  <string name="apod_title_fallback">"APOD"</string>
+  <string name="app_name">"Asteria proiektua"</string>
+  <string name="app_widget_description">"Erakutsi gaurko astronomia irudia eta espazio datuak zure hasierako pantailan"</string>
+  <string name="back">"Atzera"</string>
+  <string name="bg_circles">"Zirkuluak"</string>
+  <string name="bg_grid">"Sareta"</string>
+  <string name="bg_mesh">"Sarea"</string>
+  <string name="bg_none">"Bat ere ez"</string>
+  <string name="bg_particles">"Partikulak"</string>
+  <string name="bg_rings">"Eraztunak"</string>
+  <string name="bg_shapes">"Formak"</string>
+  <string name="bg_space">"Espazioa"</string>
+  <string name="bg_starry">"Izarrez betea"</string>
+  <string name="both_screens">"Bi pantailak"</string>
+  <string name="calculating">"Kalkulatzen..."</string>
+  <string name="cancel">"Utzi"</string>
+  <string name="cancel_reminder">"Ezeztatu abisua"</string>
+  <string name="change">"Aldaketa"</string>
+  <string name="clear_search">"Garbitu bilaketa"</string>
+  <string name="close_approach">"Hurbilketa hurbila: %1$s km-ra"</string>
+  <string name="close_search">"Itxi bilaketa"</string>
+  <string name="creator_developer">"Sortzailea eta Garatzailea"</string>
+  <string name="current_location">"Uneko kokapena"</string>
+  <string name="daily_notifications_desc">"Jaso misioen eguneraketak eta astronomia alertak"</string>
+  <string name="daily_space_notifications">"Eguneroko espazioko jakinarazpenak"</string>
+  <string name="dark_mode">"Modu Iluna"</string>
+  <string name="dark_mode_desc">"Behartu elementu ilunak aplikazio osoan zehar"</string>
+  <string name="date_unknown">"Data ezezaguna"</string>
+  <string name="debug_crash_scenarios">"Probatu hainbat istripu-egoera"</string>
+</resources>

@@ -27,7 +27,7 @@ class IssViewModel(
 ) : ViewModel() {
 
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
-    
+
     init {
         refresh()
     }
@@ -39,7 +39,6 @@ class IssViewModel(
             val maxDelay = 60000L
             var lastLocation: IssPosition? = null
 
-            // First emit a loading state if we have no prior data
             if (lastLocation == null) {
                 emit(IssUiState(location = null, isLive = false, errorMessage = null))
             }
@@ -47,7 +46,7 @@ class IssViewModel(
             while (currentCoroutineContext().isActive) {
                 try {
                     val location = repository.getIssPosition()
-                    
+
                     if (hasMeaningfulChange(lastLocation, location)) {
                         emit(IssUiState(
                             location = location,
@@ -57,26 +56,23 @@ class IssViewModel(
                         ))
                         lastLocation = location
                     } else {
-                        // Even if it didn't change meaningfully, we might want to update the 'lastUpdateTime' optionally,
-                        // but sticking to the last meaningful change makes it jitter less.
                     }
-                    currentDelay = 3000L // Reset backoff on success
+                    currentDelay = 3000L
                 } catch (e: Exception) {
                     emit(IssUiState(
-                        location = lastLocation, // Keep last known point
+                        location = lastLocation,
                         isLive = false,
                         lastUpdateTime = System.currentTimeMillis(),
                         errorMessage = "Signal lost. Retrying in ${currentDelay/1000}s..."
                     ))
-                    currentDelay = (currentDelay * 2).coerceAtMost(maxDelay) // Exponential backoff
+                    currentDelay = (currentDelay * 2).coerceAtMost(maxDelay)
                 }
                 delay(currentDelay)
             }
         }
     }.stateIn(
         scope = viewModelScope,
-        // Stop the loop completely when UI is hidden longer than 5 seconds
-        started = SharingStarted.WhileSubscribed(5000), 
+        started = SharingStarted.WhileSubscribed(5000),
         initialValue = IssUiState()
     )
 
@@ -88,7 +84,6 @@ class IssViewModel(
         if (old == null) return true
         val latDiff = Math.abs(old.latitude - new.latitude)
         val lonDiff = Math.abs(old.longitude - new.longitude)
-        // 0.001 degrees is roughly 111 meters. Perfect for avoiding unneeded map redraws.
         return latDiff > 0.001 || lonDiff > 0.001
     }
 }

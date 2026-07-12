@@ -146,7 +146,7 @@ fun AppearanceTabContent() {
     val customAccent by themePrefs.customAccent.collectAsState(initial = null)
     val customThemeColor by themePrefs.customThemeColor.collectAsState(initial = null)
     val dynamicColor by themePrefs.dynamicColor.collectAsState(initial = true)
-    
+
     val currentBgName by bgPrefs.backgroundType.collectAsState(initial = BackgroundType.DEFAULT.name)
     val enableParallax by bgPrefs.enableParallax.collectAsState(initial = true)
 
@@ -160,7 +160,7 @@ fun AppearanceTabContent() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(title = "Theme Preferences")
-        
+
         SectionCard {
             RichSettingsItem(
                 title = "Follow System Theme",
@@ -223,7 +223,6 @@ fun AppearanceTabContent() {
                         themePrefs.updateCustomAccent(null)
                         themePrefs.updateCustomThemeColor(null)
                     } else {
-                        // Convert Color to Hex String
                         val hex = color.toHexString()
                         themePrefs.updateCustomAccent(hex)
                         themePrefs.updateCustomThemeColor(hex)
@@ -240,7 +239,7 @@ fun AppearanceTabContent() {
                 coroutineScope.launch { bgPrefs.updateBackgroundType(type.name) }
             }
         )
-        
+
         SectionCard {
             RichSettingsItem(
                 title = "Parallax Effect",
@@ -263,15 +262,15 @@ fun GeneralTabContent() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val notificationPrefs = remember { NotificationPreferencesRepository(context) }
-    
+
     val dailyNotificationsEnabled by notificationPrefs.dailyNotificationsEnabled.collectAsState(initial = true)
     val wifiOnlyPrefetch by notificationPrefs.wifiOnlyPrefetch.collectAsState(initial = false)
     val notificationHour by notificationPrefs.notificationHour.collectAsState(initial = 9)
     val notificationMinute by notificationPrefs.notificationMinute.collectAsState(initial = 0)
-    
+
     val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
     val hyperdriveThreshold by backgroundPrefs.hyperdriveThresholdMinutes.collectAsState(initial = 1)
-    
+
     var showTimePicker by remember { mutableStateOf(false) }
 
     Column(
@@ -282,7 +281,7 @@ fun GeneralTabContent() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(title = "Notifications")
-        
+
         SectionCard {
             RichSettingsItem(
                 title = "Daily Space Notifications",
@@ -291,7 +290,7 @@ fun GeneralTabContent() {
                 action = {
                     Switch(
                         checked = dailyNotificationsEnabled,
-                        onCheckedChange = { 
+                        onCheckedChange = {
                             coroutineScope.launch { notificationPrefs.updateDailyNotificationsEnabled(it) }
                         }
                     )
@@ -324,7 +323,7 @@ fun GeneralTabContent() {
                 }
             )
         }
-        
+
         SectionTitle(title = "Launch Alerts")
         SectionCard {
             RichSettingsItem(
@@ -394,7 +393,7 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(title = "Project Asteria")
-        
+
         SectionCard {
             RichSettingsItem(
                 title = "Version",
@@ -437,7 +436,7 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
                 onClick = onShowLicenses
             )
         }
-        
+
         SectionTitle(title = "Feedback")
         SectionCard {
             RichSettingsItem(

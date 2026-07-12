@@ -70,7 +70,7 @@ extensions.configure<ApplicationExtension> {
         buildConfigField(
             "String",
             "ASTERIA_API_BASE_URL",
-            "\"https://asteria.o4bit.space/\""
+            "\"https://asteria.o4bit.dev/\""
         )
 
     }

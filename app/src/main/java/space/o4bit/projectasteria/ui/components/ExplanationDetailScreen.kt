@@ -32,9 +32,6 @@ import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.AstronomyPicture
 import space.o4bit.projectasteria.utils.TextUtils
 
-/**
- * Full screen view for astronomy picture explanation
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExplanationDetailScreen(
@@ -102,9 +99,9 @@ fun ExplanationDetailScreen(
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             textAlign = TextAlign.Center
                         )
-                        
+
                         Spacer(modifier = Modifier.height(8.dp))
-                        
+
                         Text(
                             text = astronomyPicture.date,
                             style = MaterialTheme.typography.labelLarge,

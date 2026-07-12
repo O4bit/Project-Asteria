@@ -4,21 +4,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.toColorInt
 
-/**
- * Determine if a color represents a dark background
- */
 fun Color.isDarkBackground(): Boolean = luminance() < 0.5f
 
-/**
- * Get luminance from a Color
- */
 fun Color.luminance(): Float {
     return 0.299f * red + 0.587f * green + 0.114f * blue
 }
 
-/**
- * Lighten a color by mixing with white
- */
 fun Color.lighten(factor: Float): Color {
     return Color(
         red = red + (1f - red) * factor,
@@ -28,9 +19,6 @@ fun Color.lighten(factor: Float): Color {
     )
 }
 
-/**
- * Darken a color by mixing with black
- */
 fun Color.darken(factor: Float): Color {
     return Color(
         red = red * (1f - factor),

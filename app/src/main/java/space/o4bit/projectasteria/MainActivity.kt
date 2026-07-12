@@ -6,9 +6,14 @@ import androidx.lifecycle.lifecycleScope
 import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -48,15 +53,19 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -65,6 +74,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -143,10 +153,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Defer heavy initializers off the Main thread to speed up TTFF (Time-to-first-frame)
+
         lifecycleScope.launch(Dispatchers.IO) {
-            // Configure Coil globally
             val imageLoader = ImageLoader.Builder(applicationContext)
                 .memoryCache {
                     MemoryCache.Builder(applicationContext)
@@ -159,7 +167,7 @@ class MainActivity : ComponentActivity() {
                         .maxSizePercent(0.02)
                         .build()
                 }
-                .respectCacheHeaders(false) // Cache heavily
+                .respectCacheHeaders(false)
                 .build()
             coil.Coil.setImageLoader(imageLoader)
 
@@ -178,20 +186,20 @@ class MainActivity : ComponentActivity() {
                 notificationManager.cancel(notificationId)
             }
         }
-        
+
         enableEdgeToEdge()
         setContent {
             ThemedApp {
-                val openFullscreen = intent.getBooleanExtra("OPEN_FULLSCREEN", false) || 
+                val openFullscreen = intent.getBooleanExtra("OPEN_FULLSCREEN", false) ||
                                     (intent.data?.scheme == "asteria" && intent.data?.host == "image")
-                
+
                 AsteriaApp(
                     openDirectlyFromNotification = openFullscreen
                 )
             }
         }
     }
-    
+
     override fun onPause() {
         super.onPause()
         if (intent?.getBooleanExtra(WidgetClickReceiver.EXTRA_FROM_WIDGET, false) == true) {
@@ -228,7 +236,7 @@ class MainActivity : ComponentActivity() {
 }
 
 enum class MainTab(
-    val title: String, 
+    val title: String,
     val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector,
     val unselectedIcon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
@@ -238,11 +246,6 @@ enum class MainTab(
     ASTEROIDS("Asteroids", Icons.Filled.Public, Icons.Outlined.Public)
 }
 
-/**
- * Main composable for the Asteria app
- * Uses Jetpack Navigation for detail screens (launch detail, APOD detail from history),
- * while keeping modal overlays (settings, licenses, fullscreen viewer) as boolean state.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AsteriaApp(
@@ -264,15 +267,15 @@ fun AsteriaApp(
     val application = context.applicationContext as AsteriaApplication
     val database = application.database
     val repository = remember { SpaceRepository(database.apodDao()) }
-    val launchRepository = remember { 
+    val launchRepository = remember {
         LaunchRepository(
             launchDao = database.launchDao(),
             sortingPreferences = application.sortingPreferences
-        ) 
+        )
     }
     val launches by launchRepository.launches.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
-    
+
     val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
     val uiHintsPrefs = remember { UiHintsPreferencesRepository(context) }
     val backgroundTypeName by backgroundPrefs.backgroundType.collectAsState(initial = BackgroundType.SPACE.name)
@@ -280,11 +283,9 @@ fun AsteriaApp(
     val mainTabsHintShown by uiHintsPrefs.mainTabsHintShown.collectAsState(initial = false)
     val hyperdriveThresholdMinutes by backgroundPrefs.hyperdriveThresholdMinutes.collectAsState(initial = 1)
 
-    // Notification preferences
     val notificationPrefs = remember { space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository(context) }
     val notificationsEnabled by notificationPrefs.dailyNotificationsEnabled.collectAsState(initial = true)
 
-    // Launch Speed State
     var launchSpeedMultiplier by remember { mutableFloatStateOf(1f) }
 
     LaunchedEffect(launches, hyperdriveThresholdMinutes) {
@@ -345,7 +346,6 @@ fun AsteriaApp(
             popEnterTransition = { fadeIn(tween(300)) + slideInHorizontally(tween(300)) { -(it * 0.1f).toInt() } },
             popExitTransition = { fadeOut(tween(300)) + slideOutHorizontally(tween(300)) { (it * 0.1f).toInt() } }
         ) {
-            // Main tabbed screen
             composable("main") {
                 Scaffold(
                     containerColor = Color.Transparent,
@@ -424,7 +424,6 @@ fun AsteriaApp(
                 }
             }
 
-            // Launch detail screen with countdown
             composable(
                 route = "launch_detail/{launchId}",
                 arguments = listOf(navArgument("launchId") { type = NavType.StringType })
@@ -436,7 +435,6 @@ fun AsteriaApp(
                 )
             }
 
-            // APOD detail from History (shows full APOD without settings button)
             composable(
                 route = "apod_detail/{date}",
                 arguments = listOf(navArgument("date") { type = NavType.StringType })
@@ -450,7 +448,6 @@ fun AsteriaApp(
             }
         }
 
-        // --- Overlays with Animations ---
 
         AnimatedVisibility(
             visible = showHistory,
@@ -540,7 +537,70 @@ private fun MainScreen(
     onRetryClick: () -> Unit
 ) {
     val context = LocalContext.current
-    
+
+    var isOnline by remember { mutableStateOf(true) }
+    var showOfflineDialog by remember { mutableStateOf(false) }
+
+    DisposableEffect(context) {
+        val cm = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                mainHandler.post { isOnline = true }
+            }
+            override fun onLost(network: Network) {
+                mainHandler.post { isOnline = false }
+            }
+            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+                val online = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                mainHandler.post { isOnline = online }
+            }
+        }
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        cm.registerNetworkCallback(request, callback, mainHandler)
+        val active = cm.activeNetwork
+        val caps = active?.let { cm.getNetworkCapabilities(it) }
+        isOnline = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        onDispose { cm.unregisterNetworkCallback(callback) }
+    }
+
+    if (showOfflineDialog) {
+        AlertDialog(
+            onDismissRequest = { showOfflineDialog = false },
+            icon = {
+                Icon(
+                    painter = androidx.compose.ui.res.painterResource(R.drawable.outline_cloud_off_24),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = { Text("No Internet Connection") },
+            text = {
+                Text(
+                    "You\'re currently offline. Project Asteria is displaying cached content from your last online session. " +
+                    "Some features may be unavailable until you reconnect."
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showOfflineDialog = false
+                    context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
+                }) {
+                    Text("Open Wi-Fi Settings")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showOfflineDialog = false }) {
+                    Text("Dismiss")
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -559,7 +619,6 @@ private fun MainScreen(
                         label = "LogoSpin"
                     )
 
-                    // Spin once on initial load
                     LaunchedEffect(Unit) {
                         isSpinning = true
                         rotationTarget += 360f * 6
@@ -593,6 +652,15 @@ private fun MainScreen(
                     }
                 },
                 actions = {
+                    if (!isOnline) {
+                        IconButton(onClick = { showOfflineDialog = true }) {
+                            Icon(
+                                painter = androidx.compose.ui.res.painterResource(R.drawable.outline_cloud_off_24),
+                                contentDescription = "Offline - tap to learn more",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                     IconButton(onClick = onHistoryClick) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
@@ -607,18 +675,35 @@ private fun MainScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onSettingsClick,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.semantics {
-                    contentDescription = "Open settings"
-                }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings"
-                )
+                if (!isOnline) {
+                    androidx.compose.material3.SmallFloatingActionButton(
+                        onClick = { showOfflineDialog = true },
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ) {
+                        Icon(
+                            painter = androidx.compose.ui.res.painterResource(R.drawable.outline_cloud_off_24),
+                            contentDescription = "Offline indicator"
+                        )
+                    }
+                }
+                FloatingActionButton(
+                    onClick = onSettingsClick,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Open settings"
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings"
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -649,7 +734,7 @@ private fun MainScreen(
                                 onShareClick = {
                                     val shareIntent = Intent().apply {
                                         action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, 
+                                        putExtra(Intent.EXTRA_TEXT,
                                             "Check out this amazing astronomy picture: ${astronomyPicture.astronomyPicture.title}\n" +
                                             "${astronomyPicture.astronomyPicture.url ?: astronomyPicture.astronomyPicture.hdUrl ?: "NASA APOD"}\n\n" +
                                             "From Project Asteria"
@@ -727,7 +812,7 @@ private fun ErrorScreen(
     onRetryClick: () -> Unit
 ) {
     val context = LocalContext.current
-    
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

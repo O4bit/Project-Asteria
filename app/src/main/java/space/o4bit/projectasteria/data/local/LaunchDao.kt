@@ -19,10 +19,10 @@ interface LaunchDao {
 
     @Query("DELETE FROM launches")
     suspend fun clearLaunches()
-    
+
     @Query("SELECT * FROM launches WHERE id = :id LIMIT 1")
     suspend fun getLaunchById(id: String): LaunchEntity?
-    
+
     @Query("SELECT * FROM launches WHERE id = :id LIMIT 1")
     fun getLaunchByIdFlow(id: String): Flow<LaunchEntity?>
 }

@@ -33,12 +33,12 @@ class AsteroidRepository(
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
             dateFormat.timeZone = TimeZone.getTimeZone("UTC")
             val todayStr = dateFormat.format(Date())
-            
+
             val response = neoWsService.getNearEarthObjects(
                 startDate = todayStr,
                 endDate = todayStr
             )
-            
+
             val networkAsteroids = response.nearEarthObjects.values.flatten()
             val entities = networkAsteroids.map { asteroid ->
                 val approachData = asteroid.closeApproachData.firstOrNull()
@@ -58,7 +58,7 @@ class AsteroidRepository(
                     missDistanceLunar = approachData?.missDistance?.lunar ?: ""
                 )
             }
-            
+
             asteroidDao.clearAsteroids()
             asteroidDao.insertAsteroids(entities)
         } catch (e: Exception) {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="about_this_image">"Այս պատկերի մասին"</string>
+  <string name="add_to_home_screen">"Ավելացնել գլխավոր էկրանին"</string>
+  <string name="altitude">"Բարձրություն"</string>
+  <string name="apod_title_fallback">"ԱՊՈԴ"</string>
+  <string name="app_name">"Աստերիա նախագիծ"</string>
+  <string name="app_widget_description">"Ցուցադրեք այսօրվա աստղագիտական ​​նկարը և տիեզերական փաստերը ձեր գլխավոր էկրանին"</string>
+  <string name="back">"Հետ"</string>
+  <string name="bg_circles">"Շրջանակներ"</string>
+  <string name="bg_grid">"Ցանց"</string>
+  <string name="bg_mesh">"Ցանց"</string>
+  <string name="bg_none">"Ոչ մեկը"</string>
+  <string name="bg_particles">"Մասնիկներ"</string>
+  <string name="bg_rings">"Մատանիներ"</string>
+  <string name="bg_shapes">"Ձևեր"</string>
+  <string name="bg_space">"Տիեզերք"</string>
+  <string name="bg_starry">"Աստղային"</string>
+  <string name="both_screens">"Երկու էկրաններն էլ"</string>
+  <string name="calculating">"Հաշվարկվում է..."</string>
+  <string name="cancel">"Չեղարկել"</string>
+  <string name="cancel_reminder">"Չեղարկել հիշեցումը"</string>
+  <string name="change">"Փոփոխություն"</string>
+  <string name="clear_search">"Մաքրել որոնումը"</string>
+  <string name="close_approach">"Մոտեցում՝ %1$s կմ հեռավորության վրա"</string>
+  <string name="close_search">"Փակել որոնումը"</string>
+  <string name="creator_developer">"Ստեղծող և մշակող"</string>
+  <string name="current_location">"Ընթացիկ գտնվելու վայրը"</string>
+  <string name="daily_notifications_desc">"Ստացեք առաքելության թարմացումներ և աստղագիտական ​​​​ազդանշաններ"</string>
+  <string name="daily_space_notifications">"Ամենօրյա տարածքի ծանուցումներ"</string>
+  <string name="dark_mode">"Մութ ռեժիմ"</string>
+  <string name="dark_mode_desc">"Մութ տարրերը պարտադրաբար ներառել ամբողջ հավելվածում"</string>
+  <string name="date_unknown">"Ամսաթիվը անհայտ է"</string>
+  <string name="debug_crash_scenarios">"Փորձեք տարբեր վթարի սցենարներ"</string>
+</resources>

@@ -6,10 +6,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 
-/**
- * Simple activity to manually test crash reporting in debug/development.
- * Kept minimal so it doesn't pull in Compose or other app dependencies.
- */
 class TestCrashActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)

@@ -16,6 +16,5 @@ data class LaunchEntity(
     val missionName: String?,
     val missionDescription: String?,
     val image: String?,
-    // We add sorting timestamp: assuming `net` is an ISO-8601 string, we can sort alphabetically or covert to epoch.
     val netMillis: Long
 )

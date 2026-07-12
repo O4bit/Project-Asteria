@@ -30,9 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
-/**
- * Standard Surface card for Asteria settings sections.
- */
 @Composable
 fun AsteriaCard(
     modifier: Modifier = Modifier,
@@ -51,9 +48,6 @@ fun AsteriaCard(
     }
 }
 
-/**
- * Standard padding block inside a AsteriaCard.
- */
 @Composable
 fun SectionCard(
     modifier: Modifier = Modifier,
@@ -69,9 +63,6 @@ fun SectionCard(
     }
 }
 
-/**
- * Standard section title used above option cards.
- */
 @Composable
 fun SectionTitle(
     title: String,
@@ -97,9 +88,6 @@ fun SectionTitle(
     }
 }
 
-/**
- * A beautiful gradient circle for icons.
- */
 @Composable
 fun GradientCircleIcon(
     icon: ImageVector,
@@ -122,9 +110,6 @@ fun GradientCircleIcon(
     }
 }
 
-/**
- * A simple icon with a subtle background circle.
- */
 @Composable
 fun AsteriaIcon(
     icon: ImageVector,
@@ -148,9 +133,6 @@ fun AsteriaIcon(
     }
 }
 
-/**
- * Base setting item row without background.
- */
 @Composable
 fun BaseSettingsItem(
     title: String,
@@ -204,9 +186,6 @@ fun BaseSettingsItem(
     }
 }
 
-/**
- * Fully loaded settings item with an icon on the left, a Switch/Chevron/Text on the right.
- */
 @Composable
 fun RichSettingsItem(
     title: String,
@@ -243,9 +222,6 @@ fun RichSettingsItem(
     )
 }
 
-/**
- * A setting item presented as a standalone card.
- */
 @Composable
 fun SettingsItemCard(
     modifier: Modifier = Modifier,
@@ -264,9 +240,6 @@ fun SettingsItemCard(
     }
 }
 
-/**
- * A divider used between list items inside a AsteriaCard.
- */
 @Composable
 fun AsteriaSettingsDivider() {
     HorizontalDivider(
@@ -275,9 +248,6 @@ fun AsteriaSettingsDivider() {
     )
 }
 
-/**
- * Expandable section with a header that toggles content visibility.
- */
 @Composable
 fun ExpandableSection(
     title: String,
@@ -321,9 +291,6 @@ fun ExpandableSection(
     }
 }
 
-/**
- * Animated pill-shaped bottom navigation bar.
- */
 @Composable
 fun AsteriaBottomNavigation(
     tabs: List<String>,
@@ -353,13 +320,13 @@ fun AsteriaBottomNavigation(
             tabs.forEachIndexed { index, label ->
                 val isSelected = selectedIndex == index
                 val icon = if (isSelected) selectedIcons[index] else unselectedIcons[index]
-                
+
                 val backgroundColor by animateColorAsState(
                     targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                     animationSpec = tween(durationMillis = 300),
                     label = "tab_bg_color"
                 )
-                
+
                 val contentColor by animateColorAsState(
                     targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                     animationSpec = tween(durationMillis = 300),
