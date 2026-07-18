@@ -1,0 +1,17 @@
+name: Auto Assign Issue
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assign to Repo Owner
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --add-assignee "${{ github.repository_owner }}"
