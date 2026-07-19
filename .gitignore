@@ -54,3 +54,7 @@ docs/crash_analytics.md
 README.md
 README_HANDOFF.md
 REPRODUCIBLE_BUILDS.md
+add_language_switcher.py
+fix_language.py
+language_patch.py
+test_plugin.patch
