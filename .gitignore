@@ -58,3 +58,4 @@ add_language_switcher.py
 fix_language.py
 language_patch.py
 test_plugin.patch
+tools/fix_dialog.py

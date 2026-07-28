@@ -1,9 +1,9 @@
 # Project Asteria
-
 <p align="center">
   <img src="app/src/main/ic_launcher-playstore.png" width="128" height="128" alt="Project Asteria Logo">
 </p>
 
+<!-- Small shield badges -->
 <p align="center">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
   <img src="https://img.shields.io/badge/F--Droid-Ready-blue.svg" alt="F-Droid Ready">
@@ -11,6 +11,12 @@
   <img src="https://img.shields.io/badge/Min%20API-31-green.svg" alt="Min API 31">
 </p>
 
+<!-- Large F-Droid download badge -->
+<p align="center">
+  <a href="https://f-droid.org/packages/space.o4bit.projectasteria.foss">
+    <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">
+  </a>
+</p>
 A Free and Open Source (FOSS) Android application for space exploration using official NASA APIs.
 
 ## Screenshots
@@ -50,40 +56,6 @@ A Free and Open Source (FOSS) Android application for space exploration using of
 
 > **F-Droid:** The app is distributed on F-Droid. Reproducible builds are configured via `app/build.gradle.kts`.
 
-## Architecture
-
-Project Asteria uses a unidirectional data flow architecture built on standard Android Jetpack libraries.
-
-```
-UI Layer  ─────────────────────────────────────────────────────
-│  AsteriaApp.kt           Root Compose scaffold + navigation
-│  ui/components/          Individual screen composables
-│  ui/viewmodels/          ApodViewModel, LaunchViewModel, AsteroidViewModel
-│                          (StateFlow → sealed UiState → Compose state)
-│
-Data Layer ─────────────────────────────────────────────────────
-│  data/repository/        SpaceRepository, LaunchRepository, AsteroidRepository
-│                          (single source of truth = Room DB; network on refresh)
-│  data/local/             Room entities and DAOs (ApodDao, LaunchDao, AsteroidDao)
-│  data/api/               Retrofit service interfaces
-│  data/preferences/       DataStore preference repositories
-│
-Infrastructure ─────────────────────────────────────────────────
-│  util/ConnectivityObserver.kt   Network state as a Flow
-│  utils/CrashReporter.kt         Local-only diagnostic log buffer
-│  worker/DailySpaceWorker.kt     WorkManager background refresh
-│  widget/                        AppWidgetProvider + glance widget
-```
-
-### Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| Room as source of truth | All screens observe Room `Flow`s; network calls only write to Room, never directly to UI. |
-| Sealed `UiState` per screen | `Loading / Success / Error` makes exhaustive UI handling mandatory at compile time. |
-| No Hilt / no DI framework | Keeps the dependency graph explicit and F-Droid build-server friendly. Factories wire dependencies manually. |
-| `minSdk = 31` | Targets modern Android APIs; avoids legacy compatibility shims. |
-| No embedded NASA key | The NASA APOD API call is proxied through a self-hosted backend (`asteria.o4bit.space`) to avoid key exposure in the APK. |
 
 ## Building
 
