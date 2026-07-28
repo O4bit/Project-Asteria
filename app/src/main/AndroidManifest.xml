@@ -34,7 +34,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:theme="@style/Theme.ProjectAsteria">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -65,7 +64,7 @@
         <!-- Receiver to open app from widget with smooth animation -->
         <receiver
             android:name=".widget.WidgetClickReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="space.o4bit.projectasteria.ACTION_OPEN_APP_FROM_WIDGET" />
             </intent-filter>
@@ -85,7 +84,7 @@
         <!-- AlarmManager receiver for widget updates -->
         <receiver
             android:name=".widget.WidgetAlarmReceiver"
-            android:exported="true" />
+            android:exported="false" />
 
         <!-- WorkManager initialization -->
         <provider
@@ -97,6 +96,17 @@
                 android:name="androidx.work.WorkManagerInitializer"
                 android:value="androidx.startup"
                 tools:node="remove" />
+        </provider>
+
+        <!-- FileProvider for diagnostic log export -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
     </application>
 

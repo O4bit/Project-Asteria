@@ -19,6 +19,8 @@ class LaunchRepository(
     private val sortingPreferences: SortingPreferencesRepository,
     private val launchService: SpaceLaunchService = SpaceLaunchService.create()
 ) {
+    val allLaunches: Flow<List<LaunchEntity>> = launchDao.getAllLaunches()
+
     val launches: Flow<List<LaunchEntity>> = sortingPreferences.isLaunchesAscending.flatMapLatest { isAscending ->
         if (isAscending) {
             launchDao.getOldestLaunches()

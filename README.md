@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
   <img src="https://img.shields.io/badge/F--Droid-Ready-blue.svg" alt="F-Droid Ready">
   <img src="https://img.shields.io/badge/API-NASA-red.svg" alt="NASA API">
+  <img src="https://img.shields.io/badge/Min%20API-31-green.svg" alt="Min API 31">
 </p>
 
 A Free and Open Source (FOSS) Android application for space exploration using official NASA APIs.
@@ -28,11 +29,14 @@ A Free and Open Source (FOSS) Android application for space exploration using of
 
 ## Features
 
-- Astronomy Picture of the Day (APOD) with high-resolution image support and detailed explanations.
-- Near-Earth Object (NEO) tracking and data visualization.
-- Space mission insights and historical data.
-- Built with Jetpack Compose for a modern, responsive interface.
-- 100% telemetry-free and privacy-focused.
+- **Astronomy Picture of the Day (APOD)** — daily NASA image with high-resolution support, explanations, video handling, and shareable content.
+- **Near-Earth Object (NEO) Tracking** — real-time asteroid data with miss-distance and hazard classification.
+- **Space Launch Tracker** — upcoming launch schedule via The Space Devs API with countdown animations.
+- **ISS Tracker** — live International Space Station position using the Where The ISS At? API.
+- **APOD History Gallery** — paged history of past astronomy pictures with a date picker.
+- **Home Screen Widget** — configurable widget that updates daily with the current APOD.
+- **Offline Support** — Room-powered local cache keeps content available when offline. An indicator shows when the app is running in cached mode.
+- **100% telemetry-free** — no analytics, no crash reporting to external services. Diagnostic logs stay local and are only exported on explicit user request.
 
 ## Installation
 
@@ -42,22 +46,85 @@ A Free and Open Source (FOSS) Android application for space exploration using of
    ```
 2. Open the project in Android Studio (Ladybug or newer recommended).
 3. Sync Gradle and build the project.
+4. Run the `app` module on a device or emulator running Android 12 (API 31) or higher.
 
-## Usage
+> **F-Droid:** The app is distributed on F-Droid. Reproducible builds are configured via `app/build.gradle.kts`.
 
-Build and run the `app` module on an Android device or emulator (API level 31 / A12 or higher).
+## Architecture
+
+Project Asteria uses a unidirectional data flow architecture built on standard Android Jetpack libraries.
+
+```
+UI Layer  ─────────────────────────────────────────────────────
+│  AsteriaApp.kt           Root Compose scaffold + navigation
+│  ui/components/          Individual screen composables
+│  ui/viewmodels/          ApodViewModel, LaunchViewModel, AsteroidViewModel
+│                          (StateFlow → sealed UiState → Compose state)
+│
+Data Layer ─────────────────────────────────────────────────────
+│  data/repository/        SpaceRepository, LaunchRepository, AsteroidRepository
+│                          (single source of truth = Room DB; network on refresh)
+│  data/local/             Room entities and DAOs (ApodDao, LaunchDao, AsteroidDao)
+│  data/api/               Retrofit service interfaces
+│  data/preferences/       DataStore preference repositories
+│
+Infrastructure ─────────────────────────────────────────────────
+│  util/ConnectivityObserver.kt   Network state as a Flow
+│  utils/CrashReporter.kt         Local-only diagnostic log buffer
+│  worker/DailySpaceWorker.kt     WorkManager background refresh
+│  widget/                        AppWidgetProvider + glance widget
+```
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Room as source of truth | All screens observe Room `Flow`s; network calls only write to Room, never directly to UI. |
+| Sealed `UiState` per screen | `Loading / Success / Error` makes exhaustive UI handling mandatory at compile time. |
+| No Hilt / no DI framework | Keeps the dependency graph explicit and F-Droid build-server friendly. Factories wire dependencies manually. |
+| `minSdk = 31` | Targets modern Android APIs; avoids legacy compatibility shims. |
+| No embedded NASA key | The NASA APOD API call is proxied through a self-hosted backend (`asteria.o4bit.space`) to avoid key exposure in the APK. |
+
+## Building
+
+```bash
+# Debug
+./gradlew assembleDebug
+
+# Release (requires signing config)
+./gradlew assembleRelease
+
+# Unit tests
+./gradlew testDebugUnitTest
+
+# Lint (with baseline — only new violations will fail the build)
+./gradlew lintRelease
+```
+
+### Lint Baseline
+
+The project maintains a `app/lint-baseline.xml` that captures all pre-existing lint warnings so that only **new** violations block the release build. When you fix existing warnings, regenerate the baseline with:
+
+```bash
+./gradlew updateLintBaseline
+```
 
 ## Contributing
 
-Contributions are welcome via GitHub Pull Requests. Please ensure your code follows the project's Kotlin coding standards and includes relevant unit tests where applicable. For major changes, please open an issue first to discuss your proposal.
+Contributions are welcome via GitHub Pull Requests.
 
-## Code of Conduct
+1. Open an issue first for major changes.
+2. Follow the Kotlin coding standards already in the project.
+3. Add or update unit tests in `app/src/test/` for any business logic you change.
+4. Run `./gradlew testDebugUnitTest lintRelease` before submitting your PR.
+5. Do not introduce new dependencies that require non-free network services without a discussion.
 
-Everyone participating in this project is expected to treat others with respect and maintain a professional environment. Aggressive, exclusionary, or harassing behavior is not tolerated.
+See [CONTRIBUTING.md](CONTRIBUTING.md) if present for detailed guidelines.
 
 ## Security
 
-To report a security vulnerability, please open a confidential issue or contact the maintainer directly. Do not disclose vulnerabilities in public issues until a fix has been prepared.
+To report a security vulnerability, please use [GitHub's private vulnerability reporting](https://github.com/O4bit/Project-Asteria/security/advisories/new).  
+See [SECURITY.md](SECURITY.md) for the full disclosure policy.
 
 ## License
 

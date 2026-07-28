@@ -20,8 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.CardDefaults
@@ -29,6 +31,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +59,7 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
+import space.o4bit.projectasteria.ui.navigation.sharedElementIfAvailable
 import space.o4bit.projectasteria.utils.TextUtils
 
 @Composable
@@ -64,7 +68,8 @@ fun AstronomyPictureCard(
     modifier: Modifier = Modifier,
     onShareClick: () -> Unit = {},
     onCardClick: () -> Unit = {},
-    onAddToHomeScreenClick: () -> Unit = {}
+    onAddToHomeScreenClick: () -> Unit = {},
+    onToggleFavorite: (Boolean) -> Unit = {}
 ) {
     val astronomyPicture = enhancedPicture.astronomyPicture
     var isImageLoaded by remember { mutableStateOf(false) }
@@ -122,6 +127,7 @@ fun AstronomyPictureCard(
                             isImageLoaded = true
                         },
                         modifier = Modifier
+                            .sharedElementIfAvailable("apod-image-${astronomyPicture.date}")
                             .fillMaxWidth()
                             .height(300.dp)
                             .clip(RoundedCornerShape(24.dp))
@@ -234,24 +240,45 @@ fun AstronomyPictureCard(
                     enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f))
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.DateRange,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = formattedDate,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.DateRange,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = formattedDate,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { onToggleFavorite(!enhancedPicture.isFavorite) },
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f))
+                                .size(44.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (enhancedPicture.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                contentDescription = if (enhancedPicture.isFavorite) "Remove from favorites" else "Add to favorites",
+                                tint = if (enhancedPicture.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                     }
                 }
 

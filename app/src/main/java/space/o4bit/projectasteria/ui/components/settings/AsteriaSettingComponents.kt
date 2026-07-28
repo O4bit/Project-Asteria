@@ -303,7 +303,8 @@ fun AsteriaBottomNavigation(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .navigationBarsPadding()          // respect 3-button / gesture nav bar
+            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
         tonalElevation = 3.dp,

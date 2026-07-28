@@ -20,5 +20,6 @@ data class EnhancedAstronomyPicture(
     val astronomyPicture: AstronomyPicture,
     val shortFact: String,
     val notificationTitle: String,
-    val notificationBody: String
+    val notificationBody: String,
+    val isFavorite: Boolean = false
 )

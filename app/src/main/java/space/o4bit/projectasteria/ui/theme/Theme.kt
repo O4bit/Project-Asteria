@@ -39,8 +39,8 @@ private val LightColorScheme = lightColorScheme(
     background = Color.White,
     surface = Color(0xFFF8F9FA),
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
+    onSecondary = SpaceBlack,  // StardustSilver is light (luminance 0.67) — white-on-silver ratio was 1.45:1
+    onTertiary = Color.White,  // NebulaViolet is dark (luminance 0.12) — white gives 6.32:1 ✓
     onBackground = SpaceBlack,
     onSurface = SpaceBlack
 )
@@ -64,11 +64,18 @@ fun ProjectAsteriaTheme(
         else -> LightColorScheme
     }.let {
         if (darkTheme && pureBlack) {
-            val black = Color.Black
+            // Override the entire container/surface family so M3 components
+            // (cards, sheets, nav bar) don't float as dark-gray islands on true black.
             it.copy(
-                background = black,
-                surface = black,
-                surfaceDim = black
+                background              = Color.Black,
+                surface                 = Color.Black,
+                surfaceDim              = Color.Black,
+                surfaceContainerLowest  = Color.Black,
+                surfaceContainerLow     = Color(0xFF0A0A0A),
+                surfaceContainer        = Color(0xFF111111),
+                surfaceContainerHigh    = Color(0xFF1A1A1A),
+                surfaceContainerHighest = Color(0xFF1F1F1F),
+                surfaceBright           = Color(0xFF2A2A2A)
             )
         } else it
     }
@@ -87,14 +94,13 @@ fun ProjectAsteriaTheme(
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        @Suppress("DEPRECATION")
         SideEffect {
             val activity = view.context as Activity
-            WindowCompat.setDecorFitsSystemWindows(activity.window, false)
-            activity.window.statusBarColor = Color.Transparent.toArgb()
-            activity.window.navigationBarColor = Color.Transparent.toArgb()
-            WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = !darkTheme
-            WindowCompat.getInsetsController(activity.window, view).isAppearanceLightNavigationBars = !darkTheme
+            // enableEdgeToEdge() in MainActivity already clears status/nav bar colors.
+            // We only need to set the icon appearance for the current theme.
+            val controller = WindowCompat.getInsetsController(activity.window, view)
+            controller.isAppearanceLightStatusBars = !darkTheme
+            controller.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
@@ -179,7 +185,15 @@ private fun Color.adjustLightness(delta: Float): Color {
     return Color(ColorUtils.HSLToColor(hsl))
 }
 
+/**
+ * Picks white or black text to overlay this color, using the actual WCAG contrast
+ * ratio rather than a naive luminance threshold. The 0.5 threshold fails for
+ * mid-tone colors (e.g. medium gray gives ~3.9:1 with white vs. ~5.3:1 with black
+ * but the old code always picked white).
+ */
 private fun Color.contrastingForeground(): Color {
-    val luminance = ColorUtils.calculateLuminance(this.toArgb())
-    return if (luminance > 0.5) Color.Black else Color.White
+    val lum = ColorUtils.calculateLuminance(this.toArgb())
+    val contrastWithWhite = 1.05 / (lum + 0.05)
+    val contrastWithBlack = (lum + 0.05) / 0.05
+    return if (contrastWithWhite >= contrastWithBlack) Color.White else Color.Black
 }

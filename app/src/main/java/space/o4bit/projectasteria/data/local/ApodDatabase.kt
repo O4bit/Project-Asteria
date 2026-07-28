@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
         LaunchEntity::class,
         AsteroidEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class ApodDatabase : RoomDatabase() {

@@ -25,6 +25,10 @@ class AsteriaApplication : Application(), Configuration.Provider {
         space.o4bit.projectasteria.data.preferences.ReminderPreferencesRepository(applicationContext)
     }
 
+    val backgroundPreferences: space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository by lazy {
+        space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository(applicationContext)
+    }
+
     override fun onCreate() {
         super.onCreate()
     }

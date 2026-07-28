@@ -8,4 +8,19 @@
     <string name="settings_background_starry">Starry</string>
     <string name="settings_background_space">Space</string>
     <string name="settings_background_none">None</string>
+
+    <!-- Widget strings (translatable=false: overwritten at runtime by the widget provider) -->
+    <string name="widget_image_content_description" translatable="false">Space Image</string>
+    <string name="widget_date_placeholder" translatable="false">Date</string>
+    <string name="widget_title_placeholder" translatable="false">Project Asteria APOD</string>
+    <string name="widget_sparkle_emoji" translatable="false">💫</string>
+    <string name="widget_loading_text" translatable="false">Loading space discoveries…</string>
+
+    <!-- Test / diagnostics (translatable=false: internal debug activity) -->
+    <string name="test_crash_button_label" translatable="false">Simulate Crash</string>
+    <string name="test_crash_simulated_recorded" translatable="false">Simulated crash recorded</string>
+    <string name="test_crash_log_breadcrumb" translatable="false">Log Breadcrumb</string>
+    <string name="test_crash_breadcrumb_logged" translatable="false">Logged breadcrumb</string>
 </resources>
+
+

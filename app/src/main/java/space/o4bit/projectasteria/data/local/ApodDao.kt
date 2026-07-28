@@ -25,5 +25,14 @@ interface ApodDao {
 
     @Query("SELECT * FROM apods ORDER BY date DESC LIMIT :limit OFFSET :offset")
     suspend fun getPagedApods(limit: Int, offset: Int): List<ApodEntity>
+
+    @Query("SELECT * FROM apods WHERE title LIKE '%' || :query || '%' OR explanation LIKE '%' || :query || '%' ORDER BY date DESC")
+    fun searchApods(query: String): Flow<List<ApodEntity>>
+
+    @Query("UPDATE apods SET isFavorite = :isFavorite WHERE date = :date")
+    suspend fun setFavorite(date: String, isFavorite: Boolean)
+
+    @Query("SELECT * FROM apods WHERE isFavorite = 1 ORDER BY date DESC")
+    fun getFavoriteApods(): Flow<List<ApodEntity>>
 }
 

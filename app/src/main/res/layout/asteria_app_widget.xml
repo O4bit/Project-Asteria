@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:contentDescription="Space Image" />
+        android:contentDescription="@string/widget_image_content_description" />
 
     <!-- Gradient overlay so text is highly legible -->
     <ImageView
@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-medium"
-            android:text="Date"
+            android:text="@string/widget_date_placeholder"
             android:textColor="#B3FFFFFF"
             android:textSize="12sp"
             android:textAllCaps="true" />
@@ -47,7 +47,7 @@
             android:ellipsize="end"
             android:fontFamily="sans-serif-medium"
             android:maxLines="2"
-            android:text="Project Asteria APOD"
+            android:text="@string/widget_title_placeholder"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -65,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
-                android:text="💫"
+                android:text="@string/widget_sparkle_emoji"
                 android:textSize="14sp" />
                 
             <TextView
@@ -75,7 +75,7 @@
                 android:ellipsize="end"
                 android:fontFamily="sans-serif"
                 android:maxLines="2"
-                android:text="Loading space discoveries..."
+                android:text="@string/widget_loading_text"
                 android:textColor="#E6FFFFFF"
                 android:textSize="13sp" />
                 

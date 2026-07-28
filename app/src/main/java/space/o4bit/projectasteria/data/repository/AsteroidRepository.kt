@@ -20,6 +20,8 @@ class AsteroidRepository(
     private val sortingPreferences: SortingPreferencesRepository,
     private val neoWsService: NasaNeoWsService = NasaNeoWsService.create()
 ) {
+    val allAsteroids: Flow<List<AsteroidEntity>> = asteroidDao.getAllAsteroids()
+
     val asteroids: Flow<List<AsteroidEntity>> = sortingPreferences.isAsteroidsClosest.flatMapLatest { isClosest ->
         if (isClosest) {
             asteroidDao.getClosestAsteroids()

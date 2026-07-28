@@ -14,6 +14,9 @@ interface LaunchDao {
     @Query("SELECT * FROM launches ORDER BY netMillis DESC")
     fun getNewestLaunches(): Flow<List<LaunchEntity>>
 
+    @Query("SELECT * FROM launches")
+    fun getAllLaunches(): Flow<List<LaunchEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLaunches(launches: List<LaunchEntity>)
 

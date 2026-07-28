@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,13 +84,18 @@ fun IssScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (state.location == null && state.errorMessage == null) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            PullToRefreshBox(
+                isRefreshing = false,
+                onRefresh = { viewModel.refresh() },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (state.location == null && state.errorMessage == null) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
 
                     if (state.errorMessage != null) {
                         Surface(
@@ -143,8 +149,8 @@ fun IssScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceEvenly
                                 ) {
-                                    DataItem("Latitude", String.format("%.4f°", position.latitude))
-                                    DataItem("Longitude", String.format("%.4f°", position.longitude))
+                                    DataItem("Latitude", String.format(java.util.Locale.US, "%.4f°", position.latitude))
+                                    DataItem("Longitude", String.format(java.util.Locale.US, "%.4f°", position.longitude))
                                 }
 
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -153,8 +159,8 @@ fun IssScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceEvenly
                                 ) {
-                                    DataItem("Altitude", "${String.format("%.2f", position.altitude)} km")
-                                    DataItem("Velocity", "${String.format("%.0f", position.velocity)} km/h")
+                                    DataItem("Altitude", "${String.format(java.util.Locale.US, "%.2f", position.altitude)} km")
+                                    DataItem("Velocity", "${String.format(java.util.Locale.US, "%.0f", position.velocity)} km/h")
                                 }
 
                                 Spacer(modifier = Modifier.height(24.dp))
@@ -185,6 +191,7 @@ fun IssScreen(
             }
         }
     }
+}
 }
 
 @Composable

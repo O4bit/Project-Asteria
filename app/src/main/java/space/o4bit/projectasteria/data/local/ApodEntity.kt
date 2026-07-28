@@ -19,7 +19,8 @@ data class ApodEntity(
     val thumbnail: String?,
     val shortFact: String,
     val notificationTitle: String,
-    val notificationBody: String
+    val notificationBody: String,
+    val isFavorite: Boolean = false
 ) {
     fun toEnhancedAstronomyPicture(): EnhancedAstronomyPicture {
         return EnhancedAstronomyPicture(
@@ -36,7 +37,8 @@ data class ApodEntity(
             ),
             shortFact = shortFact,
             notificationTitle = notificationTitle,
-            notificationBody = notificationBody
+            notificationBody = notificationBody,
+            isFavorite = isFavorite
         )
     }
 
@@ -54,7 +56,8 @@ data class ApodEntity(
                 thumbnail = enhanced.astronomyPicture.thumbnail,
                 shortFact = enhanced.shortFact,
                 notificationTitle = enhanced.notificationTitle,
-                notificationBody = enhanced.notificationBody
+                notificationBody = enhanced.notificationBody,
+                isFavorite = enhanced.isFavorite
             )
         }
     }

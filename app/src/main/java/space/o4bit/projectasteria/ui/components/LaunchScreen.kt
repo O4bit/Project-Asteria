@@ -1,52 +1,78 @@
 package space.o4bit.projectasteria.ui.components
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.runtime.saveable.rememberSaveable
+import android.content.Context
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.ui.draw.scale
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import space.o4bit.projectasteria.AsteriaApplication
 import space.o4bit.projectasteria.data.local.LaunchEntity
+import space.o4bit.projectasteria.data.model.LaunchSortBy
 import space.o4bit.projectasteria.data.repository.LaunchRepository
+import space.o4bit.projectasteria.data.worker.LaunchReminderWorker
+import space.o4bit.projectasteria.ui.viewmodels.LaunchUiState
+import space.o4bit.projectasteria.ui.viewmodels.LaunchViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import java.util.concurrent.TimeUnit
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.Data
-import space.o4bit.projectasteria.data.worker.LaunchReminderWorker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,31 +88,25 @@ fun LaunchScreen(
             sortingPreferences = application.sortingPreferences
         )
     }
+    val viewModel: LaunchViewModel = viewModel(
+        factory = LaunchViewModel.Factory(repository, application.backgroundPreferences)
+    )
 
-    val launches by repository.launches.collectAsState(initial = emptyList())
-    var isLoading by remember { mutableStateOf(launches.isEmpty()) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val uiState by viewModel.uiState.collectAsState()
+    val sortBy by viewModel.sortBy.collectAsState()
+    val sortDirection by viewModel.sortDirection.collectAsState()
+
+    var showSortSheet by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    val isAscending by application.sortingPreferences.isLaunchesAscending.collectAsState(initial = true)
-    val listState = rememberLazyListState()
+    val listState = rememberSaveable(sortBy, sortDirection, saver = LazyListState.Saver) {
+        LazyListState(0, 0)
+    }
     val snackbarHostState = remember { SnackbarHostState() }
 
-
     LaunchedEffect(Unit) {
-        if (launches.isEmpty()) {
-            scope.launch {
-                isLoading = true
-                errorMessage = null
-                try {
-                    repository.refreshUpcomingLaunches()
-                } catch (e: Exception) {
-                    errorMessage = e.message ?: "Failed to fetch launch data."
-                } finally {
-                    isLoading = false
-                }
-            }
-        }
+        viewModel.refresh()
     }
 
     Scaffold(
@@ -96,17 +116,6 @@ fun LaunchScreen(
             TopAppBar(
                 title = { Text("Upcoming Launches") },
                 actions = {
-                    FilterChip(
-                        selected = !isAscending,
-                        onClick = {
-                            scope.launch {
-                                application.sortingPreferences.toggleLaunchSort()
-                                listState.scrollToItem(0)
-                            }
-                        },
-                        label = { Text(if (isAscending) "Soonest" else "Latest") },
-                        modifier = Modifier.padding(end = 4.dp)
-                    )
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
@@ -118,61 +127,92 @@ fun LaunchScreen(
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (isLoading && launches.isEmpty()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (!errorMessage.isNullOrEmpty() && launches.isEmpty()) {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = errorMessage ?: "")
-                    Spacer(Modifier.height(16.dp))
-                    Button(onClick = {
-                        scope.launch {
-                            isLoading = true
-                            try {
-                                repository.refreshUpcomingLaunches()
-                                errorMessage = null
-                            } catch (e: Exception) {
-                                errorMessage = e.message
-                            } finally {
-                                isLoading = false
+            SortFilterHeader(
+                sortLabel = sortBy.label,
+                sortDirection = sortDirection,
+                onOpenSortSheet = { showSortSheet = true },
+                onToggleDirection = { viewModel.toggleDirection() }
+            )
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (val state = uiState) {
+                    is LaunchUiState.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    is LaunchUiState.Error -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = state.message)
+                            Spacer(Modifier.height(16.dp))
+                            Button(onClick = { viewModel.refresh() }) {
+                                Text("Retry")
                             }
                         }
-                    }) {
-                        Text("Retry")
                     }
-                }
-            } else if (launches.isEmpty()) {
-                Text(
-                    text = "No upcoming launches found.",
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn(
-                    state = listState,
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(launches, key = { it.id }) { launch ->
-                        LaunchCard(
-                            launch = launch,
-                            onClick = { onLaunchClick(launch.id) },
-                            onShowSnackbar = { message ->
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(message)
+                    is LaunchUiState.Success -> {
+                        if (state.launches.isEmpty()) {
+                            Text(
+                                text = "No upcoming launches found.",
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        } else {
+                            PullToRefreshBox(
+                                isRefreshing = isRefreshing,
+                                onRefresh = {
+                                    scope.launch {
+                                        isRefreshing = true
+                                        viewModel.refresh()
+                                        isRefreshing = false
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                LazyColumn(
+                                    state = listState,
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clipToBounds()
+                                ) {
+                                    items(
+                                        items = state.launches,
+                                        key = { "${sortBy.name}_${sortDirection.name}_${it.id}" }
+                                    ) { launch ->
+                                        LaunchCard(
+                                            launch = launch,
+                                            onClick = { onLaunchClick(launch.id) },
+                                            onShowSnackbar = { message ->
+                                                scope.launch {
+                                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                                    snackbarHostState.showSnackbar(message)
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
                             }
-                        )
+                        }
                     }
                 }
             }
+        }
+
+        if (showSortSheet) {
+            SortOptionBottomSheet(
+                options = LaunchSortBy.entries,
+                selectedOption = sortBy,
+                getOptionLabel = { it.label },
+                onOptionSelected = { viewModel.setSortBy(it) },
+                onDismissRequest = { showSortSheet = false }
+            )
         }
     }
 }
@@ -180,6 +220,7 @@ fun LaunchScreen(
 @Composable
 fun LaunchCard(
     launch: LaunchEntity,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     onShowSnackbar: (String) -> Unit = {}
 ) {
@@ -216,200 +257,113 @@ fun LaunchCard(
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "scale")
 
     space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .scale(scale)
+            .semantics(mergeDescendants = true) {}
             .clickable(
                 interactionSource = interactionSource,
                 indication = androidx.compose.foundation.LocalIndication.current,
                 onClick = onClick
             )
     ) {
-        Column {
-            if (!launch.image.isNullOrEmpty()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(launch.image)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Launch Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = launch.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+
+                IconButton(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        scope.launch {
+                            if (isReminded) {
+                                reminderPrefs.removeReminder(launch.id)
+                                cancelLaunchReminder(context, launch.id)
+                                onShowSnackbar("Reminder cancelled for ${launch.name}")
+                            } else {
+                                reminderPrefs.setReminder(launch.id)
+                                scheduleLaunchReminder(context, launch)
+                                onShowSnackbar("Reminder set 15m before ${launch.name}")
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (isReminded) Icons.Default.Notifications else Icons.Default.NotificationsOff,
+                        contentDescription = if (isReminded) "Cancel reminder" else "Set reminder",
+                        tint = if (isReminded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Launch Time: $formattedDate",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (!launch.providerName.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Provider: ${launch.providerName}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = launch.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Status",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Status: ${launch.statusName}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
+            if (!launch.locationName.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
-                    text = "Scheduled: $formattedDate",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "Location: ${launch.locationName}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
 
-                if (!launch.locationName.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Place,
-                            contentDescription = "Location",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = launch.locationName,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                if (!launch.missionDescription.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    var isExpanded by rememberSaveable { mutableStateOf(false) }
-                    Text(
-                        text = launch.missionDescription,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.animateContentSize()
-                    )
-                    TextButton(
-                        onClick = { isExpanded = !isExpanded },
-                        modifier = Modifier.align(Alignment.End),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(if (isExpanded) "Less" else "More")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    LaunchCountdownTimer(launchNet = launch.net)
-
-                    IconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            scope.launch {
-                                if (isReminded) {
-                                    reminderPrefs.removeReminder(launch.id)
-                                    WorkManager.getInstance(context)
-                                        .cancelAllWorkByTag("launch_reminder_${launch.id}")
-                                    onShowSnackbar("Reminder removed")
-                                } else {
-                                    reminderPrefs.setReminder(launch.id)
-                                    val data = Data.Builder()
-                                        .putString("launch_id", launch.id)
-                                        .putString("launch_name", launch.name)
-                                        .build()
-
-                                    val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-                                        timeZone = TimeZone.getTimeZone("UTC")
-                                    }
-                                    val targetDate = parser.parse(launch.net)?.time ?: return@launch
-                                    val delayMs = targetDate - TimeUnit.MINUTES.toMillis(15) - System.currentTimeMillis()
-
-                                    if (delayMs > 0) {
-                                        val workRequest = OneTimeWorkRequestBuilder<LaunchReminderWorker>()
-                                            .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
-                                            .setInputData(data)
-                                            .addTag("launch_reminder_${launch.id}")
-                                            .build()
-                                        WorkManager.getInstance(context).enqueue(workRequest)
-                                        onShowSnackbar("Reminder set for ${launch.name}")
-                                    }
-                                }
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (isReminded) Icons.Filled.Notifications else Icons.Outlined.Notifications,
-                            contentDescription = if (isReminded) "Cancel Reminder" else "Set Reminder",
-                            tint = if (isReminded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+            if (!launch.statusName.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Status: ${launch.statusName}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }
 }
 
+private fun scheduleLaunchReminder(context: Context, launch: LaunchEntity) {
+    val workManager = WorkManager.getInstance(context)
+    val delayMillis = launch.netMillis - System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(15)
 
-@Composable
-fun LaunchCountdownTimer(launchNet: String) {
-    var countdownText by remember { mutableStateOf("Calculating...") }
+    if (delayMillis > 0) {
+        val inputData = Data.Builder()
+            .putString("LAUNCH_ID", launch.id)
+            .putString("LAUNCH_NAME", launch.name)
+            .build()
 
-    LaunchedEffect(launchNet) {
-        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
-        }
-        val targetDate = parser.parse(launchNet)?.time ?: return@LaunchedEffect
+        val reminderWork = OneTimeWorkRequestBuilder<LaunchReminderWorker>()
+            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
+            .setInputData(inputData)
+            .addTag("reminder_${launch.id}")
+            .build()
 
-        while (isActive) {
-            val now = System.currentTimeMillis()
-            val diff = targetDate - now
-
-            if (diff <= 0) {
-                countdownText = "Launched!"
-                break
-            }
-
-            val days = TimeUnit.MILLISECONDS.toDays(diff)
-            val hours = TimeUnit.MILLISECONDS.toHours(diff) % 24
-            val minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
-            val seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60
-
-            countdownText = when {
-                days > 0 -> "T-Minus: ${days}d ${hours}h"
-                else -> "T-Minus: ${hours}h ${minutes}m ${seconds}s"
-            }
-
-            if (days > 0) {
-                delay(TimeUnit.HOURS.toMillis(1))
-            } else {
-                delay(1000)
-            }
-        }
+        workManager.enqueue(reminderWork)
     }
+}
 
-    Text(
-        text = countdownText,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.tertiary,
-        fontWeight = FontWeight.Bold
-    )
+private fun cancelLaunchReminder(context: Context, launchId: String) {
+    val workManager = WorkManager.getInstance(context)
+    workManager.cancelAllWorkByTag("reminder_$launchId")
 }

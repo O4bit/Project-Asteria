@@ -31,9 +31,9 @@ fun Color.darken(factor: Float): Color {
 fun Color.toHexString(includeAlpha: Boolean = false): String {
     val argb = toArgb()
     return if (includeAlpha) {
-        String.format("#%08X", argb)
+        String.format(java.util.Locale.US, "#%08X", argb)
     } else {
-        String.format("#%06X", argb and 0xFFFFFF)
+        String.format(java.util.Locale.US, "#%06X", argb and 0xFFFFFF)
     }
 }
 

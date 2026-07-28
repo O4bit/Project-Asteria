@@ -1,6 +1,8 @@
 package space.o4bit.projectasteria.data.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import space.o4bit.projectasteria.data.api.NasaApodService
 import space.o4bit.projectasteria.data.model.AstronomyPicture
@@ -172,9 +174,26 @@ class SpaceRepository(
     }
 
     suspend fun getPagedHistory(page: Int, pageSize: Int): List<EnhancedAstronomyPicture> {
-        return withContext(Dispatchers.IO) {
-            val offset = (page - 1) * pageSize
-            apodDao.getPagedApods(pageSize, offset).map { it.toEnhancedAstronomyPicture() }
+        val offset = (page - 1) * pageSize
+        return getHistory(limit = pageSize, offset = offset)
+    }
+
+    fun searchApods(query: String): Flow<List<EnhancedAstronomyPicture>> {
+        return apodDao.searchApods(query).map { list ->
+            list.map { it.toEnhancedAstronomyPicture() }
+        }
+    }
+
+    suspend fun setFavorite(date: String, isFavorite: Boolean) = withContext(Dispatchers.IO) {
+        apodDao.setFavorite(date, isFavorite)
+        if (memoryCache?.astronomyPicture?.date == date) {
+            memoryCache = memoryCache?.copy(isFavorite = isFavorite)
+        }
+    }
+
+    fun getFavoriteApods(): Flow<List<EnhancedAstronomyPicture>> {
+        return apodDao.getFavoriteApods().map { list ->
+            list.map { it.toEnhancedAstronomyPicture() }
         }
     }
 

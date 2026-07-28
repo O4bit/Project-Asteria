@@ -1,0 +1,5 @@
+- Redesigned Sort & Filter system for Asteroids and Launches with multi-criteria options
+- TalkBack accessibility pass with merged card semantics & 44dp+ touch targets
+- In-place APOD favorites toggle and history search bar
+- Pull-to-refresh data updates across all tabs
+- Diagnostic log exporter in Settings -> About

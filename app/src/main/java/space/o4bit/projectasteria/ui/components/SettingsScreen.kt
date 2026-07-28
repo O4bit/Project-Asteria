@@ -60,7 +60,8 @@ import space.o4bit.projectasteria.ui.components.settings.*
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onShowLicenses: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRequestNotificationPermission: () -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 3 })
@@ -116,7 +117,7 @@ fun SettingsScreen(
             ) { page ->
                 when (page) {
                     0 -> AppearanceTabContent()
-                    1 -> GeneralTabContent()
+                    1 -> GeneralTabContent(onRequestNotificationPermission = onRequestNotificationPermission)
                     2 -> AboutTabContent(onShowLicenses = onShowLicenses)
                 }
             }
@@ -258,7 +259,7 @@ fun AppearanceTabContent() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeneralTabContent() {
+fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val notificationPrefs = remember { NotificationPreferencesRepository(context) }
@@ -290,8 +291,11 @@ fun GeneralTabContent() {
                 action = {
                     Switch(
                         checked = dailyNotificationsEnabled,
-                        onCheckedChange = {
-                            coroutineScope.launch { notificationPrefs.updateDailyNotificationsEnabled(it) }
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                notificationPrefs.updateDailyNotificationsEnabled(enabled)
+                                if (enabled) onRequestNotificationPermission()
+                            }
                         }
                     )
                 }
@@ -299,7 +303,7 @@ fun GeneralTabContent() {
             AsteriaSettingsDivider()
             RichSettingsItem(
                 title = "Delivery Time",
-                subtitle = String.format("Notifications arrive daily at %02d:%02d", notificationHour, notificationMinute),
+                subtitle = String.format(java.util.Locale.US, "Notifications arrive daily at %02d:%02d", notificationHour, notificationMinute),
                 icon = Icons.Outlined.Build,
                 action = {
                     FilledTonalButton(
@@ -449,6 +453,35 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
                         context.startActivity(intent)
                     }) {
                         Text("Report")
+                    }
+                }
+            )
+        }
+
+        SectionTitle(title = "Diagnostics")
+        SectionCard {
+            var logCount by remember { mutableStateOf(space.o4bit.projectasteria.util.DiagnosticLogger.getLogCount()) }
+            RichSettingsItem(
+                title = "Share Diagnostic Log",
+                subtitle = "Export $logCount local log entries for troubleshooting",
+                action = {
+                    FilledTonalButton(onClick = {
+                        space.o4bit.projectasteria.util.DiagnosticLogger.shareLogs(context)
+                    }) {
+                        Text("Share Log")
+                    }
+                }
+            )
+            AsteriaSettingsDivider()
+            RichSettingsItem(
+                title = "Clear Logs",
+                subtitle = "Clear in-memory diagnostic buffer",
+                action = {
+                    OutlinedButton(onClick = {
+                        space.o4bit.projectasteria.util.DiagnosticLogger.clearLogs()
+                        logCount = space.o4bit.projectasteria.util.DiagnosticLogger.getLogCount()
+                    }) {
+                        Text("Clear")
                     }
                 }
             )

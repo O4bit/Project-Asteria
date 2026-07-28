@@ -23,8 +23,8 @@ import space.o4bit.projectasteria.ui.components.backgrounds.ShapesBackground
 
 @Composable
 fun AnimatedBackground(
-    type: BackgroundType = BackgroundType.DEFAULT,
     modifier: Modifier = Modifier,
+    type: BackgroundType = BackgroundType.DEFAULT,
     launchSpeedMultiplier: Float = 1f,
     content: @Composable BoxScope.() -> Unit
 ) {

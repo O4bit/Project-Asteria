@@ -14,6 +14,9 @@ interface AsteroidDao {
     @Query("SELECT * FROM asteroids ORDER BY missDistanceKm DESC")
     fun getFarthestAsteroids(): Flow<List<AsteroidEntity>>
 
+    @Query("SELECT * FROM asteroids")
+    fun getAllAsteroids(): Flow<List<AsteroidEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAsteroids(asteroids: List<AsteroidEntity>)
 
