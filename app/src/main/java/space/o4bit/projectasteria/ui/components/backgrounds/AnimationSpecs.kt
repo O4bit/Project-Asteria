@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Composable
@@ -88,8 +89,18 @@ fun rememberParallaxState(
             return@DisposableEffect onDispose { }
         }
 
+        // Throttle: only process sensor events max every 50ms (20fps is plenty for parallax)
+        var lastSensorMs = 0L
+        // Reuse a single Job per axis; cancel the previous one so we don't accumulate coroutines
+        var jobX: Job? = null
+        var jobY: Job? = null
+
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
+                val now = System.currentTimeMillis()
+                if (now - lastSensorMs < 50L) return   // throttle to ~20fps
+                lastSensorMs = now
+
                 if (!isCalibrated) {
                     baselineX = event.values[0]
                     baselineY = event.values[1]
@@ -106,7 +117,11 @@ fun rememberParallaxState(
                 val finalTiltY = if (kotlin.math.abs(rawTiltY) < deadzone) 0f
                     else rawTiltY - kotlin.math.sign(rawTiltY) * deadzone
 
-                coroutineScope.launch {
+                // Cancel previous jobs before launching new ones — prevents job accumulation
+                jobX?.cancel()
+                jobY?.cancel()
+
+                jobX = coroutineScope.launch {
                     smoothTiltX.animateTo(
                         targetValue = finalTiltX * (sensitivity * 0.35f),
                         animationSpec = spring(
@@ -115,7 +130,7 @@ fun rememberParallaxState(
                         )
                     )
                 }
-                coroutineScope.launch {
+                jobY = coroutineScope.launch {
                     smoothTiltY.animateTo(
                         targetValue = finalTiltY * (sensitivity * 0.35f),
                         animationSpec = spring(
@@ -128,7 +143,6 @@ fun rememberParallaxState(
 
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
                 // Re-calibrate baseline when sensor accuracy changes
-                // (e.g. device orientation changes, sensor is recalibrated)
                 if (accuracy == SensorManager.SENSOR_STATUS_ACCURACY_HIGH ||
                     accuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
                     isCalibrated = false
@@ -136,10 +150,13 @@ fun rememberParallaxState(
             }
         }
 
-        sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
+        // Use SENSOR_DELAY_UI instead of SENSOR_DELAY_GAME — still smooth enough for parallax
+        sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
 
         onDispose {
             sensorManager.unregisterListener(listener)
+            jobX?.cancel()
+            jobY?.cancel()
         }
     }
 

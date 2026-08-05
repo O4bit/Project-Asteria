@@ -35,9 +35,10 @@ fun ParticlesBackground(
         context = context, coroutineScope = coroutineScope
     )
 
+    // Reduced from 65 → 40 particles; still visually dense but ~63% fewer connection checks
     val particles = remember {
         mutableStateListOf<Particle>().apply {
-            repeat(65) {
+            repeat(40) {
                 val radius = when (Random.nextFloat()) {
                     in 0f..0.6f -> 2.5f + Random.nextFloat() * 3f
                     in 0.6f..0.9f -> 4f + Random.nextFloat() * 4f
@@ -92,20 +93,27 @@ fun ParticlesBackground(
     Canvas(modifier = modifier.fillMaxSize()) {
         val tiltX = parallaxState.tiltX.value
         val tiltY = parallaxState.tiltY.value
-        val connectDist = size.width * 0.22f
-        val connectDistSq = connectDist * connectDist
+        val parallaxStrength = 25f
 
-        val positions = particles.map { p ->
-            val parallaxStrength = 25f
+        // Pre-compute pixel positions once per frame
+        val positions = Array(particles.size) { i ->
+            val p = particles[i]
             Offset(
                 p.x * size.width + tiltX * parallaxStrength,
                 p.y * size.height + tiltY * parallaxStrength
             )
         }
 
+        // Optimized connection: use reduced connect distance (18% vs 22%) to significantly
+        // cut the number of pairs that pass the distance test — fewer drawLine calls
+        val connectDist = size.width * 0.18f
+        val connectDistSq = connectDist * connectDist
+
         for (i in particles.indices) {
             for (j in i + 1 until particles.size) {
                 val dx = positions[i].x - positions[j].x
+                // Early-exit on X before computing Y and doing sqrt — much cheaper
+                if (dx * dx > connectDistSq) continue
                 val dy = positions[i].y - positions[j].y
                 val distSq = dx * dx + dy * dy
                 if (distSq < connectDistSq) {
@@ -125,7 +133,7 @@ fun ParticlesBackground(
         particles.forEachIndexed { index, p ->
             val pos = positions[index]
             val color = when (p.colorIndex) { 0 -> primaryColor; 1 -> secondaryColor; else -> tertiaryColor }
-            drawCircle(color = color.copy(alpha = 0.55f * 0.2f), radius = p.radius * 2f, center = pos)
+            drawCircle(color = color.copy(alpha = 0.11f), radius = p.radius * 2f, center = pos)
             drawCircle(color = color.copy(alpha = 0.55f), radius = p.radius, center = pos)
         }
     }

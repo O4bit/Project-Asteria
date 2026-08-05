@@ -6,13 +6,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository
 import space.o4bit.projectasteria.ui.components.backgrounds.CirclesBackground
 import space.o4bit.projectasteria.ui.components.backgrounds.GridBackground
@@ -29,8 +28,10 @@ fun AnimatedBackground(
     content: @Composable BoxScope.() -> Unit
 ) {
     val context = LocalContext.current
-    val bgPrefs = BackgroundPreferencesRepository(context)
-    val enableParallax by bgPrefs.enableParallax.collectAsState(initial = true)
+    // remember prevents re-creating the repository (and re-subscribing DataStore) on every recompose
+    val bgPrefs = remember(context) { BackgroundPreferencesRepository(context) }
+    // collectAsStateWithLifecycle pauses collection when the app is in the background
+    val enableParallax by bgPrefs.enableParallax.collectAsStateWithLifecycle(initialValue = true)
 
     Surface(
         modifier = modifier
@@ -38,43 +39,43 @@ fun AnimatedBackground(
             .clipToBounds(),
         color = MaterialTheme.colorScheme.background
     ) {
-        androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
             when (type) {
-            BackgroundType.STARRY -> StarryBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax
-            ) {}
-            BackgroundType.SPACE -> SpaceBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax,
-                speedMultiplier = launchSpeedMultiplier
-            ) {}
-            BackgroundType.CIRCLES -> CirclesBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax
-            )
-            BackgroundType.RINGS -> RingsBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax
-            )
-            BackgroundType.MESH -> MeshBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax
-            )
-            BackgroundType.GRID -> GridBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax
-            )
-            BackgroundType.PARTICLES -> ParticlesBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax
-            )
-            BackgroundType.SHAPES -> ShapesBackground(
-                modifier = Modifier.fillMaxSize(),
-                enableParallax = enableParallax
-            )
-            BackgroundType.NONE -> {  }
-        }
+                BackgroundType.STARRY -> StarryBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax
+                ) {}
+                BackgroundType.SPACE -> SpaceBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax,
+                    speedMultiplier = launchSpeedMultiplier
+                ) {}
+                BackgroundType.CIRCLES -> CirclesBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax
+                )
+                BackgroundType.RINGS -> RingsBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax
+                )
+                BackgroundType.MESH -> MeshBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax
+                )
+                BackgroundType.GRID -> GridBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax
+                )
+                BackgroundType.PARTICLES -> ParticlesBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax
+                )
+                BackgroundType.SHAPES -> ShapesBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    enableParallax = enableParallax
+                )
+                BackgroundType.NONE -> {}
+            }
 
             content()
         }
