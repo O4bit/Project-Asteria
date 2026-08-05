@@ -122,7 +122,7 @@ fun AsteroidScreen(
                         shadowElevation = 4.dp
                     ) {
                         Text(
-                            text = "Asteroids",
+                            text = "Near-Earth Objects",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)

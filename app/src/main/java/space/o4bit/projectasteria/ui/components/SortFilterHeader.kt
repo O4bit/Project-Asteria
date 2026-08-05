@@ -154,8 +154,9 @@ fun <T> SortOptionBottomSheet(
     ) {
         Surface(
             shape = RoundedCornerShape(24.dp),
-            color = androidx.compose.ui.graphics.Color.Transparent,
-            shadowElevation = 0.dp,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.95f),
+            border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+            shadowElevation = 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
