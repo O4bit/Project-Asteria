@@ -99,31 +99,41 @@ fun rememberParallaxState(
                 val rawTiltX = event.values[0] - baselineX
                 val rawTiltY = event.values[1] - baselineY
 
-                val deadzone = 0.6f
-                val finalTiltX = if (kotlin.math.abs(rawTiltX) < deadzone) 0f else rawTiltX - kotlin.math.sign(rawTiltX) * deadzone
-                val finalTiltY = if (kotlin.math.abs(rawTiltY) < deadzone) 0f else rawTiltY - kotlin.math.sign(rawTiltY) * deadzone
+                // Tight deadzone — filters micro-tremor without killing responsiveness
+                val deadzone = 0.12f
+                val finalTiltX = if (kotlin.math.abs(rawTiltX) < deadzone) 0f
+                    else rawTiltX - kotlin.math.sign(rawTiltX) * deadzone
+                val finalTiltY = if (kotlin.math.abs(rawTiltY) < deadzone) 0f
+                    else rawTiltY - kotlin.math.sign(rawTiltY) * deadzone
 
                 coroutineScope.launch {
                     smoothTiltX.animateTo(
-                        targetValue = finalTiltX * (sensitivity * 0.2f),
+                        targetValue = finalTiltX * (sensitivity * 0.35f),
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
+                            stiffness = Spring.StiffnessVeryLow
                         )
                     )
                 }
                 coroutineScope.launch {
                     smoothTiltY.animateTo(
-                        targetValue = finalTiltY * (sensitivity * 0.2f),
+                        targetValue = finalTiltY * (sensitivity * 0.35f),
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
+                            stiffness = Spring.StiffnessVeryLow
                         )
                     )
                 }
             }
 
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // Re-calibrate baseline when sensor accuracy changes
+                // (e.g. device orientation changes, sensor is recalibrated)
+                if (accuracy == SensorManager.SENSOR_STATUS_ACCURACY_HIGH ||
+                    accuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
+                    isCalibrated = false
+                }
+            }
         }
 
         sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_GAME)

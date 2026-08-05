@@ -61,6 +61,18 @@
                 android:resource="@xml/asteria_app_widget_info" />
         </receiver>
 
+        <!-- ISS App Widget Provider -->
+        <receiver
+            android:name=".widget.IssAppWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/iss_app_widget_info" />
+        </receiver>
+
         <!-- Receiver to open app from widget with smooth animation -->
         <receiver
             android:name=".widget.WidgetClickReceiver"

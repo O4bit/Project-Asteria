@@ -1,13 +1,13 @@
 package space.o4bit.projectasteria.ui.viewmodels
 
 import io.mockk.coEvery
-import io.mockk.coThrows
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -65,10 +65,12 @@ class IssViewModelTest {
             fakePosition()
         }
         viewModel = IssViewModel(issRepository)
+        val collectJob = launch { viewModel.uiState.collect {} }
         val initial = viewModel.uiState.value
         assertNull("Initial location should be null", initial.location)
         assertFalse("Initial state should not be live", initial.isLive)
         assertNull("Initial state should have no error", initial.errorMessage)
+        collectJob.cancel()
     }
 
     @Test
@@ -76,6 +78,7 @@ class IssViewModelTest {
         val position = fakePosition()
         coEvery { issRepository.getIssPosition() } returns position
         viewModel = IssViewModel(issRepository)
+        val collectJob = launch { viewModel.uiState.collect {} }
         advanceTimeBy(500)
         val state = viewModel.uiState.value
         assertNotNull("Location should be populated", state.location)
@@ -83,17 +86,20 @@ class IssViewModelTest {
         assertEquals(position.longitude, state.location!!.longitude, 0.0001)
         assertTrue("State should be live after success", state.isLive)
         assertNull("No error on success", state.errorMessage)
+        collectJob.cancel()
     }
 
     @Test
     fun networkFailure_setsErrorMessage_andIsNotLive() = runTest {
-        coThrows(issRepository::getIssPosition, RuntimeException("Network timeout"))
+        coEvery { issRepository.getIssPosition() } throws RuntimeException("Network timeout")
         viewModel = IssViewModel(issRepository)
+        val collectJob = launch { viewModel.uiState.collect {} }
         advanceTimeBy(500)
         val state = viewModel.uiState.value
         assertFalse("Should not be live on error", state.isLive)
         assertNotNull("Should have error message", state.errorMessage)
         assertTrue(state.errorMessage!!.contains("Retrying", ignoreCase = true))
+        collectJob.cancel()
     }
 
     @Test
@@ -103,39 +109,39 @@ class IssViewModelTest {
             .returns(position)
             .andThenThrows(RuntimeException("Connection lost"))
         viewModel = IssViewModel(issRepository)
-        // First call succeeds
+        val collectJob = launch { viewModel.uiState.collect {} }
         advanceTimeBy(500)
         assertTrue(viewModel.uiState.value.isLive)
-        // Second call (after 3s polling delay) fails
-        advanceTimeBy(3500)
+        advanceTimeBy(60500)
         val stateAfterFailure = viewModel.uiState.value
         assertFalse(stateAfterFailure.isLive)
         assertNotNull("Previous location preserved on error", stateAfterFailure.location)
         assertEquals(position.latitude, stateAfterFailure.location!!.latitude, 0.0001)
+        collectJob.cancel()
     }
 
     @Test
     fun meaningfulChange_requiredToEmitNewState() = runTest {
         val pos1 = fakePosition(latitude = 51.5074, longitude = -0.1278)
-        // Tiny change below threshold (0.001 degrees)
         val pos2 = fakePosition(latitude = 51.50745, longitude = -0.12775)
-        // Meaningful change above threshold
         val pos3 = fakePosition(latitude = 51.515, longitude = -0.135)
         coEvery { issRepository.getIssPosition() }
             .returns(pos1)
             .andThen(pos2)
             .andThen(pos3)
         viewModel = IssViewModel(issRepository)
+        val collectJob = launch { viewModel.uiState.collect {} }
         advanceTimeBy(500)
         val stateAfterFirst = viewModel.uiState.value
+        assertNotNull(stateAfterFirst.location)
         assertEquals(pos1.latitude, stateAfterFirst.location!!.latitude, 0.0001)
-        advanceTimeBy(3500)   // tiny change — should NOT update
+        advanceTimeBy(60500)
         val stateAfterSecond = viewModel.uiState.value
-        // Position unchanged because delta was below threshold
         assertEquals(pos1.latitude, stateAfterSecond.location!!.latitude, 0.0001)
-        advanceTimeBy(3500)   // meaningful change — SHOULD update
+        advanceTimeBy(60500)
         val stateAfterThird = viewModel.uiState.value
         assertEquals(pos3.latitude, stateAfterThird.location!!.latitude, 0.0001)
+        collectJob.cancel()
     }
 
     @Test
@@ -143,10 +149,12 @@ class IssViewModelTest {
         val position = fakePosition()
         coEvery { issRepository.getIssPosition() } returns position
         viewModel = IssViewModel(issRepository)
+        val collectJob = launch { viewModel.uiState.collect {} }
         advanceTimeBy(500)
         assertTrue(viewModel.uiState.value.isLive)
         viewModel.refresh()
-        advanceUntilIdle()
+        advanceTimeBy(500)
         assertTrue(viewModel.uiState.value.isLive)
+        collectJob.cancel()
     }
 }

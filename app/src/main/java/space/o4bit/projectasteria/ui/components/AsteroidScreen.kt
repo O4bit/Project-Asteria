@@ -33,14 +33,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,6 +49,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
@@ -80,10 +82,10 @@ fun AsteroidScreen(
     }
     val viewModel: AsteroidViewModel = viewModel(factory = AsteroidViewModel.Factory(repository))
 
-    val uiState by viewModel.uiState.collectAsState()
-    val sortBy by viewModel.sortBy.collectAsState()
-    val sortDirection by viewModel.sortDirection.collectAsState()
-    val hazardousOnly by viewModel.hazardousOnly.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
+    val sortDirection by viewModel.sortDirection.collectAsStateWithLifecycle()
+    val hazardousOnly by viewModel.hazardousOnly.collectAsStateWithLifecycle()
 
     var showSortSheet by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -98,19 +100,42 @@ fun AsteroidScreen(
         viewModel.refresh()
     }
 
+    var browserUrl by remember { mutableStateOf<String?>(null) }
+
+    browserUrl?.let { url ->
+        InAppBrowserDialog(
+            url = url,
+            onDismiss = { browserUrl = null }
+        )
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Near-Earth Objects") },
+                title = {
+                    Surface(
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                        border = androidx.compose.foundation.BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        shadowElevation = 4.dp
+                    ) {
+                        Text(
+                            text = "Asteroids",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 )
             )
@@ -180,8 +205,7 @@ fun AsteroidScreen(
                                         AsteroidCard(
                                             asteroid = asteroid,
                                             onClick = {
-                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(asteroid.nasaJplUrl))
-                                                context.startActivity(intent)
+                                                browserUrl = asteroid.nasaJplUrl
                                             }
                                         )
                                     }
@@ -229,6 +253,7 @@ fun AsteroidCard(
         modifier = modifier
             .fillMaxWidth()
             .scale(scale)
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
             .semantics(mergeDescendants = true) {}
             .clickable(
                 interactionSource = interactionSource,

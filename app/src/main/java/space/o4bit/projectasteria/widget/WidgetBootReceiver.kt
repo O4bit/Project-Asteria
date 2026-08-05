@@ -15,6 +15,7 @@ class WidgetBootReceiver : BroadcastReceiver() {
                 Log.d(TAG, "Boot completed or app updated, scheduling widget updates")
                 WidgetUpdateWorker.schedulePeriodicUpdates(context)
                 WidgetAlarmManager.scheduleWidgetUpdate(context)
+                IssAppWidgetProvider.updateAllWidgets(context)
             }
         }
     }

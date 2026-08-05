@@ -1,85 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_main_card"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_background"
-    android:clipToOutline="true"
-    android:outlineProvider="background">
+    android:padding="6dp">
 
-    <!-- Edge to edge image -->
-    <ImageView
-        android:id="@+id/widget_image"
+    <RelativeLayout
+        android:id="@+id/widget_main_card"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/widget_image_content_description" />
+        android:background="@drawable/widget_background"
+        android:clipToOutline="true"
+        android:outlineProvider="background">
 
-    <!-- Gradient overlay so text is highly legible -->
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/widget_gradient_overlay" />
-
-    <!-- Bottom content container -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/widget_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
-            android:text="@string/widget_date_placeholder"
-            android:textColor="#B3FFFFFF"
-            android:textSize="12sp"
-            android:textAllCaps="true" />
-
-        <TextView
-            android:id="@+id/widget_title"
+        <!-- Edge to edge image -->
+        <ImageView
+            android:id="@+id/widget_image"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:ellipsize="end"
-            android:fontFamily="sans-serif-medium"
-            android:maxLines="2"
-            android:text="@string/widget_title_placeholder"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-            
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/widget_image_content_description" />
+
+        <!-- Gradient overlay so text is highly legible -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/widget_gradient_overlay" />
+
+        <!-- Bottom content container -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/widget_fact_background"
-            android:orientation="horizontal"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="8dp">
-            
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical"
+            android:padding="16dp">
+
             <TextView
+                android:id="@+id/widget_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:text="@string/widget_sparkle_emoji"
-                android:textSize="14sp" />
-                
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/widget_date_placeholder"
+                android:textColor="#B3FFFFFF"
+                android:textSize="12sp"
+                android:textAllCaps="true" />
+
             <TextView
-                android:id="@+id/widget_fact"
+                android:id="@+id/widget_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:ellipsize="end"
-                android:fontFamily="sans-serif"
+                android:fontFamily="sans-serif-medium"
                 android:maxLines="2"
-                android:text="@string/widget_loading_text"
-                android:textColor="#E6FFFFFF"
-                android:textSize="13sp" />
-                
-        </LinearLayout>
-    </LinearLayout>
+                android:text="@string/widget_title_placeholder"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-</RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/widget_fact_background"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/widget_sparkle_emoji"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/widget_fact"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif"
+                    android:maxLines="2"
+                    android:text="@string/widget_loading_text"
+                    android:textColor="#E6FFFFFF"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+</FrameLayout>

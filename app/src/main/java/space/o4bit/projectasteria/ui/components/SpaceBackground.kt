@@ -177,7 +177,8 @@ fun SpaceBackground(
                 val sizeFactor = perspectiveFactor * 0.65f
                 val finalSize = star.size * sizeFactor
 
-                val parallaxFactor = 1f / z.coerceAtLeast(0.1f)
+                // Clamp parallax so near-eye stars don't spike off-screen
+                val parallaxFactor = (1f / z.coerceAtLeast(0.1f)).coerceAtMost(400f)
                 val parallaxX = tiltX * 250f * parallaxFactor
                 val parallaxY = tiltY * 250f * parallaxFactor
 

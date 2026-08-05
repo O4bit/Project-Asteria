@@ -19,8 +19,13 @@ data class IssUiState(
     val location: IssPosition? = null,
     val isLive: Boolean = false,
     val lastUpdateTime: Long = 0L,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    /** Last N positions for orbit trail — newest first */
+    val orbitTrail: List<IssPosition> = emptyList()
 )
+
+/** Maximum orbit trail length (one position every ~3 s → ~60 points ≈ ~3 min of trail) */
+private const val MAX_TRAIL = 60
 
 class IssViewModel(
     private val repository: IssRepository = IssRepository()
@@ -35,9 +40,10 @@ class IssViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<IssUiState> = refreshTrigger.flatMapLatest {
         flow {
-            var currentDelay = 3000L
-            val maxDelay = 60000L
+            var currentDelay = 60000L
+            val maxDelay = 300000L
             var lastLocation: IssPosition? = null
+            val trail = ArrayDeque<IssPosition>(MAX_TRAIL)
 
             if (lastLocation == null) {
                 emit(IssUiState(location = null, isLive = false, errorMessage = null))
@@ -48,22 +54,27 @@ class IssViewModel(
                     val location = repository.getIssPosition()
 
                     if (hasMeaningfulChange(lastLocation, location)) {
+                        // Prepend new position to trail, trim to MAX_TRAIL
+                        trail.addFirst(location)
+                        if (trail.size > MAX_TRAIL) trail.removeLast()
+
                         emit(IssUiState(
                             location = location,
                             isLive = true,
                             lastUpdateTime = System.currentTimeMillis(),
-                            errorMessage = null
+                            errorMessage = null,
+                            orbitTrail = trail.toList()
                         ))
                         lastLocation = location
-                    } else {
                     }
-                    currentDelay = 3000L
+                    currentDelay = 60000L
                 } catch (e: Exception) {
                     emit(IssUiState(
                         location = lastLocation,
                         isLive = false,
                         lastUpdateTime = System.currentTimeMillis(),
-                        errorMessage = "Signal lost. Retrying in ${currentDelay/1000}s..."
+                        errorMessage = "Signal lost. Retrying in ${currentDelay/1000}s...",
+                        orbitTrail = trail.toList()
                     ))
                     currentDelay = (currentDelay * 2).coerceAtMost(maxDelay)
                 }

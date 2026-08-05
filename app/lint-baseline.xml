@@ -48,19 +48,19 @@
         errorLine2="        ~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="51"
+            line="38"
             column="9"/>
     </issue>
 
     <issue
         id="QueryPermissionsNeeded"
         message="Consider adding a `&lt;queries>` declaration to your manifest when calling this method; see https://g.co/dev/packagevisibility for details"
-        errorLine1="                                        if (intent.resolveActivity(context.packageManager) != null) {"
-        errorLine2="                                                   ~~~~~~~~~~~~~~~">
+        errorLine1="                            if (intent.resolveActivity(context.packageManager) != null) {"
+        errorLine2="                                       ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/components/IssScreen.kt"
-            line="173"
-            column="52"/>
+            line="232"
+            column="40"/>
     </issue>
 
     <issue
@@ -92,8 +92,30 @@
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/AsteriaApp.kt"
-            line="380"
+            line="411"
             column="22"/>
+    </issue>
+
+    <issue
+        id="FlowOperatorInvokedInComposition"
+        message="Flow operator functions should not be invoked within composition"
+        errorLine1="                    val isPinned by bgPrefs.pinnedLaunchIds.map { it.contains(launch.id) }.collectAsStateWithLifecycle(initialValue = false)"
+        errorLine2="                                                            ~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/ui/components/LaunchScreen.kt"
+            line="302"
+            column="61"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/ui/ImmersiveApodContent.kt"
+            line="66"
+            column="5"/>
     </issue>
 
     <issue
@@ -21659,7 +21681,7 @@
         errorLine2="                                ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/components/FullscreenImageViewer.kt"
-            line="208"
+            line="228"
             column="33"/>
     </issue>
 
@@ -21670,8 +21692,19 @@
         errorLine2="                            ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/components/FullscreenImageViewer.kt"
-            line="390"
+            line="410"
             column="29"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+        errorLine1="    var progress by remember { mutableStateOf(0) }"
+        errorLine2="                               ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/ui/components/InAppBrowserDialog.kt"
+            line="42"
+            column="32"/>
     </issue>
 
     <issue
@@ -21681,8 +21714,19 @@
         errorLine2="                                       ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/components/SettingsScreen.kt"
-            line="463"
+            line="541"
             column="40"/>
+    </issue>
+
+    <issue
+        id="DisableBaselineAlignment"
+        message="Set `android:baselineAligned=&quot;false&quot;` on this element for better performance"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="67"
+            column="10"/>
     </issue>
 
     <issue
@@ -24223,6 +24267,35 @@
     </issue>
 
     <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.world_map_dark` appears to be unused">
+        <location
+            file="src/main/res/drawable/world_map_dark.jpg"/>
+    </issue>
+
+    <issue
+        id="UselessParent"
+        message="This `RelativeLayout` layout or its `FrameLayout` parent is possibly unnecessary; transfer the `background` attribute to the other view"
+        errorLine1="    &lt;RelativeLayout"
+        errorLine2="     ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/asteria_app_widget.xml"
+            line="8"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="UselessParent"
+        message="This `LinearLayout` layout or its `FrameLayout` parent is possibly unnecessary; transfer the `background` attribute to the other view"
+        errorLine1="    &lt;LinearLayout"
+        errorLine2="     ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="9"
+            column="6"/>
+    </issue>
+
+    <issue
         id="TypographyEllipsis"
         message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?"
         errorLine1="  &lt;string name=&quot;calculating&quot;>&quot;Bereken tans...&quot;&lt;/string>"
@@ -24741,6 +24814,13 @@
     </issue>
 
     <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/world_map_dark.jpg` in densityless folder">
+        <location
+            file="src/main/res/drawable/world_map_dark.jpg"/>
+    </issue>
+
+    <issue
         id="IconDuplicates"
         message="The following unrelated icon files have identical contents: ic_launcher.webp, ic_launcher_round.webp">
         <location
@@ -24786,58 +24866,355 @@
     </issue>
 
     <issue
+        id="SmallSp"
+        message="Avoid using sizes smaller than `11sp`: `10sp`"
+        errorLine1="                android:textSize=&quot;10sp&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="45"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="SmallSp"
+        message="Avoid using sizes smaller than `11sp`: `9sp`"
+        errorLine1="                    android:textSize=&quot;9sp&quot; />"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="83"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="SmallSp"
+        message="Avoid using sizes smaller than `11sp`: `9sp`"
+        errorLine1="                    android:textSize=&quot;9sp&quot; />"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="106"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="SmallSp"
+        message="Avoid using sizes smaller than `11sp`: `9sp`"
+        errorLine1="                    android:textSize=&quot;9sp&quot; />"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="129"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="SmallSp"
+        message="Avoid using sizes smaller than `11sp`: `9sp`"
+        errorLine1="                    android:textSize=&quot;9sp&quot; />"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="152"
+            column="21"/>
+    </issue>
+
+    <issue
         id="UseKtx"
         message="Use the KTX extension function `String.toUri` instead?"
-        errorLine1="                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(imageUrl)))"
-        errorLine2="                                                                                 ~~~~~~~~~~~~~~~~~~~">
+        errorLine1="                                val domain = try { Uri.parse(currentUrl).host ?: currentUrl } catch (_: Exception) { currentUrl }"
+        errorLine2="                                                   ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/space/o4bit/projectasteria/ui/components/ApodDetailScreen.kt"
-            line="266"
+            file="src/main/java/space/o4bit/projectasteria/ui/components/InAppBrowserDialog.kt"
+            line="90"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))"
+        errorLine2="                                                                            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/ui/components/InAppBrowserDialog.kt"
+            line="132"
+            column="77"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))"
+        errorLine2="                                                                    ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/ui/components/IssScreen.kt"
+            line="230"
+            column="69"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(webUri)))"
+        errorLine2="                                                                                 ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/ui/components/IssScreen.kt"
+            line="236"
             column="82"/>
     </issue>
 
     <issue
         id="UseKtx"
-        message="Use the KTX extension function `String.toUri` instead?"
-        errorLine1="                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(asteroid.nasaJplUrl))"
-        errorLine2="                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="Use the KTX function `createBitmap` instead?"
+        errorLine1="        val bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/space/o4bit/projectasteria/ui/components/AsteroidScreen.kt"
-            line="164"
-            column="73"/>
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="27"
+            column="22"/>
     </issue>
 
     <issue
         id="UseKtx"
-        message="Use the KTX extension function `String.toUri` instead?"
-        errorLine1="                                            android.net.Uri.parse(imageUrl)"
-        errorLine2="                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                Color.parseColor(&quot;#0D223A&quot;),"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/space/o4bit/projectasteria/ui/components/AstronomyPictureCard.kt"
-            line="149"
-            column="45"/>
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="36"
+            column="17"/>
     </issue>
 
     <issue
         id="UseKtx"
-        message="Use the KTX extension function `String.toUri` instead?"
-        errorLine1="                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))"
-        errorLine2="                                                                                ~~~~~~~~~~~~~~">
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                Color.parseColor(&quot;#0D223A&quot;),"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/space/o4bit/projectasteria/ui/components/IssScreen.kt"
-            line="171"
-            column="81"/>
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="36"
+            column="17"/>
     </issue>
 
     <issue
         id="UseKtx"
-        message="Use the KTX extension function `String.toUri` instead?"
-        errorLine1="                                            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(webUri))"
-        errorLine2="                                                                                       ~~~~~~~~~~~~~~~~~">
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                Color.parseColor(&quot;#050B16&quot;),"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/space/o4bit/projectasteria/ui/components/IssScreen.kt"
-            line="177"
-            column="88"/>
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="37"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                Color.parseColor(&quot;#050B16&quot;),"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="37"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#1B3D63&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="45"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#1B3D63&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="45"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#38BDF8&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="62"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#38BDF8&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="62"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                color = Color.parseColor(&quot;#F43F5E&quot;)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="85"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                color = Color.parseColor(&quot;#F43F5E&quot;)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="85"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                color = Color.parseColor(&quot;#F43F5E&quot;)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="102"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="                color = Color.parseColor(&quot;#F43F5E&quot;)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="102"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#132B45&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="139"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#132B45&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="139"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#38BDF8&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="144"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#38BDF8&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="144"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#0284C7&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="151"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#0284C7&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="151"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#01040A&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="279"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#01040A&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="279"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#F59E0B&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="287"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="            color = Color.parseColor(&quot;#F59E0B&quot;)"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/space/o4bit/projectasteria/widget/IssWidgetMapRenderer.kt"
+            line="287"
+            column="21"/>
     </issue>
 
     <issue
@@ -24847,7 +25224,7 @@
         errorLine2="                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/components/SettingsScreen.kt"
-            line="418"
+            line="496"
             column="70"/>
     </issue>
 
@@ -24858,7 +25235,7 @@
         errorLine2="                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/components/SettingsScreen.kt"
-            line="433"
+            line="511"
             column="70"/>
     </issue>
 
@@ -24869,19 +25246,140 @@
         errorLine2="                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/components/SettingsScreen.kt"
-            line="452"
+            line="530"
             column="65"/>
     </issue>
 
     <issue
         id="ContentDescription"
         message="Missing `contentDescription` attribute on image"
-        errorLine1="    &lt;ImageView"
-        errorLine2="     ~~~~~~~~~">
+        errorLine1="        &lt;ImageView"
+        errorLine2="         ~~~~~~~~~">
         <location
             file="src/main/res/layout/asteria_app_widget.xml"
-            line="19"
-            column="6"/>
+            line="25"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;ISS SATELLITE TELEMETRY&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;ISS SATELLITE TELEMETRY&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="30"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;LIVE&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;LIVE&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="43"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;ISS Vector World Map&quot;, should use `@string` resource"
+        errorLine1="                android:contentDescription=&quot;ISS Vector World Map&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="62"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;LAT&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;LAT&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="81"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;51.51°&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;51.51°&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="89"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;LON&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;LON&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="104"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;-0.13°&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;-0.13°&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="112"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;ALT&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;ALT&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="127"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;420 km&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;420 km&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="135"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;SPEED&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;SPEED&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="150"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;27,600 km/h&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;27,600 km/h&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/iss_app_widget_layout.xml"
+            line="158"
+            column="21"/>
     </issue>
 
 </issues>

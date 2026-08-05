@@ -328,6 +328,84 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
             )
         }
 
+        SectionTitle(title = "ISS & Pinned Launch Settings")
+
+        SectionCard {
+            val autoRemovePinned by backgroundPrefs.autoRemovePinnedLaunches.collectAsState(initial = false)
+            val widgetInterval by backgroundPrefs.issWidgetUpdateIntervalHours.collectAsState(initial = 1)
+            val pinnedIds by backgroundPrefs.pinnedLaunchIds.collectAsState(initial = emptySet())
+
+            RichSettingsItem(
+                title = "Auto-Remove Launched Missions",
+                subtitle = "Automatically unpin missions from Home after liftoff",
+                icon = Icons.Outlined.RocketLaunch,
+                action = {
+                    Switch(
+                        checked = autoRemovePinned,
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                backgroundPrefs.updateAutoRemovePinnedLaunches(enabled)
+                            }
+                        }
+                    )
+                }
+            )
+
+            AsteriaSettingsDivider()
+
+            var showIntervalDropdown by remember { mutableStateOf(false) }
+
+            Box {
+                RichSettingsItem(
+                    title = "ISS Widget Refresh Rate",
+                    subtitle = "Update background ISS location every $widgetInterval hour(s)",
+                    icon = Icons.Outlined.Build,
+                    action = {
+                        FilledTonalButton(onClick = { showIntervalDropdown = true }) {
+                            Text("${widgetInterval}h")
+                        }
+                    }
+                )
+
+                DropdownMenu(
+                    expanded = showIntervalDropdown,
+                    onDismissRequest = { showIntervalDropdown = false }
+                ) {
+                    listOf(1, 2, 3, 6).forEach { interval ->
+                        DropdownMenuItem(
+                            text = { Text("$interval Hour${if (interval > 1) "s" else ""}") },
+                            onClick = {
+                                coroutineScope.launch {
+                                    backgroundPrefs.updateIssWidgetUpdateIntervalHours(interval)
+                                }
+                                showIntervalDropdown = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            if (pinnedIds.isNotEmpty()) {
+                AsteriaSettingsDivider()
+                RichSettingsItem(
+                    title = "Clear Pinned Home Launches",
+                    subtitle = "${pinnedIds.size} launch(es) currently pinned to Home",
+                    icon = Icons.Outlined.RocketLaunch,
+                    action = {
+                        TextButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pinnedIds.forEach { id -> backgroundPrefs.removePinnedLaunch(id) }
+                                }
+                            }
+                        ) {
+                            Text("Clear All")
+                        }
+                    }
+                )
+            }
+        }
+
         SectionTitle(title = "Launch Alerts")
         SectionCard {
             RichSettingsItem(
@@ -401,7 +479,7 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
         SectionCard {
             RichSettingsItem(
                 title = "Version",
-                subtitle = "4.2.0-Release"
+                subtitle = "v${space.o4bit.projectasteria.BuildConfig.VERSION_NAME} (Build ${space.o4bit.projectasteria.BuildConfig.VERSION_CODE})"
             )
             AsteriaSettingsDivider()
             BaseSettingsItem(

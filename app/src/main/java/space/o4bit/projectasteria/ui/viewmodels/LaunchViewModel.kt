@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import space.o4bit.projectasteria.data.local.LaunchEntity
 import space.o4bit.projectasteria.data.model.LaunchSortBy
@@ -80,11 +81,11 @@ class LaunchViewModel(
     )
 
     fun setSortBy(sortBy: LaunchSortBy) {
-        _sortBy.value = sortBy
+        _sortBy.update { sortBy }
     }
 
     fun toggleDirection() {
-        _sortDirection.value = _sortDirection.value.toggle()
+        _sortDirection.update { it.toggle() }
     }
 
     fun refresh() {

@@ -23,7 +23,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Settings
+import kotlinx.coroutines.flow.map
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,14 +35,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
@@ -92,9 +96,9 @@ fun LaunchScreen(
         factory = LaunchViewModel.Factory(repository, application.backgroundPreferences)
     )
 
-    val uiState by viewModel.uiState.collectAsState()
-    val sortBy by viewModel.sortBy.collectAsState()
-    val sortDirection by viewModel.sortDirection.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
+    val sortDirection by viewModel.sortDirection.collectAsStateWithLifecycle()
 
     var showSortSheet by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -114,14 +118,28 @@ fun LaunchScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Upcoming Launches") },
+                title = {
+                    Surface(
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                        border = androidx.compose.foundation.BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        shadowElevation = 4.dp
+                    ) {
+                        Text(
+                            text = "Upcoming Launches",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 )
             )
@@ -227,10 +245,11 @@ fun LaunchCard(
     val context = LocalContext.current
     val application = context.applicationContext as AsteriaApplication
     val reminderPrefs = remember { application.reminderPreferences }
+    val bgPrefs = remember { application.backgroundPreferences }
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    val remindedIds by reminderPrefs.remindedLaunchIds.collectAsState(initial = emptySet())
+    val remindedIds by reminderPrefs.remindedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
     val isReminded = remindedIds.contains(launch.id)
 
     val formattedDate = remember(launch.net) {
@@ -260,6 +279,7 @@ fun LaunchCard(
         modifier = modifier
             .fillMaxWidth()
             .scale(scale)
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
             .semantics(mergeDescendants = true) {}
             .clickable(
                 interactionSource = interactionSource,
@@ -280,27 +300,46 @@ fun LaunchCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        scope.launch {
-                            if (isReminded) {
-                                reminderPrefs.removeReminder(launch.id)
-                                cancelLaunchReminder(context, launch.id)
-                                onShowSnackbar("Reminder cancelled for ${launch.name}")
-                            } else {
-                                reminderPrefs.setReminder(launch.id)
-                                scheduleLaunchReminder(context, launch)
-                                onShowSnackbar("Reminder set 15m before ${launch.name}")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val isPinned by bgPrefs.pinnedLaunchIds.map { it.contains(launch.id) }.collectAsStateWithLifecycle(initialValue = false)
+                    IconButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            scope.launch {
+                                bgPrefs.togglePinLaunch(launch.id)
+                                onShowSnackbar(if (isPinned) "Unpinned from Home" else "Pinned ${launch.name} to Home")
                             }
                         }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PushPin,
+                            contentDescription = if (isPinned) "Unpin from Home" else "Pin to Home",
+                            tint = if (isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = if (isReminded) Icons.Default.Notifications else Icons.Default.NotificationsOff,
-                        contentDescription = if (isReminded) "Cancel reminder" else "Set reminder",
-                        tint = if (isReminded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
+                    IconButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            scope.launch {
+                                if (isReminded) {
+                                    reminderPrefs.removeReminder(launch.id)
+                                    cancelLaunchReminder(context, launch.id)
+                                    onShowSnackbar("Reminder cancelled for ${launch.name}")
+                                } else {
+                                    reminderPrefs.setReminder(launch.id)
+                                    scheduleLaunchReminder(context, launch)
+                                    onShowSnackbar("Reminder set 15m before ${launch.name}")
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isReminded) Icons.Default.Notifications else Icons.Default.NotificationsOff,
+                            contentDescription = if (isReminded) "Cancel reminder" else "Set reminder",
+                            tint = if (isReminded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 

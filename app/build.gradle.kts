@@ -10,17 +10,6 @@ plugins {
 }
 
 
-gradle.taskGraph.whenReady {
-    tasks.forEach { task ->
-        if (task.name.contains("test", ignoreCase = true) ||
-            task.name.contains("Test", ignoreCase = true) ||
-            task.name.contains("ArtProfile", ignoreCase = true) ||
-            task.name.contains("baselineProfile", ignoreCase = true)) {
-            task.enabled = false
-        }
-    }
-}
-
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
@@ -47,8 +36,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "space.o4bit.projectasteria.foss"
         minSdk = 31
         targetSdk = 36
-        versionCode = 49
-        versionName = "4.4.0"
+        versionCode = 50
+        versionName = "4.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -114,6 +103,9 @@ extensions.configure<ApplicationExtension> {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+        unitTests.all {
+            it.maxHeapSize = "2048m"
+        }
     }
 
     lint {

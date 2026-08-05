@@ -254,45 +254,23 @@ private fun ApodMediaHeader(
             )
         }
         mediaType == "video" -> {
-            val thumbUrl = thumbnail ?: extractYouTubeThumbnailUrl(imageUrl)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(320.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .clickable {
-                        if (imageUrl != null) {
-                            try {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(imageUrl)))
-                            } catch (_: Exception) { }
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                if (thumbUrl != null) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(thumbUrl)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Video Thumbnail",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.matchParentSize()
-                    )
-                }
+            val videoUrl = url ?: hdUrl
+            if (videoUrl != null) {
+                ApodVideoPlayer(
+                    videoUrl = videoUrl,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp)
+                )
+            } else {
                 Box(
                     modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.6f)),
+                        .fillMaxWidth()
+                        .height(320.dp)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Play video",
-                        tint = Color.White,
-                        modifier = Modifier.size(40.dp)
-                    )
+                    Text("Video unavailable")
                 }
             }
         }

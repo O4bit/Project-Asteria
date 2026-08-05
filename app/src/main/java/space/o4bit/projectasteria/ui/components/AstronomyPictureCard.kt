@@ -1,23 +1,28 @@
 package space.o4bit.projectasteria.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Favorite
@@ -26,32 +31,27 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.ui.draw.scale
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -59,9 +59,17 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
+import space.o4bit.projectasteria.ui.components.settings.AsteriaCard
 import space.o4bit.projectasteria.ui.navigation.sharedElementIfAvailable
 import space.o4bit.projectasteria.utils.TextUtils
 
+/**
+ * Premium APOD Picture Card.
+ *
+ * Designed with a clean, unobscured image preview (no dark gradient masks covering the photo),
+ * accompanied by metadata, short fact box, and sleek tonal action buttons cleanly presented
+ * in the card container below the image.
+ */
 @Composable
 fun AstronomyPictureCard(
     enhancedPicture: EnhancedAstronomyPicture,
@@ -73,7 +81,6 @@ fun AstronomyPictureCard(
 ) {
     val astronomyPicture = enhancedPicture.astronomyPicture
     var isImageLoaded by remember { mutableStateOf(false) }
-    var showContent by remember { mutableStateOf(false) }
 
     val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
     val displayFormat = java.text.SimpleDateFormat("MMMM d, yyyy", java.util.Locale.US)
@@ -84,21 +91,14 @@ fun AstronomyPictureCard(
         astronomyPicture.date
     }
 
-    LaunchedEffect(isImageLoaded) {
-        if (isImageLoaded) {
-            delay(300)
-            showContent = true
-        }
-    }
-
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, label = "scale")
+    val scale by animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, label = "card_scale")
 
-    space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
+    AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .scale(scale)
             .clickable(
                 interactionSource = interactionSource,
@@ -106,100 +106,93 @@ fun AstronomyPictureCard(
                 onClick = onCardClick
             )
     ) {
-        Box(
+        Column(
             modifier = Modifier.fillMaxWidth()
         ) {
             val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
             val isVideo = astronomyPicture.mediaType == "video"
             val context = LocalContext.current
 
-            when {
-                !isVideo && imageUrl != null -> {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(imageUrl)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = astronomyPicture.title,
-                        contentScale = ContentScale.Crop,
-                        onSuccess = { isImageLoaded = true },
-                        onError = {
-                            isImageLoaded = true
-                        },
-                        modifier = Modifier
-                            .sharedElementIfAvailable("apod-image-${astronomyPicture.date}")
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                    )
-                }
-                isVideo -> {
-                    val thumbnailUrl = astronomyPicture.thumbnail ?: extractYouTubeThumbnail(imageUrl)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable {
-                                if (imageUrl != null) {
-                                    try {
-                                        val intent = android.content.Intent(
-                                            android.content.Intent.ACTION_VIEW,
-                                            android.net.Uri.parse(imageUrl)
-                                        )
-                                        context.startActivity(intent)
-                                    } catch (_: Exception) { }
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (thumbnailUrl != null) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(thumbnailUrl)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = "Video Thumbnail",
-                                contentScale = ContentScale.Crop,
-                                onSuccess = { isImageLoaded = true },
-                                onError = { isImageLoaded = true },
-                                modifier = Modifier.matchParentSize()
+            // ── 1. Unobscured Media Preview ──────────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                when {
+                    !isVideo && imageUrl != null -> {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(imageUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = astronomyPicture.title,
+                            contentScale = ContentScale.Crop,
+                            onSuccess = { isImageLoaded = true },
+                            onError = { isImageLoaded = true },
+                            modifier = Modifier
+                                .sharedElementIfAvailable("apod-image-${astronomyPicture.date}")
+                                .fillMaxSize()
+                        )
+                    }
+                    isVideo -> {
+                        val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
+                        var isPlayingInline by remember { mutableStateOf(false) }
+
+                        if (isPlayingInline && videoUrl != null) {
+                            ApodVideoPlayer(
+                                videoUrl = videoUrl,
+                                modifier = Modifier.fillMaxSize()
                             )
                         } else {
-                            LaunchedEffect(Unit) { delay(300); isImageLoaded = true }
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.6f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = "Play video",
-                                tint = Color.White,
-                                modifier = Modifier.size(40.dp)
-                            )
+                            val thumbnailUrl = astronomyPicture.thumbnail ?: extractYouTubeThumbnail(imageUrl)
+                            if (thumbnailUrl != null) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(thumbnailUrl)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Video Thumbnail",
+                                    contentScale = ContentScale.Crop,
+                                    onSuccess = { isImageLoaded = true },
+                                    onError = { isImageLoaded = true },
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable { isPlayingInline = true }
+                                )
+                            } else {
+                                LaunchedEffect(Unit) { isImageLoaded = true }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .align(Alignment.Center)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.65f))
+                                    .clickable { isPlayingInline = true },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = "Play video",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
                         }
                     }
-                }
-                else -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    else -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Icon(
                                 imageVector = Icons.Rounded.Info,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -208,164 +201,139 @@ fun AstronomyPictureCard(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                        LaunchedEffect(Unit) { isImageLoaded = true }
                     }
-                    LaunchedEffect(Unit) { delay(300); isImageLoaded = true }
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-                            )
-                        )
-                    )
-                    .clip(RoundedCornerShape(24.dp))
-            )
-
+            // ── 2. Clean Metadata & Actions Below Image ────────────────────────
             Column(
                 modifier = Modifier
-                    .matchParentSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-                AnimatedVisibility(
-                    visible = showContent,
-                    enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }
+                // Header row: Date pill & Favorite heart button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f))
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        Icon(
+                            imageVector = Icons.Rounded.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = formattedDate,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Favorite Button
+                    val isFav = enhancedPicture.isFavorite
+                    IconButton(
+                        onClick = { onToggleFavorite(!isFav) },
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(if (isFav) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .size(38.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isFav) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = if (isFav) "Remove from favorites" else "Add to favorites",
+                            tint = if (isFav) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Title & Action Icon Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = astronomyPicture.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        FilledTonalIconButton(
+                            onClick = onAddToHomeScreenClick,
+                            modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.DateRange,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = formattedDate,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                painter = painterResource(id = R.drawable.baseline_widgets_24),
+                                contentDescription = "Add to Home Screen",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
 
-                        IconButton(
-                            onClick = { onToggleFavorite(!enhancedPicture.isFavorite) },
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f))
-                                .size(44.dp)
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        FilledTonalIconButton(
+                            onClick = onShareClick,
+                            modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
-                                imageVector = if (enhancedPicture.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                                contentDescription = if (enhancedPicture.isFavorite) "Remove from favorites" else "Add to favorites",
-                                tint = if (enhancedPicture.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(22.dp)
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                 }
 
-                AnimatedVisibility(
-                    visible = showContent,
-                    enter = fadeIn(tween(700)) + slideInVertically(tween(700)) { it / 2 }
-                ) {
-                    Column {
+                // Short Fact Box (if available)
+                if (enhancedPicture.shortFact.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    var factExpanded by remember { mutableStateOf(false) }
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { factExpanded = !factExpanded }
+                    ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Bottom
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = astronomyPicture.title,
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f)
+                            Icon(
+                                imageVector = Icons.Rounded.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(18.dp)
                             )
-
-                            Row {
-                                FilledTonalIconButton(
-                                    onClick = onAddToHomeScreenClick,
-                                    modifier = Modifier.size(40.dp)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.baseline_widgets_24),
-                                        contentDescription = "Add to Home Screen",
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                FilledTonalIconButton(
-                                    onClick = onShareClick,
-                                    modifier = Modifier.size(40.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Share,
-                                        contentDescription = "Share",
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        var factExpanded by remember { mutableStateOf(false) }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f))
-                                .clickable { factExpanded = !factExpanded }
-                                .padding(12.dp)
-                        ) {
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Info,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = enhancedPicture.shortFact,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        maxLines = if (factExpanded) Int.MAX_VALUE else 2,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-
-                                if (factExpanded || enhancedPicture.shortFact.length > 80) {
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = if (factExpanded) "Tap to collapse" else "Tap to expand",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier.align(Alignment.End)
-                                    )
-                                }
-                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = enhancedPicture.shortFact,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                maxLines = if (factExpanded) Int.MAX_VALUE else 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
                 }
@@ -382,7 +350,7 @@ fun AstronomyExplanationCard(
 ) {
     val cleanExplanation = TextUtils.stripHtml(explanation)
 
-    space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
+    AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -399,13 +367,14 @@ fun AstronomyExplanationCard(
                 Text(
                     text = "About this image",
                     style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = "Read more",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -427,6 +396,7 @@ fun AstronomyExplanationCard(
                 Text(
                     text = "Tap to read more",
                     style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.End)
                 )

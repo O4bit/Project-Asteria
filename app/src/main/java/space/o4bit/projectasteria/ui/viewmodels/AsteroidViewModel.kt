@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import space.o4bit.projectasteria.data.local.AsteroidEntity
 import space.o4bit.projectasteria.data.model.AsteroidSortBy
@@ -61,15 +62,15 @@ class AsteroidViewModel(
     )
 
     fun setSortBy(sortBy: AsteroidSortBy) {
-        _sortBy.value = sortBy
+        _sortBy.update { sortBy }
     }
 
     fun toggleDirection() {
-        _sortDirection.value = _sortDirection.value.toggle()
+        _sortDirection.update { it.toggle() }
     }
 
     fun toggleHazardousOnly() {
-        _hazardousOnly.value = !_hazardousOnly.value
+        _hazardousOnly.update { !it }
     }
 
     fun refresh() {

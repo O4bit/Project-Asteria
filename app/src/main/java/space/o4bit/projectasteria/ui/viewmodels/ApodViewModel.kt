@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
@@ -41,35 +42,39 @@ class ApodViewModel(
 
     fun loadTodayApod() {
         viewModelScope.launch {
-            _uiState.value = ApodUiState.Loading
+            _uiState.update { ApodUiState.Loading }
             // Try to load fresh data; fall back to the cache on failure.
             val cached = safeGetCached()
             try {
                 val picture = spaceRepository.getTodaysAstronomyPicture()
-                _uiState.value = ApodUiState.Success(picture)
+                _uiState.update { ApodUiState.Success(picture) }
             } catch (e: Exception) {
-                _uiState.value = ApodUiState.Error(
-                    message = toUserMessage(e),
-                    cachedPicture = cached
-                )
+                _uiState.update {
+                    ApodUiState.Error(
+                        message = toUserMessage(e),
+                        cachedPicture = cached
+                    )
+                }
             }
         }
     }
 
     fun loadApodForDate(dateString: String) {
         viewModelScope.launch {
-            _uiState.value = ApodUiState.Loading
+            _uiState.update { ApodUiState.Loading }
             try {
                 val picture = spaceRepository.getApodByDate(dateString)
                 if (picture != null) {
-                    _uiState.value = ApodUiState.Success(picture)
+                    _uiState.update { ApodUiState.Success(picture) }
                 } else {
-                    _uiState.value = ApodUiState.Error(
-                        message = "No picture found for $dateString"
-                    )
+                    _uiState.update {
+                        ApodUiState.Error(
+                            message = "No picture found for $dateString"
+                        )
+                    }
                 }
             } catch (e: Exception) {
-                _uiState.value = ApodUiState.Error(message = toUserMessage(e))
+                _uiState.update { ApodUiState.Error(message = toUserMessage(e)) }
             }
         }
     }
@@ -77,15 +82,18 @@ class ApodViewModel(
     fun toggleFavorite(date: String, isFavorite: Boolean) {
         viewModelScope.launch {
             spaceRepository.setFavorite(date, isFavorite)
-            val currentState = _uiState.value
-            if (currentState is ApodUiState.Success && currentState.picture.astronomyPicture.date == date) {
-                _uiState.value = ApodUiState.Success(
-                    currentState.picture.copy(isFavorite = isFavorite)
-                )
-            } else if (currentState is ApodUiState.Error && currentState.cachedPicture?.astronomyPicture?.date == date) {
-                _uiState.value = currentState.copy(
-                    cachedPicture = currentState.cachedPicture.copy(isFavorite = isFavorite)
-                )
+            _uiState.update { current ->
+                if (current is ApodUiState.Success && current.picture.astronomyPicture.date == date) {
+                    ApodUiState.Success(
+                        current.picture.copy(isFavorite = isFavorite)
+                    )
+                } else if (current is ApodUiState.Error && current.cachedPicture?.astronomyPicture?.date == date) {
+                    current.copy(
+                        cachedPicture = current.cachedPicture.copy(isFavorite = isFavorite)
+                    )
+                } else {
+                    current
+                }
             }
         }
     }

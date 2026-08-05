@@ -1,13 +1,15 @@
 package space.o4bit.projectasteria.ui.viewmodels
 
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -45,7 +47,7 @@ class AsteroidViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         asteroidRepository = mockk(relaxed = true)
-        every { asteroidRepository.asteroids } returns flowOf(emptyList())
+        every { asteroidRepository.allAsteroids } returns flowOf(emptyList())
     }
 
     @After
@@ -55,41 +57,47 @@ class AsteroidViewModelTest {
 
     @Test
     fun initialState_isLoading_beforeFlowEmits() = runTest {
-        every { asteroidRepository.asteroids } returns flowOf(emptyList())
+        every { asteroidRepository.allAsteroids } returns flowOf(emptyList())
         viewModel = AsteroidViewModel(asteroidRepository)
-        // Before advanceUntilIdle the StateFlow starts at Loading
         assertTrue(viewModel.uiState.value is AsteroidUiState.Loading)
     }
 
     @Test
     fun emptyList_stillTransitionsToSuccess() = runTest {
-        every { asteroidRepository.asteroids } returns flowOf(emptyList())
+        every { asteroidRepository.allAsteroids } returns flowOf(emptyList())
         viewModel = AsteroidViewModel(asteroidRepository)
-        advanceUntilIdle()
+        val job = launch { viewModel.uiState.collect {} }
+        advanceTimeBy(100)
         val state = viewModel.uiState.value
         assertTrue("Expected Success, got $state", state is AsteroidUiState.Success)
         assertTrue((state as AsteroidUiState.Success).asteroids.isEmpty())
+        job.cancel()
     }
 
     @Test
     fun nonEmptyList_populatesSuccessState() = runTest {
         val entities = listOf(fakeEntity("a1"), fakeEntity("a2", isPotentiallyHazardous = true))
-        every { asteroidRepository.asteroids } returns flowOf(entities)
+        every { asteroidRepository.allAsteroids } returns flowOf(entities)
         viewModel = AsteroidViewModel(asteroidRepository)
-        advanceUntilIdle()
+        val job = launch { viewModel.uiState.collect {} }
+        advanceTimeBy(100)
         val state = viewModel.uiState.value
         assertTrue(state is AsteroidUiState.Success)
         val success = state as AsteroidUiState.Success
         assertTrue(success.asteroids.size == 2)
         assertTrue(success.asteroids.any { it.isPotentiallyHazardous })
+        job.cancel()
     }
 
     @Test
     fun refresh_callsRepositoryRefresh() = runTest {
-        every { asteroidRepository.asteroids } returns flowOf(emptyList())
+        every { asteroidRepository.allAsteroids } returns flowOf(emptyList())
         viewModel = AsteroidViewModel(asteroidRepository)
+        val job = launch { viewModel.uiState.collect {} }
+        advanceTimeBy(100)
         viewModel.refresh()
-        advanceUntilIdle()
-        verify(atLeast = 1) { asteroidRepository.asteroids }
+        advanceTimeBy(100)
+        coVerify(atLeast = 1) { asteroidRepository.refreshTodaysAsteroids() }
+        job.cancel()
     }
 }

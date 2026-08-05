@@ -8,6 +8,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlin.math.absoluteValue
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Image
@@ -48,8 +52,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,6 +67,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
@@ -142,12 +147,12 @@ fun AsteriaApp(
     val launchViewModel: LaunchViewModel =
         viewModel(factory = LaunchViewModel.Factory(launchRepository, backgroundPrefs))
 
-    val apodState by apodViewModel.uiState.collectAsState()
-    val launchState by launchViewModel.uiState.collectAsState()
+    val apodState by apodViewModel.uiState.collectAsStateWithLifecycle()
+    val launchState by launchViewModel.uiState.collectAsStateWithLifecycle()
 
-    val backgroundTypeName by backgroundPrefs.backgroundType.collectAsState(initial = BackgroundType.SPACE.name)
+    val backgroundTypeName by backgroundPrefs.backgroundType.collectAsStateWithLifecycle(initialValue = BackgroundType.SPACE.name)
     val backgroundType = BackgroundType.fromName(backgroundTypeName)
-    val mainTabsHintShown by uiHintsPrefs.mainTabsHintShown.collectAsState(initial = false)
+    val mainTabsHintShown by uiHintsPrefs.mainTabsHintShown.collectAsStateWithLifecycle(initialValue = false)
 
     val currentApodPicture = { (apodState as? ApodUiState.Success)?.picture }
     val launchSpeedMultiplier = (launchState as? LaunchUiState.Success)?.launchSpeedMultiplier ?: 1f
@@ -204,46 +209,49 @@ fun AsteriaApp(
                         modifier = Modifier.fillMaxSize()
                     ) { page ->
                         when (MainTab.entries[page]) {
-                            MainTab.APOD -> ApodTab(
-                                apodState = apodState,
-                                onSettingsClick = { navController.navigate("settings") },
-                                onHistoryClick  = { navController.navigate("history") },
-                                onCardClick = {
-                                    val date = currentApodPicture()
-                                        ?.astronomyPicture?.date
-                                    navController.navigate(
-                                        if (date != null) "fullscreen?date=$date"
-                                        else "fullscreen"
-                                    )
-                                },
-                                onExplanationClick = {
-                                    val date = currentApodPicture()
-                                        ?.astronomyPicture?.date
-                                    if (date != null) {
-                                        navController.navigate("explanation/$date")
-                                    }
-                                },
-                                onRetryClick = { apodViewModel.loadTodayApod() },
-                                onToggleFavorite = { enhanced ->
-                                    apodViewModel.toggleFavorite(enhanced.astronomyPicture.date, !enhanced.isFavorite)
-                                }
-                            )
-                            MainTab.ASTEROIDS ->
-                                AsteroidScreen(
-                                    onSettingsClick = { navController.navigate("settings") }
-                                )
-                            MainTab.LAUNCHES ->
-                                LaunchScreen(
+                                MainTab.APOD -> ApodTab(
+                                    apodState = apodState,
                                     onSettingsClick = { navController.navigate("settings") },
+                                    onHistoryClick  = { navController.navigate("history") },
+                                    onCardClick = {
+                                        val date = currentApodPicture()
+                                            ?.astronomyPicture?.date
+                                        navController.navigate(
+                                            if (date != null) "fullscreen?date=$date"
+                                            else "fullscreen"
+                                        )
+                                    },
+                                    onExplanationClick = {
+                                        val date = currentApodPicture()
+                                            ?.astronomyPicture?.date
+                                        if (date != null) {
+                                            navController.navigate("explanation/$date")
+                                        }
+                                    },
+                                    onRetryClick = { apodViewModel.loadTodayApod() },
+                                    onToggleFavorite = { enhanced ->
+                                        apodViewModel.toggleFavorite(enhanced.astronomyPicture.date, !enhanced.isFavorite)
+                                    },
                                     onLaunchClick = { launchId ->
                                         navController.navigate("launch_detail/$launchId")
                                     }
                                 )
-                            MainTab.ISS ->
-                                IssScreen(
-                                    onSettingsClick = { navController.navigate("settings") }
-                                )
-                        }
+                                MainTab.ASTEROIDS ->
+                                    AsteroidScreen(
+                                        onSettingsClick = { navController.navigate("settings") }
+                                    )
+                                MainTab.LAUNCHES ->
+                                    LaunchScreen(
+                                        onSettingsClick = { navController.navigate("settings") },
+                                        onLaunchClick = { launchId ->
+                                            navController.navigate("launch_detail/$launchId")
+                                        }
+                                    )
+                                MainTab.ISS ->
+                                    IssScreen(
+                                        onSettingsClick = { navController.navigate("settings") }
+                                    )
+                            }
                     }
 
                     if (!mainTabsHintShown) {
@@ -273,12 +281,26 @@ private fun ApodTab(
     onCardClick: () -> Unit,
     onExplanationClick: () -> Unit,
     onRetryClick: () -> Unit,
-    onToggleFavorite: (EnhancedAstronomyPicture) -> Unit = {}
+    onToggleFavorite: (EnhancedAstronomyPicture) -> Unit = {},
+    onLaunchClick: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
+    val application = context.applicationContext as AsteriaApplication
+    val bgPrefs = remember { application.backgroundPreferences }
+    val launchRepo = remember { LaunchRepository(application.database.launchDao(), application.sortingPreferences) }
+    val scope = rememberCoroutineScope()
+
+    val pinnedIds by bgPrefs.pinnedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
+    val autoRemoveSetting by bgPrefs.autoRemovePinnedLaunches.collectAsStateWithLifecycle(initialValue = false)
+    val neverAskSetting by bgPrefs.neverAskRemovePinned.collectAsStateWithLifecycle(initialValue = false)
+    val allLaunches by launchRepo.allLaunches.collectAsStateWithLifecycle(initialValue = emptyList())
+    val pinnedLaunches = remember(allLaunches, pinnedIds) {
+        allLaunches.filter { pinnedIds.contains(it.id) }
+    }
+
     val connectivityObserver = remember { NetworkConnectivityObserver(context) }
-    val isOnline by connectivityObserver.observe().collectAsState(
-        initial = connectivityObserver.isCurrentlyOnline()
+    val isOnline by connectivityObserver.observe().collectAsStateWithLifecycle(
+        initialValue = connectivityObserver.isCurrentlyOnline()
     )
     var showOfflineDialog by remember { mutableStateOf(false) }
 
@@ -316,7 +338,19 @@ private fun ApodTab(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Project Asteria", style = MaterialTheme.typography.titleLarge)
+                    Surface(
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                        border = androidx.compose.foundation.BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        shadowElevation = 4.dp
+                    ) {
+                        Text(
+                            text = "Project Asteria",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        )
+                    }
                 },
                 actions = {
                     if (!isOnline) {
@@ -400,73 +434,81 @@ private fun ApodTab(
             }
         }
     } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            when (apodState) {
-                is ApodUiState.Loading -> item {
-                    CircularProgressIndicator(modifier = Modifier.padding(32.dp))
-                }
+        // ── Success: immersive scroll reader owns the full height ─────────────
+        // ImmersiveApodContent uses Modifier.verticalScroll internally, so it must
+        // NOT be inside a LazyColumn (that gives unbounded height → crash).
+        if (apodState is ApodUiState.Success) {
+            ImmersiveApodContent(
+                state = apodState,
+                onCardClick = onCardClick,
+                onToggleFavorite = onToggleFavorite,
+                pinnedLaunches = pinnedLaunches,
+                onLaunchClick = onLaunchClick,
+                onUnpinLaunch = { launchId -> scope.launch { bgPrefs.removePinnedLaunch(launchId) } },
+                autoRemoveSetting = autoRemoveSetting,
+                neverAskSetting = neverAskSetting,
+                onUpdateAutoRemove = { autoRemove -> scope.launch { bgPrefs.updateAutoRemovePinnedLaunches(autoRemove) } },
+                onUpdateNeverAsk = { neverAsk -> scope.launch { bgPrefs.updateNeverAskRemovePinned(neverAsk) } },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                when (apodState) {
+                    is ApodUiState.Loading -> item {
+                        CircularProgressIndicator(modifier = Modifier.padding(32.dp))
+                    }
 
-                is ApodUiState.Error -> item {
-                    // If we have cached content, show it with a slim error banner on top.
-                    if (apodState.cachedPicture != null) {
-                        Column {
-                            Surface(
-                                color = MaterialTheme.colorScheme.errorContainer,
-                                modifier = Modifier.fillMaxWidth()
+                    is ApodUiState.Error -> item {
+                        // If we have cached content, show it with a slim error banner on top.
+                        if (apodState.cachedPicture != null) {
+                            Column {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.errorContainer,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = apodState.message,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.padding(
+                                            horizontal = 16.dp, vertical = 8.dp
+                                        )
+                                    )
+                                }
+                                AstronomyPictureCard(
+                                    enhancedPicture = apodState.cachedPicture,
+                                    onCardClick = onCardClick
+                                )
+                            }
+                        } else {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(32.dp)
                             ) {
                                 Text(
                                     text = apodState.message,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.padding(
-                                        horizontal = 16.dp, vertical = 8.dp
-                                    )
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.error
                                 )
+                                Spacer(Modifier.height(16.dp))
+                                FilledTonalButton(onClick = onRetryClick) { Text("Retry") }
                             }
-                            AstronomyPictureCard(
-                                enhancedPicture = apodState.cachedPicture,
-                                onCardClick = onCardClick
-                            )
-                        }
-                    } else {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(32.dp)
-                        ) {
-                            Text(
-                                text = apodState.message,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Spacer(Modifier.height(16.dp))
-                            FilledTonalButton(onClick = onRetryClick) { Text("Retry") }
                         }
                     }
-                }
 
-                is ApodUiState.Success -> {
-                    item {
-                        AstronomyPictureCard(
-                            enhancedPicture = apodState.picture,
-                            onCardClick = onCardClick,
-                            onToggleFavorite = { onToggleFavorite(apodState.picture) }
-                        )
-                    }
-                    item {
-                        AstronomyExplanationCard(
-                            explanation = apodState.picture.astronomyPicture.explanation,
-                            onCardClick = onExplanationClick
-                        )
-                    }
+                    else -> { /* Success handled above */ }
                 }
             }
         }
     }
     }
 }
+

@@ -8,12 +8,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
+import space.o4bit.projectasteria.data.api.NasaApodService
 import space.o4bit.projectasteria.data.local.ApodDao
 import space.o4bit.projectasteria.data.local.ApodEntity
 
 class SpaceRepositoryTest {
 
     private lateinit var apodDao: ApodDao
+    private lateinit var nasaApodService: NasaApodService
     private lateinit var spaceRepository: SpaceRepository
 
     private fun fakeApodEntity(date: String, title: String) = ApodEntity(
@@ -34,7 +36,8 @@ class SpaceRepositoryTest {
     @Before
     fun setUp() {
         apodDao = mockk(relaxed = true)
-        spaceRepository = SpaceRepository(apodDao)
+        nasaApodService = mockk()
+        spaceRepository = SpaceRepository(apodDao, nasaApodService)
     }
 
     @Test
@@ -53,13 +56,12 @@ class SpaceRepositoryTest {
     @Test
     fun getApodByDate_returnsNull_whenDaoHasNoDataAndNetworkFails() = runTest {
         coEvery { apodDao.getApodByDate(any()) } returns null
+        coEvery { nasaApodService.getAstronomyPictureByDate(any()) } throws
+            RuntimeException("Network unavailable in tests")
 
         val result = spaceRepository.getApodByDate("2026-01-01")
 
-        // When DAO returns null and the network call throws (in test environment
-        // because no real service is wired), getApodByDate should return null gracefully.
-        // In this environment, result is null because the network call throws and
-        // the catch block returns null.
+        // When DAO returns null and the network call throws, getApodByDate returns null gracefully.
         assertEquals(null, result)
     }
 

@@ -41,8 +41,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
@@ -78,13 +79,13 @@ fun HistoryScreen(
     val searchResults by remember(searchQuery) {
         if (searchQuery.isNotBlank()) repository.searchApods(searchQuery)
         else kotlinx.coroutines.flow.flowOf(emptyList())
-    }.collectAsState(initial = emptyList())
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
 
     var showFavoritesOnly by remember { mutableStateOf(false) }
     val favoriteResults by remember(showFavoritesOnly) {
         if (showFavoritesOnly) repository.getFavoriteApods()
         else kotlinx.coroutines.flow.flowOf(emptyList())
-    }.collectAsState(initial = emptyList())
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -199,6 +200,7 @@ fun HistoryScreen(
                 ) {
                     items(
                         count = lazyPagingItems.itemCount,
+                        key = lazyPagingItems.itemKey { it.astronomyPicture.date },
                         contentType = lazyPagingItems.itemContentType { "ApodItem" }
                     ) { index ->
                         val item = lazyPagingItems[index]

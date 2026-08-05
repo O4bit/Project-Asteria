@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
@@ -87,14 +88,33 @@ fun FullscreenImageViewer(
     val context = LocalContext.current
 
     if (astronomyPicture.mediaType == "video") {
-        LaunchedEffect(Unit) {
-            val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
-            if (videoUrl != null) {
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, videoUrl.toUri())
-                    context.startActivity(intent)
-                } catch (_: Exception) { }
+        val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
+        if (videoUrl != null) {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                ApodVideoPlayer(
+                    videoUrl = videoUrl,
+                    modifier = Modifier.fillMaxSize()
+                )
+                FilledTonalIconButton(
+                    onClick = onBackPressed,
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(16.dp)
+                        .size(40.dp)
+                        .align(Alignment.TopStart)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.arrowback),
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
+        } else {
             onBackPressed()
         }
         return
