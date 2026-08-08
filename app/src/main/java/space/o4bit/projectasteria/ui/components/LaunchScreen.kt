@@ -305,9 +305,10 @@ fun LaunchCard(
                     IconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            val currentlyPinned = isPinned
                             scope.launch {
                                 bgPrefs.togglePinLaunch(launch.id)
-                                onShowSnackbar(if (isPinned) "Unpinned from Home" else "Pinned ${launch.name} to Home")
+                                onShowSnackbar(if (currentlyPinned) "Unpinned from Home" else "Pinned ${launch.name} to Home")
                             }
                         }
                     ) {

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
+    android:background="@drawable/iss_widget_background"
+    android:clipToOutline="true"
+    android:outlineProvider="background">
+
+    <!-- Map fills the entire widget background -->
+    <ImageView
+        android:id="@+id/iss_widget_map_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="ISS World Map"
+        android:scaleType="fitXY"
+        android:background="@drawable/iss_widget_map_container" />
+
+    <!-- Gradient overlay on top of the map (bottom-up dark fade) -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:src="@drawable/widget_gradient_overlay"
+        android:scaleType="fitXY" />
+
+    <!-- Bottom overlay panel: header + divider + telemetry -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#CC090F19"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="10dp">
+
+        <!-- Header row: ISS TRACKER label + subtitle on left, LIVE badge on right -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Title block -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ISS TRACKER"
+                    android:textColor="#99AABB"
+                    android:textSize="9sp"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="International Space Station"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- LIVE badge pill -->
+            <TextView
+                android:id="@+id/iss_widget_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/iss_widget_badge_bg"
+                android:fontFamily="sans-serif-medium"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="3dp"
+                android:text="LIVE"
+                android:textColor="#F43F5E"
+                android:textSize="9sp"
+                android:letterSpacing="0.08"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Divider line -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginVertical="7dp"
+            android:background="#3AFFFFFF" />
+
+        <!-- Telemetry HUD row: 4 stats -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- LAT -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LAT"
+                    android:textColor="#66889A"
+                    android:textSize="8sp"
+                    android:letterSpacing="0.1"
+                    android:fontFamily="sans-serif" />
+                <TextView
+                    android:id="@+id/iss_widget_lat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="51.51°"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- LON -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LON"
+                    android:textColor="#66889A"
+                    android:textSize="8sp"
+                    android:letterSpacing="0.1"
+                    android:fontFamily="sans-serif" />
+                <TextView
+                    android:id="@+id/iss_widget_lon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-0.13°"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- ALT -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ALT"
+                    android:textColor="#66889A"
+                    android:textSize="8sp"
+                    android:letterSpacing="0.1"
+                    android:fontFamily="sans-serif" />
+                <TextView
+                    android:id="@+id/iss_widget_alt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="420 km"
+                    android:textColor="#DDEEFF"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- SPEED -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SPEED"
+                    android:textColor="#66889A"
+                    android:textSize="8sp"
+                    android:letterSpacing="0.1"
+                    android:fontFamily="sans-serif" />
+                <TextView
+                    android:id="@+id/iss_widget_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="27,600 km/h"
+                    android:textColor="#DDEEFF"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

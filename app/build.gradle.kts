@@ -167,6 +167,7 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.coil.core)
+    implementation(libs.coil.gif)
 
     implementation(libs.lucide.icons)
 

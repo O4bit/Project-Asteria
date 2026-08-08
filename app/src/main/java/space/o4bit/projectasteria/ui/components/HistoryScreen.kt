@@ -70,6 +70,7 @@ import space.o4bit.projectasteria.data.repository.SpaceRepository
 @Composable
 fun HistoryScreen(
     repository: SpaceRepository,
+    initialShowFavorites: Boolean = false,
     onNavigateUp: () -> Unit,
     onApodClick: (EnhancedAstronomyPicture) -> Unit
 ) {
@@ -81,7 +82,7 @@ fun HistoryScreen(
         else kotlinx.coroutines.flow.flowOf(emptyList())
     }.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    var showFavoritesOnly by remember { mutableStateOf(false) }
+    var showFavoritesOnly by remember { mutableStateOf(initialShowFavorites) }
     val favoriteResults by remember(showFavoritesOnly) {
         if (showFavoritesOnly) repository.getFavoriteApods()
         else kotlinx.coroutines.flow.flowOf(emptyList())

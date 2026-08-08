@@ -1,11 +1,28 @@
 package space.o4bit.projectasteria
 
 import android.app.Application
+import android.os.Build
 import androidx.room.Room
 import androidx.work.Configuration
+import coil.Coil
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import space.o4bit.projectasteria.data.local.ApodDatabase
 
-class AsteriaApplication : Application(), Configuration.Provider {
+class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFactory {
+
+    override fun newImageLoader(): ImageLoader {
+        return ImageLoader.Builder(this)
+            .components {
+                add(GifDecoder.Factory())
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                }
+            }
+            .build()
+    }
 
     val database: ApodDatabase by lazy {
         Room.databaseBuilder(
@@ -31,6 +48,7 @@ class AsteriaApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        Coil.setImageLoader(newImageLoader())
     }
 
     override val workManagerConfiguration: Configuration

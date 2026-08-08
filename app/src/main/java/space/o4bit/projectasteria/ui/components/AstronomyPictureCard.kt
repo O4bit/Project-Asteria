@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import space.o4bit.projectasteria.R
@@ -81,6 +83,7 @@ fun AstronomyPictureCard(
 ) {
     val astronomyPicture = enhancedPicture.astronomyPicture
     var isImageLoaded by remember { mutableStateOf(false) }
+    var showWebBrowser by remember { mutableStateOf(false) }
 
     val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
     val displayFormat = java.text.SimpleDateFormat("MMMM d, yyyy", java.util.Locale.US)
@@ -123,10 +126,18 @@ fun AstronomyPictureCard(
             ) {
                 when {
                     !isVideo && imageUrl != null -> {
+                        val isGif = imageUrl.contains(".gif", ignoreCase = true)
                         AsyncImage(
                             model = ImageRequest.Builder(context)
                                 .data(imageUrl)
-                                .crossfade(true)
+                                .apply {
+                                    if (isGif) {
+                                        decoderFactory(GifDecoder.Factory())
+                                        crossfade(false)
+                                    } else {
+                                        crossfade(true)
+                                    }
+                                }
                                 .build(),
                             contentDescription = astronomyPicture.title,
                             contentScale = ContentScale.Crop,
@@ -278,6 +289,20 @@ fun AstronomyPictureCard(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         FilledTonalIconButton(
+                            onClick = { showWebBrowser = true },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Language,
+                                contentDescription = "Open APOD Webpage",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        FilledTonalIconButton(
                             onClick = onAddToHomeScreenClick,
                             modifier = Modifier.size(36.dp)
                         ) {
@@ -339,6 +364,22 @@ fun AstronomyPictureCard(
                 }
             }
         }
+    }
+
+    if (showWebBrowser) {
+        val parts = astronomyPicture.date.split("-")
+        val webUrl = if (parts.size == 3 && parts[0].length == 4) {
+            val yy = parts[0].substring(2)
+            val mm = parts[1]
+            val dd = parts[2]
+            "https://apod.nasa.gov/apod/ap$yy$mm$dd.html"
+        } else {
+            "https://apod.nasa.gov/apod/astropix.html"
+        }
+        InAppBrowserDialog(
+            url = webUrl,
+            onDismiss = { showWebBrowser = false }
+        )
     }
 }
 

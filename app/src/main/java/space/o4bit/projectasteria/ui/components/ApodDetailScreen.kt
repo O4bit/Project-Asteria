@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.data.repository.SpaceRepository
@@ -240,10 +241,18 @@ private fun ApodMediaHeader(
 
     when {
         mediaType == "image" && imageUrl != null -> {
+            val isGif = imageUrl.contains(".gif", ignoreCase = true)
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(hdUrl ?: url)
-                    .crossfade(true)
+                    .apply {
+                        if (isGif) {
+                            decoderFactory(GifDecoder.Factory())
+                            crossfade(false)
+                        } else {
+                            crossfade(true)
+                        }
+                    }
                     .build(),
                 contentDescription = title,
                 contentScale = ContentScale.Crop,

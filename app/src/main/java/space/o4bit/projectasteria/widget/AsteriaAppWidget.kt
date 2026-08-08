@@ -86,8 +86,7 @@ class AsteriaAppWidget : AppWidgetProvider() {
         val currentDate = dateFormat.format(java.util.Date())
         views.setTextViewText(R.id.widget_date, currentDate)
 
-        views.setTextViewText(R.id.widget_title, "Project Asteria")
-        views.setTextViewText(R.id.widget_fact, "Loading space discoveries...")
+        views.setTextViewText(R.id.widget_title, "Today in Space")
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
 
@@ -100,7 +99,6 @@ class AsteriaAppWidget : AppWidgetProvider() {
                 CoroutineScope(Dispatchers.Main).launch {
                     val apod = enhancedPicture.astronomyPicture
                     views.setTextViewText(R.id.widget_title, apod.title)
-                    views.setTextViewText(R.id.widget_fact, enhancedPicture.shortFact)
 
                     val imageUrl = apod.url ?: apod.hdUrl
                     val isVideo = apod.mediaType.equals("video", ignoreCase = true)
@@ -127,7 +125,6 @@ class AsteriaAppWidget : AppWidgetProvider() {
             } catch (e: Exception) {
                 CoroutineScope(Dispatchers.Main).launch {
                     views.setTextViewText(R.id.widget_title, "Project Asteria")
-                    views.setTextViewText(R.id.widget_fact, "Tap to explore space discoveries")
 
                     appWidgetManager.updateAppWidget(appWidgetId, views)
                 }

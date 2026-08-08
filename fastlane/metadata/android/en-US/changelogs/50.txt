@@ -1,0 +1,6 @@
+- Built-in Material 3 in-app browser with NASA JPL database integration and APOD web view
+- APOD GIF animation playback & full-featured MP4/YouTube video player
+- Organic vector ISS world map with Catmull-Rom curves, theme adaptation, and live HUD
+- Full-bleed edge-to-edge ISS widget with custom resize boundaries
+- User-selectable ISS update intervals (10s, 30s, 1m, 5m) via top bar dropdown
+- Unpin launch confirmation dialog & fixed post-launch prompt persistence

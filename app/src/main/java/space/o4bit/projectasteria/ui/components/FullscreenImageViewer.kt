@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import coil.size.Size
@@ -243,10 +244,18 @@ fun FullscreenImageViewer(
                 )
                 .transformable(state = state)
         ) {
+            val isGif = imageUrl?.contains(".gif", ignoreCase = true) == true
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(imageUrl)
-                    .crossfade(true)
+                    .apply {
+                        if (isGif) {
+                            decoderFactory(GifDecoder.Factory())
+                            crossfade(false)
+                        } else {
+                            crossfade(true)
+                        }
+                    }
                     .diskCachePolicy(coil.request.CachePolicy.ENABLED)
                     .build(),
                 contentDescription = astronomyPicture.title,

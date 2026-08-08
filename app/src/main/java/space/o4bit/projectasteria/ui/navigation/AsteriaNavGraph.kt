@@ -106,10 +106,18 @@ fun AsteriaNavGraph(
                 }
 
                 // ── History ───────────────────────────────────────────────────────────
-                composable("history") {
+                composable(
+                    route = "history?favorites={favorites}",
+                    arguments = listOf(navArgument("favorites") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    })
+                ) { backStackEntry ->
+                    val showFavorites = backStackEntry.arguments?.getBoolean("favorites") ?: false
                     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
                         HistoryScreen(
                             repository = spaceRepository,
+                            initialShowFavorites = showFavorites,
                             onNavigateUp = { navController.popBackStack() },
                             onApodClick = { enhanced ->
                                 navController.navigate(

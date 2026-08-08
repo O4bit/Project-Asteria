@@ -33,13 +33,17 @@ import androidx.compose.material.icons.filled.Satellite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Terrain
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -50,6 +54,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -69,6 +76,7 @@ import android.content.ComponentName
 import androidx.compose.ui.res.painterResource
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.widget.IssAppWidgetProvider
+import space.o4bit.projectasteria.ui.viewmodels.IssUpdateInterval
 import space.o4bit.projectasteria.ui.viewmodels.IssViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,6 +116,53 @@ fun IssScreen(
                     }
                 },
                 actions = {
+                    // ── Update interval dropdown ──────────────────────────────
+                    val currentInterval by viewModel.updateInterval.collectAsStateWithLifecycle()
+                    var showIntervalMenu by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { showIntervalMenu = true }) {
+                            Icon(Icons.Default.Timer, contentDescription = "Update interval: ${currentInterval.label}")
+                        }
+                        DropdownMenu(
+                            expanded = showIntervalMenu,
+                            onDismissRequest = { showIntervalMenu = false }
+                        ) {
+                            Text(
+                                text = "Update Interval",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            )
+                            HorizontalDivider()
+                            IssUpdateInterval.entries.forEach { interval ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            Text(
+                                                interval.label,
+                                                fontWeight = if (currentInterval == interval) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        viewModel.setUpdateInterval(interval)
+                                        showIntervalMenu = false
+                                    },
+                                    trailingIcon = if (currentInterval == interval) {{
+                                        Icon(
+                                            Icons.Default.MyLocation,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }} else null
+                                )
+                            }
+                        }
+                    }
                     IconButton(
                         onClick = {
                             val appWidgetManager = AppWidgetManager.getInstance(context)

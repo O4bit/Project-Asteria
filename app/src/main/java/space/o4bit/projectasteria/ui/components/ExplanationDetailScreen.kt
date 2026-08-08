@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -21,7 +23,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +46,8 @@ fun ExplanationDetailScreen(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showWebBrowser by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -56,6 +65,15 @@ fun ExplanationDetailScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.arrowback),
                             contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showWebBrowser = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = "View on Web",
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 },
@@ -146,5 +164,21 @@ fun ExplanationDetailScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
+    }
+
+    if (showWebBrowser) {
+        val parts = astronomyPicture.date.split("-")
+        val webUrl = if (parts.size == 3 && parts[0].length == 4) {
+            val yy = parts[0].substring(2)
+            val mm = parts[1]
+            val dd = parts[2]
+            "https://apod.nasa.gov/apod/ap$yy$mm$dd.html"
+        } else {
+            "https://apod.nasa.gov/apod/astropix.html"
+        }
+        InAppBrowserDialog(
+            url = webUrl,
+            onDismiss = { showWebBrowser = false }
+        )
     }
 }

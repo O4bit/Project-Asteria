@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Uses system-neutral colors with high corner radius to match Material You card style.
+     The surface color (#12181F) approximates a dark neutralSurface that blends well
+     with both light and dark wallpapers. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#121820" />
+    <corners android:radius="24dp" />
+    <stroke
+        android:width="0.8dp"
+        android:color="#2A3A4A" />
+</shape>

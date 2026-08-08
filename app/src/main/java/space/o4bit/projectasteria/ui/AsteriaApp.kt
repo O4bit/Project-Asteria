@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Satellite
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.RocketLaunch
@@ -213,6 +214,7 @@ fun AsteriaApp(
                                     apodState = apodState,
                                     onSettingsClick = { navController.navigate("settings") },
                                     onHistoryClick  = { navController.navigate("history") },
+                                    onFavoritesClick = { navController.navigate("history?favorites=true") },
                                     onCardClick = {
                                         val date = currentApodPicture()
                                             ?.astronomyPicture?.date
@@ -278,6 +280,7 @@ private fun ApodTab(
     apodState: ApodUiState,
     onSettingsClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     onCardClick: () -> Unit,
     onExplanationClick: () -> Unit,
     onRetryClick: () -> Unit,
@@ -367,10 +370,23 @@ private fun ApodTab(
                             )
                         }
                     }
+                    IconButton(onClick = onFavoritesClick) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "View favorites",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(onClick = onHistoryClick) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = "View previous APODs"
+                        )
+                    }
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
                         )
                     }
                 },
@@ -381,29 +397,16 @@ private fun ApodTab(
             )
         },
         floatingActionButton = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if (!isOnline) {
-                    SmallFloatingActionButton(
-                        onClick = { showOfflineDialog = true },
-                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.outline_cloud_off_24),
-                            contentDescription = "Offline — tap to see options"
-                        )
-                    }
-                }
-                FloatingActionButton(
-                    onClick = onSettingsClick,
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.semantics { contentDescription = "Open settings" }
+            if (!isOnline) {
+                SmallFloatingActionButton(
+                    onClick = { showOfflineDialog = true },
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
                 ) {
-                    Icon(imageVector = Icons.Default.Settings, contentDescription = "Settings")
+                    Icon(
+                        painter = painterResource(R.drawable.outline_cloud_off_24),
+                        contentDescription = "Offline — tap to see options"
+                    )
                 }
             }
         }
