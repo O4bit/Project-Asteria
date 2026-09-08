@@ -45,6 +45,8 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,6 +84,7 @@ fun HistoryScreen(
         else kotlinx.coroutines.flow.flowOf(emptyList())
     }.collectAsStateWithLifecycle(initialValue = emptyList())
 
+    val scope = rememberCoroutineScope()
     var showFavoritesOnly by remember { mutableStateOf(initialShowFavorites) }
     val favoriteResults by remember(showFavoritesOnly) {
         if (showFavoritesOnly) repository.getFavoriteApods()
@@ -165,7 +168,12 @@ fun HistoryScreen(
                         items(favoriteResults, key = { it.astronomyPicture.date }) { item ->
                             HistoryItemCard(
                                 item = item,
-                                onClick = { onApodClick(item) }
+                                onClick = { onApodClick(item) },
+                                onToggleFavorite = {
+                                    scope.launch {
+                                        repository.setFavorite(item.astronomyPicture.date, !item.isFavorite)
+                                    }
+                                }
                             )
                         }
                     }
@@ -188,7 +196,12 @@ fun HistoryScreen(
                         items(searchResults, key = { it.astronomyPicture.date }) { item ->
                             HistoryItemCard(
                                 item = item,
-                                onClick = { onApodClick(item) }
+                                onClick = { onApodClick(item) },
+                                onToggleFavorite = {
+                                    scope.launch {
+                                        repository.setFavorite(item.astronomyPicture.date, !item.isFavorite)
+                                    }
+                                }
                             )
                         }
                     }
@@ -208,7 +221,12 @@ fun HistoryScreen(
                         if (item != null) {
                             HistoryItemCard(
                                 item = item,
-                                onClick = { onApodClick(item) }
+                                onClick = { onApodClick(item) },
+                                onToggleFavorite = {
+                                    scope.launch {
+                                        repository.setFavorite(item.astronomyPicture.date, !item.isFavorite)
+                                    }
+                                }
                             )
                         }
                     }
@@ -272,7 +290,8 @@ fun HistoryScreen(
 @Composable
 fun HistoryItemCard(
     item: EnhancedAstronomyPicture,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -343,6 +362,14 @@ fun HistoryItemCard(
                     text = item.astronomyPicture.date,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            androidx.compose.material3.IconButton(onClick = onToggleFavorite) {
+                androidx.compose.material3.Icon(
+                    imageVector = if (item.isFavorite) androidx.compose.material.icons.Icons.Filled.Favorite else androidx.compose.material.icons.Icons.Outlined.FavoriteBorder,
+                    contentDescription = if (item.isFavorite) "Remove from favorites" else "Add to favorites",
+                    tint = if (item.isFavorite) androidx.compose.material3.MaterialTheme.colorScheme.error else androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

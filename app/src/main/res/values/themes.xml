@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.ProjectAsteria" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.ProjectAsteria" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Splash screen (API 31+): just set the background; wordmark is rendered
+             as a full-screen Compose overlay in AsteriaApp. -->
+        <item name="android:windowSplashScreenBackground">#0A0A0F</item>
+    </style>
 </resources>

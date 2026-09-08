@@ -26,7 +26,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -88,31 +91,115 @@ fun FullscreenImageViewer(
 ) {
     val context = LocalContext.current
 
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    val displayFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
+    val formattedDate = try {
+        dateFormat.parse(astronomyPicture.date)?.let {
+            displayFormat.format(it)
+        } ?: astronomyPicture.date
+    } catch (_: Exception) {
+        astronomyPicture.date
+    }
+
     if (astronomyPicture.mediaType == "video") {
         val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
         if (videoUrl != null) {
+            var showVideoControls by remember { mutableStateOf(true) }
+            val videoControlsAlpha by animateFloatAsState(
+                targetValue = if (showVideoControls) 1f else 0f,
+                label = "videoControlsAlpha"
+            )
+
+            LaunchedEffect(showVideoControls) {
+                if (showVideoControls) {
+                    try {
+                        delay(4000)
+                        showVideoControls = false
+                    } catch (_: Exception) {}
+                }
+            }
+
             Box(
                 modifier = modifier
                     .fillMaxSize()
                     .background(Color.Black)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = { showVideoControls = !showVideoControls }
+                        )
+                    }
             ) {
                 ApodVideoPlayer(
                     videoUrl = videoUrl,
                     modifier = Modifier.fillMaxSize()
                 )
-                FilledTonalIconButton(
-                    onClick = onBackPressed,
+
+                // Top bar with Back button, Title, Date, Share & External App
+                Row(
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(videoControlsAlpha)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
                         .statusBarsPadding()
-                        .padding(16.dp)
-                        .size(40.dp)
-                        .align(Alignment.TopStart)
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.arrowback),
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    FilledTonalIconButton(
+                        onClick = onBackPressed,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.arrowback),
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = astronomyPicture.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = formattedDate,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    FilledTonalIconButton(
+                        onClick = { shareImageOnly(context, astronomyPicture) },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.share),
+                            contentDescription = "Share",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    FilledTonalIconButton(
+                        onClick = { openVideoInExternalApp(context, videoUrl) },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = "Open in External Player",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         } else {
@@ -129,15 +216,6 @@ fun FullscreenImageViewer(
         label = "controlsAlpha"
     )
     var showWallpaperDialog by remember { mutableStateOf(false) }
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-    val displayFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
-    val formattedDate = try {
-        dateFormat.parse(astronomyPicture.date)?.let {
-            displayFormat.format(it)
-        } ?: astronomyPicture.date
-    } catch (_: Exception) {
-        astronomyPicture.date
-    }
     LaunchedEffect(showControls) {
         if (showControls) {
             try {
@@ -278,6 +356,7 @@ fun FullscreenImageViewer(
                         )
                     )
                 )
+                .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -321,6 +400,7 @@ fun FullscreenImageViewer(
                         )
                     )
                 )
+                .navigationBarsPadding()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {

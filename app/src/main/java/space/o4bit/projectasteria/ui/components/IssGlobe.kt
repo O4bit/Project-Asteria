@@ -310,9 +310,9 @@ fun IssGlobe(
                         // Outer pulse ring
                         drawCircle(
                             color = errorColor.copy(alpha = pulseAlpha),
-                            radius = 22f * pulseScale,
+                            radius = 55f * pulseScale,
                             center = targetOffset,
-                            style = Stroke(width = 2.5f)
+                            style = Stroke(width = 4f)
                         )
 
                         // Radar arc
@@ -321,49 +321,49 @@ fun IssGlobe(
                             startAngle = radarRotation,
                             sweepAngle = 110f,
                             useCenter = false,
-                            topLeft = Offset(targetX - 16f, targetY - 16f),
-                            size = Size(32f, 32f),
-                            style = Stroke(width = 2f)
+                            topLeft = Offset(targetX - 40f, targetY - 40f),
+                            size = Size(80f, 80f),
+                            style = Stroke(width = 4f)
                         )
 
                         // Center glowing core
                         drawCircle(
                             color = errorColor,
-                            radius = 6f,
+                            radius = 15f,
                             center = targetOffset
                         )
                         drawCircle(
                             color = onSurface,
-                            radius = 2.5f,
+                            radius = 6f,
                             center = targetOffset
                         )
 
                         // Precision Crosshair Ticks
-                        val tickLen = 14f
-                        val tickGap = 8f
+                        val tickLen = 35f
+                        val tickGap = 20f
                         drawLine(
                             color = errorColor,
                             start = Offset(targetX - tickLen, targetY),
                             end = Offset(targetX - tickGap, targetY),
-                            strokeWidth = 2f
+                            strokeWidth = 4f
                         )
                         drawLine(
                             color = errorColor,
                             start = Offset(targetX + tickGap, targetY),
                             end = Offset(targetX + tickLen, targetY),
-                            strokeWidth = 2f
+                            strokeWidth = 4f
                         )
                         drawLine(
                             color = errorColor,
                             start = Offset(targetX, targetY - tickLen),
                             end = Offset(targetX, targetY - tickGap),
-                            strokeWidth = 2f
+                            strokeWidth = 4f
                         )
                         drawLine(
                             color = errorColor,
                             start = Offset(targetX, targetY + tickGap),
                             end = Offset(targetX, targetY + tickLen),
-                            strokeWidth = 2f
+                            strokeWidth = 4f
                         )
                     }
                 }

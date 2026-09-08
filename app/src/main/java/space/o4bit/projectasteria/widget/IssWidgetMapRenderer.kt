@@ -118,20 +118,20 @@ object IssWidgetMapRenderer {
             val ty = ((90.0 - pos.latitude) / 180.0 * h).toFloat()
 
             // Outer glow
-            canvas.drawCircle(tx, ty, 19f, Paint().apply {
-                color = errorColor; strokeWidth = 3f
+            canvas.drawCircle(tx, ty, 30f, Paint().apply {
+                color = errorColor; strokeWidth = 4f
                 style = Paint.Style.STROKE; isAntiAlias = true; alpha = 75
             })
             // Ring
-            canvas.drawCircle(tx, ty, 12f, Paint().apply {
-                color = errorColor; strokeWidth = 2f; style = Paint.Style.STROKE; isAntiAlias = true
+            canvas.drawCircle(tx, ty, 18f, Paint().apply {
+                color = errorColor; strokeWidth = 3f; style = Paint.Style.STROKE; isAntiAlias = true
             })
             // Core fill
-            canvas.drawCircle(tx, ty, 5f, Paint().apply { color = errorColor; isAntiAlias = true })
-            canvas.drawCircle(tx, ty, 2.5f, Paint().apply { color = Color.WHITE; isAntiAlias = true })
+            canvas.drawCircle(tx, ty, 8f, Paint().apply { color = errorColor; isAntiAlias = true })
+            canvas.drawCircle(tx, ty, 4f, Paint().apply { color = Color.WHITE; isAntiAlias = true })
             // Crosshair ticks
-            val tickPaint = Paint().apply { color = errorColor; strokeWidth = 1.8f; isAntiAlias = true }
-            val tL = 11f; val tG = 6f
+            val tickPaint = Paint().apply { color = errorColor; strokeWidth = 3f; isAntiAlias = true }
+            val tL = 18f; val tG = 10f
             canvas.drawLine(tx - tL, ty, tx - tG, ty, tickPaint)
             canvas.drawLine(tx + tG, ty, tx + tL, ty, tickPaint)
             canvas.drawLine(tx, ty - tL, tx, ty - tG, tickPaint)

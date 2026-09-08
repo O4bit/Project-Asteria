@@ -22,15 +22,14 @@ A Free and Open Source (FOSS) Android application for space exploration using of
 ## Screenshots
 
 <p align="center">
-  <img src="images/screenshot_home.png" width="200" alt="Home Screen">
-  <img src="images/screenshot_apod.png" width="200" alt="Details View">
-  <img src="images/screenshot_search.png" width="200" alt="Search Gallery">
+  <img src="images/screenshot_apod_main.png" width="200" alt="Main APOD Screen">
+  <img src="images/screenshot_apod_fullscreen.png" width="200" alt="Fullscreen Image Viewer">
+  <img src="images/screenshot_history_favorites.png" width="200" alt="History Gallery (Favorites)">
 </p>
 
 <p align="center">
-  <img src="images/screenshot_settings.png" width="200" alt="Settings">
-  <img src="images/screenshot_apod_detail.png" width="200" alt="APOD Detail">
-  <img src="images/screenshot_neow_tracking.png" width="200" alt="NEO Tracker">
+  <img src="images/screenshot_iss_tracker.png" width="200" alt="ISS Live Tracker">
+  <img src="images/screenshot_history_empty.png" width="200" alt="History Gallery (Empty)">
 </p>
 
 ## Features

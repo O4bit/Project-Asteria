@@ -467,6 +467,14 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
 @Composable
 fun AboutTabContent(onShowLicenses: () -> Unit) {
     val context = LocalContext.current
+    var showDebugDialog by remember { mutableStateOf(false) }
+    var tapCount by remember { mutableStateOf(0) }
+    var lastTapTime by remember { mutableStateOf(0L) }
+
+    if (showDebugDialog) {
+        DebugMenuDialog(onDismiss = { showDebugDialog = false })
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -479,7 +487,29 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
         SectionCard {
             RichSettingsItem(
                 title = "Version",
-                subtitle = "v${space.o4bit.projectasteria.BuildConfig.VERSION_NAME} (Build ${space.o4bit.projectasteria.BuildConfig.VERSION_CODE})"
+                subtitle = "v${space.o4bit.projectasteria.BuildConfig.VERSION_NAME} (Build ${space.o4bit.projectasteria.BuildConfig.VERSION_CODE})",
+                onClick = {
+                    val now = System.currentTimeMillis()
+                    if (now - lastTapTime < 1500) {
+                        tapCount++
+                    } else {
+                        tapCount = 1
+                    }
+                    lastTapTime = now
+
+                    if (tapCount >= 3) {
+                        tapCount = 0
+                        showDebugDialog = true
+                        android.widget.Toast.makeText(context, "🔧 Developer Debug Menu unlocked!", android.widget.Toast.LENGTH_SHORT).show()
+                    } else {
+                        val remaining = 3 - tapCount
+                        android.widget.Toast.makeText(
+                            context,
+                            "Tap $remaining more time${if (remaining > 1) "s" else ""} to open Debug Menu",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             )
             AsteriaSettingsDivider()
             BaseSettingsItem(

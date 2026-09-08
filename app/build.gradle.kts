@@ -187,6 +187,8 @@ dependencies {
     implementation(libs.androidx.paging.compose)
 
     implementation(libs.aboutlibraries.compose)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

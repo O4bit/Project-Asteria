@@ -7,6 +7,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.absoluteValue
@@ -52,6 +55,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -100,13 +105,13 @@ import space.o4bit.projectasteria.util.NetworkConnectivityObserver
 
 enum class MainTab(
     val title: String,
-    val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector,
-    val unselectedIcon: androidx.compose.ui.graphics.vector.ImageVector
+    val selectedIconFactory: @androidx.compose.runtime.Composable () -> androidx.compose.ui.graphics.vector.ImageVector,
+    val unselectedIconFactory: @androidx.compose.runtime.Composable () -> androidx.compose.ui.graphics.vector.ImageVector
 ) {
-    APOD("APOD", Icons.Filled.Image, Icons.Outlined.Image),
-    ISS("ISS", Icons.Filled.Satellite, Icons.Outlined.Satellite),
-    LAUNCHES("Launches", Icons.Filled.RocketLaunch, Icons.Outlined.RocketLaunch),
-    ASTEROIDS("Asteroids", Icons.Filled.Public, Icons.Outlined.Public)
+    APOD("APOD", { Icons.Filled.Image }, { Icons.Outlined.Image }),
+    ISS("ISS", { ImageVector.vectorResource(id = space.o4bit.projectasteria.R.drawable.outline_satellite_alt_24) }, { ImageVector.vectorResource(id = space.o4bit.projectasteria.R.drawable.outline_satellite_alt_24) }),
+    LAUNCHES("Launches", { Icons.Filled.RocketLaunch }, { Icons.Outlined.RocketLaunch }),
+    ASTEROIDS("Asteroids", { Icons.Filled.Public }, { Icons.Outlined.Public })
 }
 
 @Composable
@@ -177,11 +182,15 @@ fun AsteriaApp(
         }
     }
 
-    AnimatedBackground(
-        type = backgroundType,
-        modifier = Modifier.fillMaxSize(),
-        launchSpeedMultiplier = launchSpeedMultiplier
-    ) {
+    // ── Full-screen splash overlay — shown once per process start ─────────────
+    var splashVisible by rememberSaveable { mutableStateOf(true) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedBackground(
+            type = backgroundType,
+            modifier = Modifier.fillMaxSize(),
+            launchSpeedMultiplier = launchSpeedMultiplier
+        ) {
         AsteriaNavGraph(
             navController = navController,
             spaceRepository = spaceRepository,
@@ -194,8 +203,8 @@ fun AsteriaApp(
                 bottomBar = {
                     AsteriaBottomNavigation(
                         tabs = MainTab.entries.map { it.title },
-                        selectedIcons = MainTab.entries.map { it.selectedIcon },
-                        unselectedIcons = MainTab.entries.map { it.unselectedIcon },
+                        selectedIcons = MainTab.entries.map { it.selectedIconFactory() },
+                        unselectedIcons = MainTab.entries.map { it.unselectedIconFactory() },
                         selectedIndex = pagerState.currentPage,
                         onTabSelected = { index ->
                             scope.launch { pagerState.animateScrollToPage(index) }
@@ -267,8 +276,15 @@ fun AsteriaApp(
                 }
             }
         }
-    }
-}
+    }   // AnimatedBackground
+
+        // Splash overlay — shown over everything, fades automatically
+        SplashOverlay(
+            visible = splashVisible,
+            onDismissed = { splashVisible = false }
+        )
+    }   // outer Box
+}   // AsteriaApp
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APOD tab composable
@@ -515,3 +531,55 @@ private fun ApodTab(
     }
 }
 
+// ─── Splash Screen Overlay ───────────────────────────────────────────────────
+
+/**
+ * Full-screen wordmark splash that shows immediately on app start and fades
+ * out after [holdMs] ms. The system splash screen (just a dark background)
+ * transitions seamlessly into this overlay.
+ */
+@Composable
+private fun SplashOverlay(
+    visible: Boolean,
+    onDismissed: () -> Unit,
+    holdMs: Long = 900L,
+    fadeDurationMs: Int = 500
+) {
+    var fading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(visible) {
+        if (visible) {
+            delay(holdMs)
+            fading = true
+            delay(fadeDurationMs.toLong())
+            onDismissed()
+        }
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (fading) 0f else 1f,
+        animationSpec = tween(durationMillis = fadeDurationMs, easing = FastOutSlowInEasing),
+        label = "splashAlpha"
+    )
+
+    if (visible) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { this.alpha = alpha },
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                drawRect(color = Color(0xFF0A0A0F))
+            }
+            androidx.compose.foundation.Image(
+                painter = painterResource(R.drawable.ic_splash_wordmark),
+                contentDescription = "Project Asteria",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit
+            )
+        }
+    }
+}
