@@ -360,17 +360,13 @@ private fun ApodTab(
         topBar = {
             TopAppBar(
                 title = {
-                    Surface(
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
-                        border = androidx.compose.foundation.BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
-                        shadowElevation = 4.dp
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        AnimatedSatelliteEasterEgg()
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Project Asteria",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 },
