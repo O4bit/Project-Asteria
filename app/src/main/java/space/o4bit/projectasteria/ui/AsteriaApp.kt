@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.absoluteValue
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -582,4 +585,68 @@ private fun SplashOverlay(
             )
         }
     }
+}
+
+@Composable
+fun AnimatedSatelliteEasterEgg() {
+    val context = LocalContext.current
+    var clickCount by remember { mutableStateOf(0) }
+    var showDialog by remember { mutableStateOf(false) }
+    
+    val rotation = remember { androidx.compose.animation.core.Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        rotation.animateTo(
+            targetValue = 360f,
+            animationSpec = tween(1500, easing = FastOutSlowInEasing)
+        )
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Enjoying Project Asteria?") },
+            text = { Text("If you like the app, it means a lot to me if you could star the repository! 💜") },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog = false
+                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/O4bit/Project-Asteria"))
+                    context.startActivity(intent)
+                }) {
+                    Text("Star on GitHub")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    Icon(
+        imageVector = ImageVector.vectorResource(id = R.drawable.outline_satellite_alt_24),
+        contentDescription = "Satellite",
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .size(28.dp)
+            .graphicsLayer { rotationZ = rotation.value }
+            .clickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null
+            ) {
+                scope.launch {
+                    rotation.animateTo(
+                        targetValue = rotation.value + 360f,
+                        animationSpec = tween(800, easing = FastOutSlowInEasing)
+                    )
+                }
+                clickCount++
+                if (clickCount >= 3) {
+                    showDialog = true
+                    clickCount = 0
+                }
+            }
+    )
 }
