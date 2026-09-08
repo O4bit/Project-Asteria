@@ -36,8 +36,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "space.o4bit.projectasteria.foss"
         minSdk = 31
         targetSdk = 36
-        versionCode = 50
-        versionName = "4.5.0"
+        versionCode = 51
+        versionName = "4.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         

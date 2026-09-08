@@ -1,0 +1,7 @@
+- Save past APODs directly from the History Gallery
+- Respectful image viewer layout that clears punch-hole cameras and system bars
+- Refined ISS map marker scaling for quick at-a-glance visibility
+- Full-screen animated wordmark splash sequence on app startup
+- Enhanced notification delivery and background error handling
+- Embedded APOD YouTube videos now play in privacy-respecting nocookie mode
+- High-fidelity material icons across the bottom navigation bar
