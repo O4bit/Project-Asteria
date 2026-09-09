@@ -122,7 +122,7 @@ extensions.configure<ApplicationExtension> {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
