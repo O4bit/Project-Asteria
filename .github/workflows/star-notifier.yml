@@ -1,0 +1,15 @@
+name: Star Notifier
+on:
+  watch:
+    types: [started]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Star Notification
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: "⭐ **${{ github.actor }}** starred [${{ github.repository }}](https://github.com/${{ github.repository }})"
