@@ -88,6 +88,7 @@ import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository
 import space.o4bit.projectasteria.data.preferences.UiHintsPreferencesRepository
 import space.o4bit.projectasteria.data.repository.AsteroidRepository
+import space.o4bit.projectasteria.utils.Constants
 import space.o4bit.projectasteria.data.repository.LaunchRepository
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 import space.o4bit.projectasteria.ui.components.AnimatedBackground
@@ -603,14 +604,33 @@ fun AnimatedSatelliteEasterEgg() {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Enjoying Project Asteria?") },
-            text = { Text("If you like the app, it means a lot to me if you could star the repository! 💜") },
+            text = { Text("If you like the app, it means a lot to me if you could star the repository or join our Discord community! 💜") },
             confirmButton = {
-                Button(onClick = {
-                    showDialog = false
-                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/O4bit/Project-Asteria"))
-                    context.startActivity(intent)
-                }) {
-                    Text("Star on GitHub")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilledTonalButton(onClick = {
+                        showDialog = false
+                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(Constants.DISCORD_INVITE_URL))
+                        context.startActivity(intent)
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_discord),
+                            contentDescription = "Discord",
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.Unspecified
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text("Discord")
+                    }
+                    Button(onClick = {
+                        showDialog = false
+                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(Constants.GITHUB_REPO_URL))
+                        context.startActivity(intent)
+                    }) {
+                        Text("Star on GitHub")
+                    }
                 }
             },
             dismissButton = {

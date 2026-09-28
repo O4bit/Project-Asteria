@@ -99,37 +99,29 @@ object IssWidgetMapRenderer {
             canvas.drawLine(x, 0f, x, h, gridPaint)
         }
 
-        // Equator & Prime Meridian
         val axisPaint = Paint().apply {
             color = gridLineColor; strokeWidth = 1.5f; style = Paint.Style.STROKE
         }
         canvas.drawLine(0f, 90f / 180f * h, w, 90f / 180f * h, axisPaint)
         canvas.drawLine(180f / 360f * w, 0f, 180f / 360f * w, h, axisPaint)
 
-        // 3. Day/Night Terminator
         drawDayNightTerminator(canvas, w, h, nightColor)
 
-        // 4. High-fidelity SVG continents
         drawSvgContinents(context, canvas, w, h, landFill, landStroke)
 
-        // 5. ISS reticle
         issPosition?.let { pos ->
             val tx = ((pos.longitude + 180.0) / 360.0 * w).toFloat()
             val ty = ((90.0 - pos.latitude) / 180.0 * h).toFloat()
 
-            // Outer glow
             canvas.drawCircle(tx, ty, 30f, Paint().apply {
                 color = errorColor; strokeWidth = 4f
                 style = Paint.Style.STROKE; isAntiAlias = true; alpha = 75
             })
-            // Ring
             canvas.drawCircle(tx, ty, 18f, Paint().apply {
                 color = errorColor; strokeWidth = 3f; style = Paint.Style.STROKE; isAntiAlias = true
             })
-            // Core fill
             canvas.drawCircle(tx, ty, 8f, Paint().apply { color = errorColor; isAntiAlias = true })
             canvas.drawCircle(tx, ty, 4f, Paint().apply { color = Color.WHITE; isAntiAlias = true })
-            // Crosshair ticks
             val tickPaint = Paint().apply { color = errorColor; strokeWidth = 3f; isAntiAlias = true }
             val tL = 18f; val tG = 10f
             canvas.drawLine(tx - tL, ty, tx - tG, ty, tickPaint)
@@ -138,7 +130,6 @@ object IssWidgetMapRenderer {
             canvas.drawLine(tx, ty + tG, tx, ty + tL, tickPaint)
         }
 
-        // 6. Smooth rounded map border frame
         val mapBorderPaint = Paint().apply {
             color = Color.parseColor("#263D5C")
             strokeWidth = 3f

@@ -87,7 +87,7 @@
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.application than 9.2.1 is available: 9.4.0"
+        message="A newer version of com.android.application than 9.2.1 is available: 9.4.1"
         errorLine1="androidGradlePlugin = &quot;9.2.1&quot;"
         errorLine2="                      ~~~~~~~">
         <location
@@ -98,7 +98,7 @@
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.library than 9.2.1 is available: 9.4.0"
+        message="A newer version of com.android.library than 9.2.1 is available: 9.4.1"
         errorLine1="androidGradlePlugin = &quot;9.2.1&quot;"
         errorLine2="                      ~~~~~~~">
         <location
@@ -114,7 +114,7 @@
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/AsteriaApp.kt"
-            line="433"
+            line="429"
             column="22"/>
     </issue>
 
@@ -21824,7 +21824,7 @@
         errorLine2="                                 ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/AsteriaApp.kt"
-            line="593"
+            line="589"
             column="34"/>
     </issue>
 
@@ -25095,7 +25095,7 @@
         errorLine2="                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/space/o4bit/projectasteria/ui/AsteriaApp.kt"
-            line="614"
+            line="610"
             column="61"/>
     </issue>
 

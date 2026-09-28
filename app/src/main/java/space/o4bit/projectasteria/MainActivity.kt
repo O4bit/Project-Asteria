@@ -58,9 +58,9 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Notification permission is now requested contextually from Settings when
-        // the user enables daily notifications — not on cold launch. Moved here only
-        // if the permission is already granted (no-op) or was previously requested.
+
+
+
         dismissNotificationIfRequested(intent)
 
         enableEdgeToEdge()
@@ -76,8 +76,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Handle the case where the app is already in the foreground and a deep-link
-     * or notification intent arrives. Without this, `intent` in `setContent` is
+     * Called when a new intent is received, e.g., when a deep-link or notification intent arrives. Without this, `intent` in `setContent` is
      * stale and the new intent is silently dropped.
      */
     override fun onNewIntent(intent: Intent) {
