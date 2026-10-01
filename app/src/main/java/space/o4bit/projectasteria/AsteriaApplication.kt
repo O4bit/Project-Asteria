@@ -49,6 +49,14 @@ class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFac
     override fun onCreate() {
         super.onCreate()
         Coil.setImageLoader(newImageLoader())
+        
+        space.o4bit.projectasteria.util.DiagnosticLogger.initialize(this)
+        
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            space.o4bit.projectasteria.util.DiagnosticLogger.log("CRASH", "Uncaught exception on thread ${thread.name}", throwable)
+            defaultHandler?.uncaughtException(thread, throwable)
+        }
     }
 
     override val workManagerConfiguration: Configuration

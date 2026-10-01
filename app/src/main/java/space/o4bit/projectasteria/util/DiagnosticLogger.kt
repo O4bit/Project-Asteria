@@ -8,17 +8,28 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.io.FileWriter
 
 /**
- * Local, privacy-preserving diagnostic logger.
- * Keeps an in-memory rotating buffer of the last 500 log events.
+ * Persistent diagnostic logger.
  * Logs stay on device and can be exported by the user from Settings -> About.
  */
 object DiagnosticLogger {
     private const val MAX_LOGS = 500
     private val logBuffer = ConcurrentLinkedQueue<String>()
+    private var logFile: File? = null
 
-    init {
+    fun initialize(context: Context) {
+        logFile = File(context.filesDir, "diagnostic_logs.txt")
+        if (logFile?.exists() == true) {
+            try {
+                val lines = logFile?.readLines() ?: emptyList()
+                val entries = lines.joinToString("\n").split("\n---\n").filter { it.isNotBlank() }
+                logBuffer.addAll(entries.takeLast(MAX_LOGS))
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
         log("DiagnosticLogger", "Diagnostic logger initialized")
     }
 
@@ -28,12 +39,21 @@ object DiagnosticLogger {
             append("[$timestamp] [$tag] $message")
             if (throwable != null) {
                 append("\nException: ${throwable.localizedMessage}")
-                append("\nStacktrace: ${throwable.stackTraceToString().take(500)}")
+                append("\nStacktrace: ${throwable.stackTraceToString().take(2000)}")
             }
         }
         logBuffer.add(entry)
         while (logBuffer.size > MAX_LOGS) {
             logBuffer.poll()
+        }
+        
+        // Persist to file
+        logFile?.let { file ->
+            try {
+                file.writeText(logBuffer.joinToString("\n---\n"))
+            } catch (e: Exception) {
+                // ignore
+            }
         }
     }
 
@@ -66,6 +86,7 @@ object DiagnosticLogger {
 
     fun clearLogs() {
         logBuffer.clear()
+        logFile?.delete()
         log("DiagnosticLogger", "Logs cleared by user")
     }
 }

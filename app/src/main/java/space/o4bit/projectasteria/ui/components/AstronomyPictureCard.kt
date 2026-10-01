@@ -112,7 +112,7 @@ fun AstronomyPictureCard(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
+            val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
             val isVideo = astronomyPicture.mediaType == "video"
             val context = LocalContext.current
 

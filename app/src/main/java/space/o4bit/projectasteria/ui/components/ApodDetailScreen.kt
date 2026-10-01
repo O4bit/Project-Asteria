@@ -237,7 +237,7 @@ private fun ApodMediaHeader(
     onImageClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val imageUrl = url ?: hdUrl
+    val imageUrl = hdUrl ?: url
 
     when {
         mediaType == "image" && imageUrl != null -> {
