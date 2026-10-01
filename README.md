@@ -1,23 +1,22 @@
-# Project Asteria
-<p align="center">
+<div align="center">
   <img src="app/src/main/ic_launcher-playstore.png" width="128" height="128" alt="Project Asteria Logo">
-</p>
 
-<!-- Small shield badges -->
-<p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
-  <img src="https://img.shields.io/badge/F--Droid-Ready-blue.svg" alt="F-Droid Ready">
-  <img src="https://img.shields.io/badge/API-NASA-red.svg" alt="NASA API">
-  <img src="https://img.shields.io/badge/Min%20API-31-green.svg" alt="Min API 31">
-  <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fkitswas%2Ffdroid-metrics-dashboard%2Fraw%2Frefs%2Fheads%2Fmain%2Fprocessed%2Fmonthly%2Fspace.o4bit.projectasteria.foss.json&query=%24.total_downloads&logo=fdroid&label=Downloads%20last%20month" alt="Downloads last month">
-</p>
+  <h1>Project Asteria</h1>
 
-<!-- Large F-Droid download badge -->
-<p align="center">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT">
+  <img src="https://img.shields.io/badge/F--Droid-Ready-blue.svg?style=for-the-badge" alt="F-Droid Ready">
+  <img src="https://img.shields.io/badge/API-NASA-red.svg?style=for-the-badge" alt="NASA API">
+  <img src="https://img.shields.io/badge/Min%20API-31-green.svg?style=for-the-badge" alt="Min API 31">
+  <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fkitswas%2Ffdroid-metrics-dashboard%2Fraw%2Frefs%2Fheads%2Fmain%2Fprocessed%2Fmonthly%2Fspace.o4bit.projectasteria.foss.json&query=%24.total_downloads&logo=fdroid&label=Downloads%20last%20month&style=for-the-badge" alt="Downloads last month">
+  <a href="https://discord.gg/ZRvqsPgMZ5"><img src="https://img.shields.io/discord/1553814965918367784?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="Discord Server"></a>
+
+  <br>
+
   <a href="https://f-droid.org/packages/space.o4bit.projectasteria.foss">
     <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">
   </a>
-</p>
+</div>
+
 A Free and Open Source (FOSS) Android application for space exploration using official NASA APIs.
 
 ## Screenshots
