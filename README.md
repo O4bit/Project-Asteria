@@ -90,8 +90,6 @@ Contributions are welcome via GitHub Pull Requests.
 4. Run `./gradlew testDebugUnitTest lintRelease` before submitting your PR.
 5. Do not introduce new dependencies that require non-free network services without a discussion.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) if present for detailed guidelines.
-
 ## Security
 
 To report a security vulnerability, please use [GitHub's private vulnerability reporting](https://github.com/O4bit/Project-Asteria/security/advisories/new).  
