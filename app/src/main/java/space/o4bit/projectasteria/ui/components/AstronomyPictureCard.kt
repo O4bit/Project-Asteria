@@ -339,6 +339,24 @@ fun AstronomyPictureCard(
                     }
                 }
 
+                // Image Credit (if available)
+                if (!astronomyPicture.copyright.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    val linkColor = MaterialTheme.colorScheme.primary
+                    val creditText = remember(astronomyPicture.copyright, linkColor) {
+                        TextUtils.htmlToAnnotatedString(
+                            html = astronomyPicture.copyright,
+                            prefix = "Image Credit: ",
+                            linkColor = linkColor
+                        )
+                    }
+                    Text(
+                        text = creditText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
                 // Short Fact Box (if available)
                 if (enhancedPicture.shortFact.isNotBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
