@@ -1,0 +1,7 @@
+- Re-tuned gyro parallax sensitivity across all backgrounds
+- Smooth scroll-bound collapsing navigation bars on APOD
+- Seamless dual-card APOD preview transition animation
+- Clean edge-aligned screen headers and uncluttered ISS layout
+- Fixed NASA JPL asteroid web browser white screen
+- Added configurable ISS tracker update intervals
+- Performance and bundle optimizations
