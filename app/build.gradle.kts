@@ -33,7 +33,7 @@ extensions.configure<ApplicationExtension> {
     }
 
     defaultConfig {
-        applicationId = "space.o4bit.projectasteria.foss"
+        applicationId = "space.o4bit.projectasteria"
         minSdk = 31
         targetSdk = 36
         versionCode = 52
