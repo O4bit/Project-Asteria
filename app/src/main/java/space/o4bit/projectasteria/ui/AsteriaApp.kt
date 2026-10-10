@@ -429,9 +429,10 @@ private fun ApodTab(
             }
         }
     ) { paddingValues ->
-    val isExpanded = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp >= 600
+        val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+        val isTablet = configuration.smallestScreenWidthDp >= 600
 
-    if (isExpanded && apodState is ApodUiState.Success) {
+        if (isTablet && apodState is ApodUiState.Success) {
         Row(
             modifier = Modifier
                 .fillMaxSize()

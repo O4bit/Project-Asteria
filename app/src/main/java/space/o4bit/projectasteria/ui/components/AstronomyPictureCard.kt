@@ -57,8 +57,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import android.content.res.Configuration
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -124,12 +126,15 @@ fun AstronomyPictureCard(
             val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
             val isVideo = astronomyPicture.mediaType == "video"
             val context = LocalContext.current
+            val configuration = LocalConfiguration.current
+            val isLandscapePhone = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && configuration.smallestScreenWidthDp < 600
+            val mediaHeight = if (isLandscapePhone) 190.dp else 280.dp
 
             // ── 1. Unobscured Media Preview ──────────────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp)
+                    .height(mediaHeight)
                     .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {

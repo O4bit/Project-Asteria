@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,13 +29,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -76,14 +81,26 @@ fun ImmersiveApodContent(
 
     val onSurface = MaterialTheme.colorScheme.onSurface
     val picture = state.picture
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
 
-    // Parallax translation so the picture card glides slower than scroll,
-    // allowing the reading card to slide cleanly up and over it without disappearing early.
-    val maxParallaxPx = with(density) { 220.dp.toPx() }
-    val cardTranslationY = (scrollState.value * 0.4f).coerceAtMost(maxParallaxPx)
-    val expandScrollTargetPx = with(density) { 460.dp.toPx() }.toInt()
+    val isLandscapePhone = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE && configuration.smallestScreenWidthDp < 600
+    val cardHeightEstimate = if (isLandscapePhone) 300.dp else 470.dp
+    val expandScrollTargetPx = with(density) { cardHeightEstimate.toPx() }.toInt()
+    val maxParallaxPx = with(density) { (if (isLandscapePhone) 120.dp else 200.dp).toPx() }
+    val cardTranslationY = (scrollState.value * 0.35f).coerceAtMost(maxParallaxPx)
+    var readingCardHeightPx by remember { mutableIntStateOf(0) }
 
-    Box(modifier = modifier) {
+    BoxWithConstraints(modifier = modifier) {
+        val viewportHeight = maxHeight
+        val bottomClearance = remember(readingCardHeightPx, viewportHeight, density) {
+            if (readingCardHeightPx > 0) {
+                val cardHeightDp = with(density) { readingCardHeightPx.toDp() }
+                (viewportHeight - cardHeightDp + 60.dp).coerceAtLeast(96.dp)
+            } else {
+                (configuration.screenHeightDp * 0.5f).dp.coerceAtLeast(96.dp)
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,7 +143,10 @@ fun ImmersiveApodContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .offset(y = (-10).dp)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .onGloballyPositioned { coordinates ->
+                        readingCardHeightPx = coordinates.size.height
+                    },
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
@@ -147,6 +167,8 @@ fun ImmersiveApodContent(
                             ) {
                                 if (scrollState.value < expandScrollTargetPx / 2) {
                                     scope.launch { scrollState.animateScrollTo(expandScrollTargetPx) }
+                                } else {
+                                    scope.launch { scrollState.animateScrollTo(0) }
                                 }
                             },
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -293,17 +315,23 @@ fun ImmersiveApodContent(
 
                     // Return hint
                     Text(
-                        text = "↑ Scroll up to return",
+                        text = "↑ Tap or scroll up to return",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                scope.launch { scrollState.animateScrollTo(0) }
+                            }
+                            .padding(vertical = 8.dp),
                         textAlign = TextAlign.Center
                     )
                 }
             }
 
-            // Bottom space
-            Spacer(Modifier.height(80.dp))
+            // Bottom space clearance
+            Spacer(Modifier.height(bottomClearance))
         }
     }
 }
