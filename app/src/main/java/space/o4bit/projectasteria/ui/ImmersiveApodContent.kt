@@ -164,9 +164,9 @@ fun ImmersiveApodContent(
             }
 
             // ── 2. Peeking Preview Card (Visible at rest to signal scroll) ─────
-            val previewAlpha = (1f - fraction * 3.5f).coerceIn(0f, 1f)
-            val previewScale = (1f - fraction * 0.15f).coerceIn(0f, 1f)
-            val previewSlide = fraction * -120f
+            val previewAlpha = (1f - fraction * 1.5f).coerceIn(0f, 1f)
+            val previewScale = (1f - fraction * 0.05f).coerceIn(0f, 1f)
+            val previewSlide = fraction * 80f
             
             Box(
                 modifier = Modifier
@@ -235,7 +235,7 @@ fun ImmersiveApodContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .zIndex(1f)
+                    .zIndex(2f)
                     .graphicsLayer {
                         alpha = textAlpha
                         translationY = textSlide
