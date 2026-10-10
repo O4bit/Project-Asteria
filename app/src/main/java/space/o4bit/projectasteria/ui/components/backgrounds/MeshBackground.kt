@@ -66,7 +66,7 @@ fun MeshBackground(
             val tiltRad = Math.toRadians(gridTilt.toDouble())
             val rotatedY = normalizedY * cos(tiltRad).toFloat() - z * sin(tiltRad).toFloat()
             val rotatedZ = normalizedY * sin(tiltRad).toFloat() + z * cos(tiltRad).toFloat()
-            val parallaxStrength = node.baseDepth * 60f
+            val parallaxStrength = node.baseDepth * 400f
             val perspective = cameraZ / (cameraZ - rotatedZ)
 
             return Offset(

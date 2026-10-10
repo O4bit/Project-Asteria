@@ -69,7 +69,7 @@ fun ShapesBackground(
 
         configs.forEachIndexed { index, config ->
             val pos = smoothedPositions[index]
-            val parallaxStrength = config.depth * 45f
+            val parallaxStrength = config.depth * 300f
             val centerX = pos.x * size.width + tiltX * parallaxStrength
             val centerY = pos.y * size.height + tiltY * parallaxStrength
             val angleX = t * config.rotSpeeds.x * 0.0004f

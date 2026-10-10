@@ -123,15 +123,15 @@ fun StarryBackground(
 
             nebulae.forEachIndexed { index, nebula ->
                 val depth = 0.2f + (index * 0.1f)
-                val pX = tiltX * 100f * depth
-                val pY = tiltY * 100f * depth
+                val pX = tiltX * 400f * depth
+                val pY = tiltY * 400f * depth
                 drawNebula(nebula, nebulaPulse.value, pX, pY)
             }
 
             stars.forEachIndexed { index, star ->
                 val depth = 0.5f + (index % 5) * 0.1f
-                val pX = tiltX * 150f * depth
-                val pY = tiltY * 150f * depth
+                val pX = tiltX * 600f * depth
+                val pY = tiltY * 600f * depth
                 val individualTwinkle = (twinkleBase.value +
                     kotlin.math.sin((System.currentTimeMillis() % star.twinkleSpeed.toLong()) / star.twinkleSpeed * 2 * kotlin.math.PI).toFloat() * 0.3f)
                     .coerceIn(0.4f, 1f)

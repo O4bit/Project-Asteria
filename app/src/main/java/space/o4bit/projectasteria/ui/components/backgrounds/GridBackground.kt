@@ -42,8 +42,8 @@ fun GridBackground(
 
         for (row in 0 until rows) {
             for (col in 0 until cols) {
-                val baseX = col * cellW + tiltX * 12f
-                val baseY = row * cellH + tiltY * 12f
+                val baseX = col * cellW + tiltX * 200f
+                val baseY = row * cellH + tiltY * 200f
 
                 val dx = baseX - size.width * 0.5f
                 val dy = baseY - size.height * 0.5f

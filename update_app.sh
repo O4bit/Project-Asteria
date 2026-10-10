@@ -1,1 +1,0 @@
-sed -i 's/val LocalReadingMode.*/val LocalNavOffset = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<Float>> { error("No LocalNavOffset") }/g' app/src/main/java/space/o4bit/projectasteria/ui/AsteriaApp.kt

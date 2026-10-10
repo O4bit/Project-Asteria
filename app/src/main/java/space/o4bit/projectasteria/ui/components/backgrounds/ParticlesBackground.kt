@@ -93,7 +93,7 @@ fun ParticlesBackground(
     Canvas(modifier = modifier.fillMaxSize()) {
         val tiltX = parallaxState.tiltX.value
         val tiltY = parallaxState.tiltY.value
-        val parallaxStrength = 25f
+        val parallaxStrength = 250f
 
         // Pre-compute pixel positions once per frame
         val positions = Array(particles.size) { i ->

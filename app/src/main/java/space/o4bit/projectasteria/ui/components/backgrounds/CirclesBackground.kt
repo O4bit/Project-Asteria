@@ -46,7 +46,7 @@ fun CirclesBackground(
         )
 
         circles.forEach { circle ->
-            val parallaxStrength = circle.depth * 50f
+            val parallaxStrength = circle.depth * 300f
             val center = Offset(
                 size.width * circle.x + tiltX * parallaxStrength,
                 size.height * circle.y + tiltY * parallaxStrength

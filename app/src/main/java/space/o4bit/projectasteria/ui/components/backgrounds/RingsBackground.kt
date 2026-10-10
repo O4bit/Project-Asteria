@@ -55,7 +55,7 @@ fun RingsBackground(
             val cx = config.startX + halfX + halfX * sin(t * twoPi / config.durationX)
             val cy = config.startY + halfY + halfY * sin(t * twoPi / config.durationY)
 
-            val parallaxStrength = config.depth * 50f
+            val parallaxStrength = config.depth * 300f
             val center = Offset(
                 size.width * cx + tiltX * parallaxStrength,
                 size.height * cy + tiltY * parallaxStrength
