@@ -224,23 +224,7 @@ fun ImmersiveApodContent(
                         color = onSurface
                     )
 
-                    // Image Credit (with clickable links)
-                    if (!picture.astronomyPicture.copyright.isNullOrBlank()) {
-                        Spacer(Modifier.height(6.dp))
-                        val linkColor = MaterialTheme.colorScheme.primary
-                        val creditText = remember(picture.astronomyPicture.copyright, linkColor) {
-                            TextUtils.htmlToAnnotatedString(
-                                html = picture.astronomyPicture.copyright,
-                                prefix = "Image Credit: ",
-                                linkColor = linkColor
-                            )
-                        }
-                        Text(
-                            text = creditText,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+
 
                     Spacer(Modifier.height(16.dp))
 

@@ -346,7 +346,7 @@ fun AstronomyPictureCard(
 
                 // Image Credit (if available)
                 if (!astronomyPicture.copyright.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     val linkColor = MaterialTheme.colorScheme.primary
                     val creditText = remember(astronomyPicture.copyright, linkColor) {
                         TextUtils.htmlToAnnotatedString(
@@ -357,42 +357,9 @@ fun AstronomyPictureCard(
                     }
                     Text(
                         text = creditText,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-
-                // Short Fact Box (if available)
-                if (enhancedPicture.shortFact.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    var factExpanded by remember { mutableStateOf(false) }
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { factExpanded = !factExpanded }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = enhancedPicture.shortFact,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                maxLines = if (factExpanded) Int.MAX_VALUE else 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
                 }
             }
         }

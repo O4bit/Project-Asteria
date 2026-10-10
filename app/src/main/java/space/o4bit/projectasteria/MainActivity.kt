@@ -34,6 +34,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
 
         lifecycleScope.launch(Dispatchers.IO) {
             val imageLoader = ImageLoader.Builder(applicationContext)
