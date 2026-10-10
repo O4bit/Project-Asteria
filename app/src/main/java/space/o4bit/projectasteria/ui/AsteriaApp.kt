@@ -219,8 +219,8 @@ fun AsteriaApp(
                 bottomBar = {
                     AnimatedVisibility(
                         visible = !LocalReadingMode.current.value,
-                        enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { it }),
-                        exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { it })
+                        enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { it }) + androidx.compose.animation.expandVertically(tween(400), expandFrom = Alignment.Top),
+                        exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { it }) + androidx.compose.animation.shrinkVertically(tween(400), shrinkTowards = Alignment.Top)
                     ) {
                         AsteriaBottomNavigation(
                             tabs = MainTab.entries.map { it.title },
@@ -380,8 +380,8 @@ private fun ApodTab(
         topBar = {
             AnimatedVisibility(
                 visible = !LocalReadingMode.current.value,
-                enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { -it }),
-                exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { -it })
+                enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { -it }) + androidx.compose.animation.expandVertically(tween(400), expandFrom = Alignment.Bottom),
+                exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { -it }) + androidx.compose.animation.shrinkVertically(tween(400), shrinkTowards = Alignment.Bottom)
             ) {
                 TopAppBar(
                     title = {
