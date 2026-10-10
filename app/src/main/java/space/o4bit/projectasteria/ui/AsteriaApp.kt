@@ -73,6 +73,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -125,7 +126,7 @@ enum class MainTab(
 
 
 
-val LocalReadingMode = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<Boolean>> { error("No LocalReadingMode provided") }
+val LocalNavOffset = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<Float>> { error("No LocalNavOffset") }
 
 @Composable
 fun AsteriaApp(
@@ -144,8 +145,8 @@ fun AsteriaApp(
         pageCount = { MainTab.entries.size }
     )
 
-    val readingMode = remember { mutableStateOf(false) }
-    androidx.compose.runtime.CompositionLocalProvider(LocalReadingMode provides readingMode) {
+    val navOffset = remember { mutableStateOf(0f) }
+    androidx.compose.runtime.CompositionLocalProvider(LocalNavOffset provides navOffset) {
 
     // ── Repositories & ViewModels ─────────────────────────────────────────────
     val spaceRepository = remember { SpaceRepository(application.database.apodDao()) }
@@ -217,10 +218,16 @@ fun AsteriaApp(
             Scaffold(
                 containerColor = Color.Transparent,
                 bottomBar = {
-                    AnimatedVisibility(
-                        visible = !LocalReadingMode.current.value,
-                        enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { it }) + androidx.compose.animation.expandVertically(tween(400), expandFrom = Alignment.Top),
-                        exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { it }) + androidx.compose.animation.shrinkVertically(tween(400), shrinkTowards = Alignment.Top)
+                    val offset = LocalNavOffset.current.value
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .layout { measurable, constraints ->
+                            val placeable = measurable.measure(constraints)
+                            val height = (placeable.height * (1f - offset)).toInt()
+                            layout(placeable.width, height) {
+                                placeable.place(0, 0)
+                            }
+                        }
                     ) {
                         AsteriaBottomNavigation(
                             tabs = MainTab.entries.map { it.title },
@@ -378,10 +385,17 @@ private fun ApodTab(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            AnimatedVisibility(
-                visible = !LocalReadingMode.current.value,
-                enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { -it }) + androidx.compose.animation.expandVertically(tween(400), expandFrom = Alignment.Bottom),
-                exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { -it }) + androidx.compose.animation.shrinkVertically(tween(400), shrinkTowards = Alignment.Bottom)
+            val offset = LocalNavOffset.current.value
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    val height = (placeable.height * (1f - offset)).toInt()
+                    layout(placeable.width, height) {
+                        val yShift = (placeable.height * offset).toInt()
+                        placeable.place(0, -yShift)
+                    }
+                }
             ) {
                 TopAppBar(
                     title = {

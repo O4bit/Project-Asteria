@@ -76,12 +76,14 @@ fun ImmersiveApodContent(
 ) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
-    val readingMode = LocalReadingMode.current
+    val navOffsetState = LocalNavOffset.current
     
     androidx.compose.runtime.LaunchedEffect(scrollState) {
-        androidx.compose.runtime.snapshotFlow { scrollState.value > 150 }
-            .collect { isReading ->
-                readingMode.value = isReading
+        androidx.compose.runtime.snapshotFlow { scrollState.value }
+            .collect { scroll ->
+                // Start collapsing at 50px, fully collapse at 250px
+                val fraction = ((scroll - 50f) / 200f).coerceIn(0f, 1f)
+                navOffsetState.value = fraction
             }
     }
 
