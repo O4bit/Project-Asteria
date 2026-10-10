@@ -113,6 +113,7 @@ fun LaunchScreen(
             TopAppBar(
                 title = {
                     Text(
+                        modifier = Modifier.padding(start = 12.dp),
                         text = "Upcoming Launches",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold

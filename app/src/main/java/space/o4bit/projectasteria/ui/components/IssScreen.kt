@@ -97,6 +97,7 @@ fun IssScreen(
             TopAppBar(
                 title = {
                     Row(
+                        modifier = Modifier.padding(start = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(

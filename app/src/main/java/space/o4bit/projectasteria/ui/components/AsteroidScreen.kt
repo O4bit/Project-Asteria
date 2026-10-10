@@ -107,6 +107,7 @@ fun AsteroidScreen(
             TopAppBar(
                 title = {
                     Text(
+                        modifier = Modifier.padding(start = 12.dp),
                         text = "Near-Earth Objects",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
