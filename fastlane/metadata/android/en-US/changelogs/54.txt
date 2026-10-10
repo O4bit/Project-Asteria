@@ -1,0 +1,4 @@
+- Hotfix for in-app web browser blank screen when loading NASA JPL asteroid details
+- Enforced HTTPS conversion and allowed NASA/JPL domain network redirects
+- Improved SSL certificate tolerance for devices with legacy trust stores
+- Added web error recovery view with retry and external browser fallback
