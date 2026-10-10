@@ -9,6 +9,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.graphics.graphicsLayer
@@ -217,8 +219,8 @@ fun AsteriaApp(
                 bottomBar = {
                     AnimatedVisibility(
                         visible = !LocalReadingMode.current.value,
-                        enter = fadeIn(),
-                        exit = fadeOut()
+                        enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { it }),
+                        exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { it })
                     ) {
                         AsteriaBottomNavigation(
                             tabs = MainTab.entries.map { it.title },
@@ -378,8 +380,8 @@ private fun ApodTab(
         topBar = {
             AnimatedVisibility(
                 visible = !LocalReadingMode.current.value,
-                enter = fadeIn(),
-                exit = fadeOut()
+                enter = fadeIn(tween(400)) + slideInVertically(tween(400), initialOffsetY = { -it }),
+                exit = fadeOut(tween(400)) + slideOutVertically(tween(400), targetOffsetY = { -it })
             ) {
                 TopAppBar(
                     title = {
