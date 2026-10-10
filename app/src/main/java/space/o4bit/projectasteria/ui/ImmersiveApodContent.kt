@@ -2,14 +2,10 @@ package space.o4bit.projectasteria.ui
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,33 +13,33 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -57,7 +53,8 @@ import space.o4bit.projectasteria.utils.Constants
 import space.o4bit.projectasteria.utils.TextUtils
 
 /**
- * Immersive APOD reading experience with a peeking preview card and pinned launches.
+ * Immersive APOD reading experience where the reading content card smoothly
+ * slides up and over the APOD picture card, with natural parallax and zero gap.
  */
 @Composable
 fun ImmersiveApodContent(
@@ -75,27 +72,16 @@ fun ImmersiveApodContent(
 ) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
-
-    // Scroll range over which transition occurs
-    val transitionRangePx = 650
-
-    val rawFraction by remember {
-        derivedStateOf { (scrollState.value.toFloat() / transitionRangePx).coerceIn(0f, 1f) }
-    }
-
-    val fraction by animateFloatAsState(
-        targetValue = rawFraction,
-        animationSpec = tween(durationMillis = 80, easing = FastOutSlowInEasing),
-        label = "immersiveFraction"
-    )
-
-    val cardAlpha = (1f - fraction * 1.5f).coerceIn(0f, 1f)
-    val cardScale = 1f - fraction * 0.12f
-    val textAlpha = ((fraction - 0.12f) / 0.78f).coerceIn(0f, 1f)
-    val textSlide = (1f - textAlpha) * 40f
+    val density = LocalDensity.current
 
     val onSurface = MaterialTheme.colorScheme.onSurface
     val picture = state.picture
+
+    // Parallax translation so the picture card glides slower than scroll,
+    // allowing the reading card to slide cleanly up and over it without disappearing early.
+    val maxParallaxPx = with(density) { 220.dp.toPx() }
+    val cardTranslationY = (scrollState.value * 0.4f).coerceAtMost(maxParallaxPx)
+    val expandScrollTargetPx = with(density) { 460.dp.toPx() }.toInt()
 
     Box(modifier = modifier) {
         Column(
@@ -105,38 +91,27 @@ fun ImmersiveApodContent(
         ) {
             // ── 0. Pinned Launches Carousel/List ─────────────────────────────
             if (pinnedLaunches.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .graphicsLayer {
-                            alpha = cardAlpha
-                        }
-                ) {
-                    Column {
-                        pinnedLaunches.forEach { launch ->
-                            PinnedLaunchCard(
-                                launch = launch,
-                                onLaunchClick = { onLaunchClick(launch.id) },
-                                onUnpinClick = { onUnpinLaunch(launch.id) },
-                                autoRemoveSetting = autoRemoveSetting,
-                                neverAskSetting = neverAskSetting,
-                                onUpdateAutoRemove = onUpdateAutoRemove,
-                                onUpdateNeverAsk = onUpdateNeverAsk
-                            )
-                        }
+                Column {
+                    pinnedLaunches.forEach { launch ->
+                        PinnedLaunchCard(
+                            launch = launch,
+                            onLaunchClick = { onLaunchClick(launch.id) },
+                            onUnpinClick = { onUnpinLaunch(launch.id) },
+                            autoRemoveSetting = autoRemoveSetting,
+                            neverAskSetting = neverAskSetting,
+                            onUpdateAutoRemove = onUpdateAutoRemove,
+                            onUpdateNeverAsk = onUpdateNeverAsk
+                        )
                     }
                 }
             }
 
-            // ── 1. APOD Picture Card ──────────────────────────────────────────
+            // ── 1. APOD Picture Card (Moves with parallax so reading card slides over it)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .graphicsLayer {
-                        alpha = cardAlpha
-                        scaleX = cardScale
-                        scaleY = cardScale
-                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 0f)
+                        translationY = cardTranslationY
                     }
             ) {
                 AstronomyPictureCard(
@@ -146,214 +121,189 @@ fun ImmersiveApodContent(
                 )
             }
 
-            // ── 2. Peeking Preview Card (Visible at rest to signal scroll) ─────
-            AnimatedVisibility(
-                visible = fraction < 0.35f,
-                enter = fadeIn(),
-                exit = fadeOut()
+            // ── 2. Full Reading Content Section (Slides up and covers the picture card)
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-10).dp)
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                shadowElevation = 10.dp
             ) {
-                Surface(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .clickable {
-                            scope.launch { scrollState.animateScrollTo(600) }
-                        },
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                    shadowElevation = 6.dp
+                        .padding(20.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    // Tap handle to expand/scroll
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) {
+                                if (scrollState.value < expandScrollTargetPx / 2) {
+                                    scope.launch { scrollState.animateScrollTo(expandScrollTargetPx) }
+                                }
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Drag handle pill
+                        Box(
+                            modifier = Modifier
+                                .width(38.dp)
+                                .height(4.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f))
+                        )
+
+                        Spacer(Modifier.height(14.dp))
+
+                        // Category Pill + Date
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                                border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                            ) {
                                 Text(
                                     text = "ABOUT THIS IMAGE",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    letterSpacing = 1.sp
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = "• Tap or scroll to read",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    letterSpacing = 1.sp,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                 )
                             }
-                            Spacer(Modifier.height(4.dp))
+
                             Text(
-                                text = picture.astronomyPicture.explanation,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
+                                text = picture.astronomyPicture.date,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Scroll down to read full explanation",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
                     }
-                }
-            }
 
-            // ── 3. Full Reading Content Section ──────────────────────────────
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .graphicsLayer {
-                        alpha = textAlpha
-                        translationY = textSlide
-                    }
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                    shadowElevation = 8.dp
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp)
-                    ) {
-                        // ── Make text selectable and copyable ─────────────────
-                        SelectionContainer {
-                            Column {
-                                // Title
-                                Text(
-                                    text = picture.astronomyPicture.title,
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = onSurface,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
+                    Spacer(Modifier.height(14.dp))
 
-                                Spacer(Modifier.height(6.dp))
+                    // Title
+                    Text(
+                        text = picture.astronomyPicture.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = onSurface
+                    )
 
-                                // Date
-                                Text(
-                                    text = picture.astronomyPicture.date,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = onSurface.copy(alpha = 0.75f),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
-
-                                if (!picture.astronomyPicture.copyright.isNullOrBlank()) {
-                                    Spacer(Modifier.height(6.dp))
-                                    val linkColor = MaterialTheme.colorScheme.primary
-                                    val creditText = remember(picture.astronomyPicture.copyright, linkColor) {
-                                        TextUtils.htmlToAnnotatedString(
-                                            html = picture.astronomyPicture.copyright,
-                                            prefix = "Image Credit: ",
-                                            linkColor = linkColor
-                                        )
-                                    }
-                                    Text(
-                                        text = creditText,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = onSurface.copy(alpha = 0.85f),
-                                        modifier = Modifier.fillMaxWidth(),
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-
-                                Spacer(Modifier.height(20.dp))
-
-                                // Divider line
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(1.dp),
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
-                                ) {}
-
-                                Spacer(Modifier.height(20.dp))
-
-                                // Full Explanation Body (High Contrast White / onSurface)
-                                val linkColor = MaterialTheme.colorScheme.primary
-                                val explanationText = remember(picture.astronomyPicture.explanation, linkColor) {
-                                    TextUtils.htmlToAnnotatedString(
-                                        html = picture.astronomyPicture.explanation,
-                                        linkColor = linkColor
-                                    )
-                                }
-                                Text(
-                                    text = explanationText,
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.55f
-                                    ),
-                                    color = onSurface,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
+                    // Image Credit (with clickable links)
+                    if (!picture.astronomyPicture.copyright.isNullOrBlank()) {
+                        Spacer(Modifier.height(6.dp))
+                        val linkColor = MaterialTheme.colorScheme.primary
+                        val creditText = remember(picture.astronomyPicture.copyright, linkColor) {
+                            TextUtils.htmlToAnnotatedString(
+                                html = picture.astronomyPicture.copyright,
+                                prefix = "Image Credit: ",
+                                linkColor = linkColor
+                            )
                         }
-
-                        Spacer(Modifier.height(24.dp))
-
-                        // ── Join Discord Server Pill ──────────────────────────
-                        val context = LocalContext.current
-                        Surface(
-                            onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Constants.DISCORD_INVITE_URL))
-                                context.startActivity(intent)
-                            },
-                            shape = RoundedCornerShape(percent = 50),
-                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.85f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_discord),
-                                    contentDescription = "Discord",
-                                    modifier = Modifier.size(22.dp),
-                                    tint = Color.Unspecified
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Text(
-                                    text = "Join the discord server to talk about project asteria and get important announcements!",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-
-                        Spacer(Modifier.height(28.dp))
-
-                        // Return hint
                         Text(
-                            text = "↑ Scroll up to return",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
+                            text = creditText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Divider line
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        thickness = 1.dp
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Full Explanation Body
+                    val linkColor = MaterialTheme.colorScheme.primary
+                    val explanationText = remember(picture.astronomyPicture.explanation, linkColor) {
+                        TextUtils.htmlToAnnotatedString(
+                            html = picture.astronomyPicture.explanation,
+                            linkColor = linkColor
+                        )
+                    }
+
+                    SelectionContainer {
+                        Text(
+                            text = explanationText,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 16.5.sp,
+                                lineHeight = 27.sp,
+                                letterSpacing = 0.2.sp
+                            ),
+                            color = onSurface,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    // ── Join Discord Server Pill ──────────────────────────
+                    val context = LocalContext.current
+                    Surface(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Constants.DISCORD_INVITE_URL))
+                            context.startActivity(intent)
+                        },
+                        shape = RoundedCornerShape(percent = 50),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.85f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_discord),
+                                contentDescription = "Discord",
+                                modifier = Modifier.size(22.dp),
+                                tint = Color.Unspecified
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = "Join the discord server to talk about project asteria and get important announcements!",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    // Return hint
+                    Text(
+                        text = "↑ Scroll up to return",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
             // Bottom space
-            Spacer(Modifier.height(100.dp))
+            Spacer(Modifier.height(80.dp))
         }
     }
 }
