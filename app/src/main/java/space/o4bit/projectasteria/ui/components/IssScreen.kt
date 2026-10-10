@@ -12,6 +12,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -76,6 +80,8 @@ import android.content.ComponentName
 import androidx.compose.ui.res.painterResource
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.widget.IssAppWidgetProvider
+import space.o4bit.projectasteria.data.model.iss.IssPosition
+import space.o4bit.projectasteria.ui.viewmodels.IssUiState
 import space.o4bit.projectasteria.ui.viewmodels.IssUpdateInterval
 import space.o4bit.projectasteria.ui.viewmodels.IssViewModel
 
@@ -198,110 +204,203 @@ fun IssScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxSize()
             ) {
-                // Error / update banner
-                if (state.errorMessage != null) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = state.errorMessage!!,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else if (state.lastUpdateTime > 0) {
-                    val timeAgoSecs = (System.currentTimeMillis() - state.lastUpdateTime) / 1000
-                    val updateText = if (timeAgoSecs < 5) "Updated just now" else "Updated ${timeAgoSecs}s ago"
-                    Text(
-                        text = updateText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                // ── Interactive globe ──────────────────────────────────────────
-                IssGlobe(
-                    issPosition = state.location,
-                    orbitTrail = state.orbitTrail,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp)
-                )
-
-                val position = state.location
-                if (position != null) {
-                    // 2×2 stat grid
+                val isTablet = maxWidth >= 680.dp
+                if (isTablet) {
+                    // Two-pane tablet / landscape layout
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        IssStatCard(
-                            label = "Latitude",
-                            value = String.format(java.util.Locale.US, "%.4f°", position.latitude),
-                            icon = Icons.Default.MyLocation,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IssStatCard(
-                            label = "Longitude",
-                            value = String.format(java.util.Locale.US, "%.4f°", position.longitude),
-                            icon = Icons.Default.Place,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        IssStatCard(
-                            label = "Altitude",
-                            value = "${String.format(java.util.Locale.US, "%.1f", position.altitude)} km",
-                            icon = Icons.Default.Terrain,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IssStatCard(
-                            label = "Velocity",
-                            value = "${String.format(java.util.Locale.US, "%.0f", position.velocity)} km/h",
-                            icon = Icons.Default.Speed,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    // Map button
-                    FilledTonalButton(
-                        onClick = {
-                            val uri = "geo:${position.latitude},${position.longitude}?q=${position.latitude},${position.longitude}(International Space Station)"
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-                            intent.setPackage("com.google.android.apps.maps")
-                            if (intent.resolveActivity(context.packageManager) != null) {
-                                context.startActivity(intent)
-                            } else {
-                                val webUri = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}"
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(webUri)))
-                            }
-                        },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(14.dp)
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Place, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("View on Map", fontWeight = FontWeight.SemiBold)
+                        // Left pane: Constrained Interactive Globe
+                        Box(
+                            modifier = Modifier
+                                .weight(1.2f)
+                                .fillMaxHeight(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            IssGlobe(
+                                issPosition = state.location,
+                                orbitTrail = state.orbitTrail,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1.85f)
+                            )
+                        }
+
+                        // Right pane: Telemetry details column
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            IssTelemetryDetails(state = state, context = context)
+                        }
+                    }
+                } else {
+                    // Phone / narrow portrait layout
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (state.errorMessage != null) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .widthIn(max = 600.dp)
+                            ) {
+                                Text(
+                                    text = state.errorMessage!!,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else if (state.lastUpdateTime > 0) {
+                            val timeAgoSecs = (System.currentTimeMillis() - state.lastUpdateTime) / 1000
+                            val updateText = if (timeAgoSecs < 5) "Updated just now" else "Updated ${timeAgoSecs}s ago"
+                            Text(
+                                text = updateText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        // Interactive globe with constrained max width
+                        IssGlobe(
+                            issPosition = state.location,
+                            orbitTrail = state.orbitTrail,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 600.dp)
+                                .aspectRatio(1.85f)
+                                .padding(horizontal = 4.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 600.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            IssStatCardsAndButton(position = state.location, context = context)
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun IssTelemetryDetails(
+    state: IssUiState,
+    context: android.content.Context
+) {
+    if (state.errorMessage != null) {
+        Surface(
+            color = MaterialTheme.colorScheme.errorContainer,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = state.errorMessage!!,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    } else if (state.lastUpdateTime > 0) {
+        val timeAgoSecs = (System.currentTimeMillis() - state.lastUpdateTime) / 1000
+        val updateText = if (timeAgoSecs < 5) "Updated just now" else "Updated ${timeAgoSecs}s ago"
+        Text(
+            text = updateText,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
+    IssStatCardsAndButton(position = state.location, context = context)
+}
+
+@Composable
+private fun IssStatCardsAndButton(
+    position: IssPosition?,
+    context: android.content.Context
+) {
+    if (position != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            IssStatCard(
+                label = "Latitude",
+                value = String.format(java.util.Locale.US, "%.4f°", position.latitude),
+                icon = Icons.Default.MyLocation,
+                modifier = Modifier.weight(1f)
+            )
+            IssStatCard(
+                label = "Longitude",
+                value = String.format(java.util.Locale.US, "%.4f°", position.longitude),
+                icon = Icons.Default.Place,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            IssStatCard(
+                label = "Altitude",
+                value = "${String.format(java.util.Locale.US, "%.1f", position.altitude)} km",
+                icon = Icons.Default.Terrain,
+                modifier = Modifier.weight(1f)
+            )
+            IssStatCard(
+                label = "Velocity",
+                value = "${String.format(java.util.Locale.US, "%.0f", position.velocity)} km/h",
+                icon = Icons.Default.Speed,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        FilledTonalButton(
+            onClick = {
+                val uri = "geo:${position.latitude},${position.longitude}?q=${position.latitude},${position.longitude}(International Space Station)"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                intent.setPackage("com.google.android.apps.maps")
+                if (intent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(intent)
+                } else {
+                    val webUri = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}"
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(webUri)))
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Icon(Icons.Default.Place, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("View on Map", fontWeight = FontWeight.SemiBold)
         }
     }
 }
