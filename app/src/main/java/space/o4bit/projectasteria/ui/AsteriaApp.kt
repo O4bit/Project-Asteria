@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -98,6 +99,7 @@ import space.o4bit.projectasteria.ui.components.AstronomyPictureCard
 import space.o4bit.projectasteria.ui.components.BackgroundType
 import space.o4bit.projectasteria.ui.components.IssScreen
 import space.o4bit.projectasteria.ui.components.LaunchScreen
+import space.o4bit.projectasteria.ui.components.PinnedLaunchCard
 import space.o4bit.projectasteria.ui.components.SwipeHintOverlay
 import space.o4bit.projectasteria.ui.components.settings.AsteriaBottomNavigation
 import space.o4bit.projectasteria.ui.navigation.AsteriaNavGraph
@@ -434,20 +436,51 @@ private fun ApodTab(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Box(modifier = Modifier.weight(1f)) {
-                AstronomyPictureCard(
-                    enhancedPicture = apodState.picture,
-                    onCardClick = onCardClick,
-                    onToggleFavorite = { onToggleFavorite(apodState.picture) }
-                )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    AstronomyPictureCard(
+                        enhancedPicture = apodState.picture,
+                        onCardClick = onCardClick,
+                        onToggleFavorite = { onToggleFavorite(apodState.picture) }
+                    )
+
+                    if (pinnedLaunches.isNotEmpty()) {
+                        Column {
+                            pinnedLaunches.forEach { launch ->
+                                PinnedLaunchCard(
+                                    launch = launch,
+                                    onLaunchClick = { onLaunchClick(launch.id) },
+                                    onUnpinClick = { scope.launch { bgPrefs.removePinnedLaunch(launch.id) } },
+                                    autoRemoveSetting = autoRemoveSetting,
+                                    neverAskSetting = neverAskSetting,
+                                    onUpdateAutoRemove = { autoRemove -> scope.launch { bgPrefs.updateAutoRemovePinnedLaunches(autoRemove) } },
+                                    onUpdateNeverAsk = { neverAsk -> scope.launch { bgPrefs.updateNeverAskRemovePinned(neverAsk) } }
+                                )
+                            }
+                        }
+                    }
+                }
             }
-            Box(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .weight(1.15f)
+                    .fillMaxHeight()
+            ) {
                 AstronomyExplanationCard(
                     explanation = apodState.picture.astronomyPicture.explanation,
+                    title = apodState.picture.astronomyPicture.title,
+                    date = apodState.picture.astronomyPicture.date,
+                    copyright = apodState.picture.astronomyPicture.copyright,
+                    modifier = Modifier.fillMaxSize(),
                     onCardClick = onExplanationClick
                 )
             }
