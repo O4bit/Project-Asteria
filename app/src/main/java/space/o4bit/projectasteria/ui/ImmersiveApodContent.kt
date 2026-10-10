@@ -76,6 +76,14 @@ fun ImmersiveApodContent(
 ) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
+    val readingMode = LocalReadingMode.current
+    
+    androidx.compose.runtime.LaunchedEffect(scrollState) {
+        androidx.compose.runtime.snapshotFlow { scrollState.value > 150 }
+            .collect { isReading ->
+                readingMode.value = isReading
+            }
+    }
 
     // Scroll range over which transition occurs
     val transitionRangePx = 650
@@ -156,11 +164,20 @@ fun ImmersiveApodContent(
             }
 
             // ── 2. Peeking Preview Card (Visible at rest to signal scroll) ─────
-            AnimatedVisibility(
-                visible = fraction < 0.35f,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier.zIndex(1f)
+            val previewAlpha = (1f - fraction * 3.5f).coerceIn(0f, 1f)
+            val previewScale = (1f - fraction * 0.15f).coerceIn(0f, 1f)
+            val previewSlide = fraction * -120f
+            
+            Box(
+                modifier = Modifier
+                    .zIndex(1f)
+                    .graphicsLayer {
+                        alpha = previewAlpha
+                        scaleX = previewScale
+                        scaleY = previewScale
+                        translationY = previewSlide
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 0f)
+                    }
             ) {
                 Surface(
                     modifier = Modifier

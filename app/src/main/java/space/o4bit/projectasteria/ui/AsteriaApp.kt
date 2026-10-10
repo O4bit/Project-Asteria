@@ -120,6 +120,11 @@ enum class MainTab(
     ASTEROIDS("Asteroids", { Icons.Filled.Public }, { Icons.Outlined.Public })
 }
 
+
+
+
+val LocalReadingMode = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<Boolean>> { error("No LocalReadingMode provided") }
+
 @Composable
 fun AsteriaApp(
     openDirectlyFromNotification: Boolean = false,
@@ -136,6 +141,9 @@ fun AsteriaApp(
         initialPage = initialPage,
         pageCount = { MainTab.entries.size }
     )
+
+    val readingMode = remember { mutableStateOf(false) }
+    androidx.compose.runtime.CompositionLocalProvider(LocalReadingMode provides readingMode) {
 
     // ── Repositories & ViewModels ─────────────────────────────────────────────
     val spaceRepository = remember { SpaceRepository(application.database.apodDao()) }
@@ -207,15 +215,21 @@ fun AsteriaApp(
             Scaffold(
                 containerColor = Color.Transparent,
                 bottomBar = {
-                    AsteriaBottomNavigation(
-                        tabs = MainTab.entries.map { it.title },
-                        selectedIcons = MainTab.entries.map { it.selectedIconFactory() },
-                        unselectedIcons = MainTab.entries.map { it.unselectedIconFactory() },
-                        selectedIndex = pagerState.currentPage,
-                        onTabSelected = { index ->
-                            scope.launch { pagerState.animateScrollToPage(index) }
-                        }
-                    )
+                    AnimatedVisibility(
+                        visible = !LocalReadingMode.current.value,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        AsteriaBottomNavigation(
+                            tabs = MainTab.entries.map { it.title },
+                            selectedIcons = MainTab.entries.map { it.selectedIconFactory() },
+                            unselectedIcons = MainTab.entries.map { it.unselectedIconFactory() },
+                            selectedIndex = pagerState.currentPage,
+                            onTabSelected = { index ->
+                                scope.launch { pagerState.animateScrollToPage(index) }
+                            }
+                        )
+                    }
                 }
             ) { innerPadding ->
                 Box(modifier = Modifier.padding(innerPadding)) {
@@ -290,6 +304,7 @@ fun AsteriaApp(
             onDismissed = { splashVisible = false }
         )
     }   // outer Box
+    }   // CompositionLocalProvider
 }   // AsteriaApp
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -361,58 +376,64 @@ private fun ApodTab(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        AnimatedSatelliteEasterEgg()
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Project Asteria",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                },
-                actions = {
-                    if (!isOnline) {
-                        IconButton(
-                            onClick = { showOfflineDialog = true },
-                            modifier = Modifier.semantics {
-                                contentDescription = "You are offline. Tap for details."
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_cloud_off_24),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
+            AnimatedVisibility(
+                visible = !LocalReadingMode.current.value,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                TopAppBar(
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            AnimatedSatelliteEasterEgg()
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Project Asteria",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
                             )
                         }
-                    }
-                    IconButton(onClick = onFavoritesClick) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = "View favorites",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    IconButton(onClick = onHistoryClick) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "View previous APODs"
-                        )
-                    }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    },
+                    actions = {
+                        if (!isOnline) {
+                            IconButton(
+                                onClick = { showOfflineDialog = true },
+                                modifier = Modifier.semantics {
+                                    contentDescription = "You are offline. Tap for details."
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_cloud_off_24),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                        IconButton(onClick = onFavoritesClick) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "View favorites",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        IconButton(onClick = onHistoryClick) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "View previous APODs"
+                            )
+                        }
+                        IconButton(onClick = onSettingsClick) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 )
-            )
+            }
         },
         floatingActionButton = {
             if (!isOnline) {
