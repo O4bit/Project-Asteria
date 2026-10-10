@@ -54,6 +54,7 @@ import space.o4bit.projectasteria.ui.components.AstronomyPictureCard
 import space.o4bit.projectasteria.ui.components.PinnedLaunchCard
 import space.o4bit.projectasteria.ui.viewmodels.ApodUiState
 import space.o4bit.projectasteria.utils.Constants
+import space.o4bit.projectasteria.utils.TextUtils
 
 /**
  * Immersive APOD reading experience with a peeking preview card and pinned launches.
@@ -250,6 +251,25 @@ fun ImmersiveApodContent(
                                     textAlign = TextAlign.Center
                                 )
 
+                                if (!picture.astronomyPicture.copyright.isNullOrBlank()) {
+                                    Spacer(Modifier.height(6.dp))
+                                    val linkColor = MaterialTheme.colorScheme.primary
+                                    val creditText = remember(picture.astronomyPicture.copyright, linkColor) {
+                                        TextUtils.htmlToAnnotatedString(
+                                            html = picture.astronomyPicture.copyright,
+                                            prefix = "Image Credit: ",
+                                            linkColor = linkColor
+                                        )
+                                    }
+                                    Text(
+                                        text = creditText,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = onSurface.copy(alpha = 0.85f),
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+
                                 Spacer(Modifier.height(20.dp))
 
                                 // Divider line
@@ -263,8 +283,15 @@ fun ImmersiveApodContent(
                                 Spacer(Modifier.height(20.dp))
 
                                 // Full Explanation Body (High Contrast White / onSurface)
+                                val linkColor = MaterialTheme.colorScheme.primary
+                                val explanationText = remember(picture.astronomyPicture.explanation, linkColor) {
+                                    TextUtils.htmlToAnnotatedString(
+                                        html = picture.astronomyPicture.explanation,
+                                        linkColor = linkColor
+                                    )
+                                }
                                 Text(
-                                    text = picture.astronomyPicture.explanation,
+                                    text = explanationText,
                                     style = MaterialTheme.typography.bodyLarge.copy(
                                         lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.55f
                                     ),

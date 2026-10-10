@@ -29,6 +29,7 @@ import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.data.repository.SpaceRepository
+import space.o4bit.projectasteria.utils.TextUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -172,9 +173,17 @@ fun ApodDetailScreen(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                if (pic.copyright != null) {
+                                if (pic.copyright != null && pic.copyright.isNotBlank()) {
+                                    val linkColor = MaterialTheme.colorScheme.primary
+                                    val copyrightText = remember(pic.copyright, linkColor) {
+                                        TextUtils.htmlToAnnotatedString(
+                                            html = pic.copyright,
+                                            prefix = "\u00A9 ",
+                                            linkColor = linkColor
+                                        )
+                                    }
                                     Text(
-                                        text = "\u00A9 ${pic.copyright.trim()}",
+                                        text = copyrightText,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

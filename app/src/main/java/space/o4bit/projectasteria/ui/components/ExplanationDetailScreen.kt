@@ -127,6 +127,24 @@ fun ExplanationDetailScreen(
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                             textAlign = TextAlign.Center
                         )
+
+                        if (!astronomyPicture.copyright.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            val linkColor = MaterialTheme.colorScheme.primary
+                            val creditText = remember(astronomyPicture.copyright, linkColor) {
+                                TextUtils.htmlToAnnotatedString(
+                                    html = astronomyPicture.copyright,
+                                    prefix = "Image Credit: ",
+                                    linkColor = linkColor
+                                )
+                            }
+                            Text(
+                                text = creditText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
 
@@ -153,9 +171,17 @@ fun ExplanationDetailScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
+                        val linkColor = MaterialTheme.colorScheme.primary
+                        val explanationAnnotated = remember(astronomyPicture.explanation, linkColor) {
+                            TextUtils.htmlToAnnotatedString(
+                                html = astronomyPicture.explanation,
+                                linkColor = linkColor
+                            )
+                        }
+
                         SelectionContainer {
                             Text(
-                                text = TextUtils.stripHtml(astronomyPicture.explanation),
+                                text = explanationAnnotated,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.4f)

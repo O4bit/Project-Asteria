@@ -401,7 +401,13 @@ fun AstronomyExplanationCard(
     copyright: String? = null,
     onCardClick: () -> Unit = {}
 ) {
-    val cleanExplanation = TextUtils.stripHtml(explanation)
+    val linkColor = MaterialTheme.colorScheme.primary
+    val cleanExplanation = remember(explanation, linkColor) {
+        TextUtils.htmlToAnnotatedString(
+            html = explanation,
+            linkColor = linkColor
+        )
+    }
     val context = LocalContext.current
 
     AsteriaCard(
@@ -458,8 +464,15 @@ fun AstronomyExplanationCard(
 
             if (copyright != null && copyright.isNotBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
+                val creditText = remember(copyright, linkColor) {
+                    TextUtils.htmlToAnnotatedString(
+                        html = copyright,
+                        prefix = "Image Credit: ",
+                        linkColor = linkColor
+                    )
+                }
                 Text(
-                    text = "Image Credit: $copyright",
+                    text = creditText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
