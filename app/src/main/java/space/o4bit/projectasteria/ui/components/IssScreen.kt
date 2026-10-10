@@ -99,25 +99,17 @@ fun IssScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
-                        border = androidx.compose.foundation.BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
-                        shadowElevation = 4.dp
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                "ISS Tracker",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (state.isLive) {
-                                Spacer(Modifier.width(8.dp))
-                                LivePulsingBadge()
-                            }
+                        Text(
+                            "ISS Tracker",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (state.isLive) {
+                            Spacer(Modifier.width(8.dp))
+                            LivePulsingBadge()
                         }
                     }
                 },
@@ -271,14 +263,6 @@ fun IssScreen(
                                     textAlign = TextAlign.Center
                                 )
                             }
-                        } else if (state.lastUpdateTime > 0) {
-                            val timeAgoSecs = (System.currentTimeMillis() - state.lastUpdateTime) / 1000
-                            val updateText = if (timeAgoSecs < 5) "Updated just now" else "Updated ${timeAgoSecs}s ago"
-                            Text(
-                                text = updateText,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
                         }
 
                         // Interactive globe with constrained max width
@@ -299,7 +283,7 @@ fun IssScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            IssStatCardsAndButton(position = state.location, context = context)
+                            IssStatCardsAndButton(state = state, context = context)
                         }
                     }
                 }
@@ -327,24 +311,17 @@ private fun IssTelemetryDetails(
                 textAlign = TextAlign.Center
             )
         }
-    } else if (state.lastUpdateTime > 0) {
-        val timeAgoSecs = (System.currentTimeMillis() - state.lastUpdateTime) / 1000
-        val updateText = if (timeAgoSecs < 5) "Updated just now" else "Updated ${timeAgoSecs}s ago"
-        Text(
-            text = updateText,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 
-    IssStatCardsAndButton(position = state.location, context = context)
+    IssStatCardsAndButton(state = state, context = context)
 }
 
 @Composable
 private fun IssStatCardsAndButton(
-    position: IssPosition?,
+    state: IssUiState,
     context: android.content.Context
 ) {
+    val position = state.location
     if (position != null) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -369,7 +346,7 @@ private fun IssStatCardsAndButton(
         ) {
             IssStatCard(
                 label = "Altitude",
-                value = "${String.format(java.util.Locale.US, "%.1f", position.altitude)} km",
+                value = "${String.format(java.util.Locale.US, "%.0f", position.altitude)} km",
                 icon = Icons.Default.Terrain,
                 modifier = Modifier.weight(1f)
             )
@@ -401,6 +378,17 @@ private fun IssStatCardsAndButton(
             Icon(Icons.Default.Place, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text("View on Map", fontWeight = FontWeight.SemiBold)
+        }
+        
+        if (state.lastUpdateTime > 0) {
+            val timeAgoSecs = (System.currentTimeMillis() - state.lastUpdateTime) / 1000
+            val updateText = if (timeAgoSecs < 5) "Updated just now" else "Updated ${timeAgoSecs}s ago"
+            Text(
+                text = updateText,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
 }
