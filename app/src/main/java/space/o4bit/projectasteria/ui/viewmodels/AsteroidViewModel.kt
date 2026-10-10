@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.viewmodels
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -16,26 +15,20 @@ import space.o4bit.projectasteria.data.local.AsteroidEntity
 import space.o4bit.projectasteria.data.model.AsteroidSortBy
 import space.o4bit.projectasteria.data.model.SortDirection
 import space.o4bit.projectasteria.data.repository.AsteroidRepository
-
 sealed interface AsteroidUiState {
     data object Loading : AsteroidUiState
     data class Success(val asteroids: List<AsteroidEntity>) : AsteroidUiState
     data class Error(val message: String) : AsteroidUiState
 }
-
 class AsteroidViewModel(
     private val asteroidRepository: AsteroidRepository
 ) : ViewModel() {
-
     private val _sortBy = MutableStateFlow(AsteroidSortBy.DISTANCE)
     val sortBy: StateFlow<AsteroidSortBy> = _sortBy.asStateFlow()
-
     private val _sortDirection = MutableStateFlow(SortDirection.ASCENDING)
     val sortDirection: StateFlow<SortDirection> = _sortDirection.asStateFlow()
-
     private val _hazardousOnly = MutableStateFlow(false)
     val hazardousOnly: StateFlow<Boolean> = _hazardousOnly.asStateFlow()
-
     val uiState: StateFlow<AsteroidUiState> = combine(
         asteroidRepository.allAsteroids,
         _sortBy,
@@ -60,29 +53,23 @@ class AsteroidViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = AsteroidUiState.Loading
     )
-
     fun setSortBy(sortBy: AsteroidSortBy) {
         _sortBy.update { sortBy }
     }
-
     fun toggleDirection() {
         _sortDirection.update { it.toggle() }
     }
-
     fun toggleHazardousOnly() {
         _hazardousOnly.update { !it }
     }
-
     fun refresh() {
         viewModelScope.launch {
             try {
                 asteroidRepository.refreshTodaysAsteroids()
             } catch (_: Exception) {
-                // Flow from Room will reflect any cached results
             }
         }
     }
-
     class Factory(private val asteroidRepository: AsteroidRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

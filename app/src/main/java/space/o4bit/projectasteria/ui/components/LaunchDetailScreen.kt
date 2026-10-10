@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.animateContentSize
@@ -40,7 +39,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaunchDetailScreen(
@@ -53,12 +51,9 @@ fun LaunchDetailScreen(
     val reminderPrefs = remember { application.reminderPreferences }
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-
     val launch by launchDao.getLaunchByIdFlow(launchId).collectAsState(initial = null)
-
     val remindedIds by reminderPrefs.remindedLaunchIds.collectAsState(initial = emptySet())
     val isReminded = remindedIds.contains(launchId)
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -106,20 +101,15 @@ fun LaunchDetailScreen(
                             .height(260.dp)
                     )
                 }
-
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
                         text = currentLaunch.name,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     EfficientCountdown(launchNet = currentLaunch.net)
-
                     Spacer(modifier = Modifier.height(20.dp))
-
                     ReminderButton(
                         isReminded = isReminded,
                         onToggle = {
@@ -136,9 +126,7 @@ fun LaunchDetailScreen(
                             }
                         }
                     )
-
                     Spacer(modifier = Modifier.height(20.dp))
-
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -172,13 +160,10 @@ fun LaunchDetailScreen(
                             }
                         }
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
                     if (!currentLaunch.providerName.isNullOrEmpty()) {
                         DetailRow(label = "Provider", value = currentLaunch.providerName)
                     }
-
                     val formattedDate = remember(currentLaunch.net) {
                         try {
                             val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
@@ -198,7 +183,6 @@ fun LaunchDetailScreen(
                         }
                     }
                     DetailRow(label = "Scheduled", value = formattedDate)
-
                     if (!currentLaunch.locationName.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -216,11 +200,9 @@ fun LaunchDetailScreen(
                             )
                         }
                     }
-
                     if (!currentLaunch.padName.isNullOrEmpty()) {
                         DetailRow(label = "Pad", value = currentLaunch.padName)
                     }
-
                     if (!currentLaunch.missionName.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
@@ -229,7 +211,6 @@ fun LaunchDetailScreen(
                             fontWeight = FontWeight.SemiBold
                         )
                     }
-
                     if (!currentLaunch.missionDescription.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -244,7 +225,6 @@ fun LaunchDetailScreen(
         }
     }
 }
-
 @Composable
 fun EfficientCountdown(launchNet: String) {
     val countdownText by produceState(initialValue = "Calculating...", key1 = launchNet) {
@@ -255,29 +235,23 @@ fun EfficientCountdown(launchNet: String) {
             value = "Date unknown"
             return@produceState
         }
-
         while (isActive) {
             val diff = targetTime - System.currentTimeMillis()
-
             if (diff <= 0) {
                 value = "Launched!"
                 break
             }
-
             val days = TimeUnit.MILLISECONDS.toDays(diff)
             val hours = TimeUnit.MILLISECONDS.toHours(diff) % 24
             val minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
             val seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60
-
             value = when {
                 days > 0 -> "T-${days}d ${hours}h ${minutes}m"
                 else -> "T-${hours}h ${minutes}m ${seconds}s"
             }
-
             delay(if (days > 0) 60_000L else 1_000L)
         }
     }
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -301,7 +275,6 @@ fun EfficientCountdown(launchNet: String) {
         }
     }
 }
-
 @Composable
 fun ReminderButton(
     isReminded: Boolean,
@@ -310,7 +283,6 @@ fun ReminderButton(
     val icon = if (isReminded) Icons.Filled.Notifications else Icons.Outlined.Notifications
     val label = if (isReminded) "Reminder Set" else "Set Reminder"
     val containerColor = if (isReminded) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh
-
     Button(
         onClick = onToggle,
         modifier = Modifier.fillMaxWidth(),
@@ -329,7 +301,6 @@ fun ReminderButton(
         Text(text = label, fontWeight = FontWeight.Medium)
     }
 }
-
 @Composable
 private fun DetailRow(label: String, value: String) {
     Spacer(modifier = Modifier.height(8.dp))
@@ -339,26 +310,22 @@ private fun DetailRow(label: String, value: String) {
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
-
 private fun scheduleLaunchReminder(context: android.content.Context, launch: LaunchEntity) {
     val data = Data.Builder()
         .putString("launch_id", launch.id)
         .putString("launch_name", launch.name)
         .build()
-
     val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
         timeZone = TimeZone.getTimeZone("UTC")
     }
     val targetDate = parser.parse(launch.net)?.time ?: return
     val delayMs = targetDate - TimeUnit.MINUTES.toMillis(15) - System.currentTimeMillis()
-
     if (delayMs > 0) {
         val workRequest = OneTimeWorkRequestBuilder<LaunchReminderWorker>()
             .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
             .setInputData(data)
             .addTag("launch_reminder_${launch.id}")
             .build()
-
         WorkManager.getInstance(context).enqueue(workRequest)
     }
 }

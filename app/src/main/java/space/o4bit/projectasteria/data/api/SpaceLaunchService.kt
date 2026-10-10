@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.data.api
-
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -10,22 +9,18 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 import space.o4bit.projectasteria.data.model.launch.LaunchResponse
 import java.util.concurrent.TimeUnit
-
 interface SpaceLaunchService {
     @GET("launch/upcoming/")
     suspend fun getUpcomingLaunches(
         @Query("limit") limit: Int = 15,
         @Query("mode") mode: String = "detailed"
     ): LaunchResponse
-
     companion object {
         private const val BASE_URL = "https://lldev.thespacedevs.com/2.2.0/"
-
         fun create(): SpaceLaunchService {
             val logger = HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BASIC
             }
-
             val client = OkHttpClient.Builder()
                 .addInterceptor { chain ->
                     val request = chain.request().newBuilder()
@@ -37,11 +32,9 @@ interface SpaceLaunchService {
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
                 .build()
-
             val moshi = Moshi.Builder()
                 .add(KotlinJsonAdapterFactory())
                 .build()
-
             return Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(client)

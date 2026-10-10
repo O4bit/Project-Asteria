@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.theme
-
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
@@ -10,13 +9,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import space.o4bit.projectasteria.R
-
-/**
- * Space Grotesk — SIL Open Font Licence, F-Droid safe.
- *
- * Uses the variable font axis `wght` to cover every weight from
- * Light (300) → Black (900) with a single file.
- */
 @OptIn(ExperimentalTextApi::class)
 private val SpaceGrotesk = FontFamily(
     Font(
@@ -45,9 +37,7 @@ private val SpaceGrotesk = FontFamily(
         variationSettings = FontVariation.Settings(FontVariation.weight(700))
     ),
 )
-
 val Typography = Typography(
-    // ── Display — hero / splash text ──────────────────────────────────────────
     displayLarge = TextStyle(
         fontFamily = SpaceGrotesk,
         fontWeight = FontWeight.Bold,
@@ -69,7 +59,6 @@ val Typography = Typography(
         lineHeight = 44.sp,
         letterSpacing = (-0.015).em
     ),
-    // ── Headline — screen section headings ────────────────────────────────────
     headlineLarge = TextStyle(
         fontFamily = SpaceGrotesk,
         fontWeight = FontWeight.Bold,
@@ -90,7 +79,6 @@ val Typography = Typography(
         fontSize = 24.sp,
         lineHeight = 32.sp
     ),
-    // ── Title — TopAppBar, card headers ───────────────────────────────────────
     titleLarge = TextStyle(
         fontFamily = SpaceGrotesk,
         fontWeight = FontWeight.Bold,
@@ -112,7 +100,6 @@ val Typography = Typography(
         lineHeight = 20.sp,
         letterSpacing = 0.005.em
     ),
-    // ── Body — prose, descriptions — system font for comfortable reading ──────
     bodyLarge = TextStyle(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
@@ -131,7 +118,6 @@ val Typography = Typography(
         lineHeight = 16.sp,
         letterSpacing = 0.015.em
     ),
-    // ── Label — chips, badges, captions ───────────────────────────────────────
     labelLarge = TextStyle(
         fontFamily = SpaceGrotesk,
         fontWeight = FontWeight.Medium,

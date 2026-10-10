@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -67,7 +66,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.data.repository.SpaceRepository
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
@@ -83,14 +81,12 @@ fun HistoryScreen(
         if (searchQuery.isNotBlank()) repository.searchApods(searchQuery)
         else kotlinx.coroutines.flow.flowOf(emptyList())
     }.collectAsStateWithLifecycle(initialValue = emptyList())
-
     val scope = rememberCoroutineScope()
     var showFavoritesOnly by remember { mutableStateOf(initialShowFavorites) }
     val favoriteResults by remember(showFavoritesOnly) {
         if (showFavoritesOnly) repository.getFavoriteApods()
         else kotlinx.coroutines.flow.flowOf(emptyList())
     }.collectAsStateWithLifecycle(initialValue = emptyList())
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -149,7 +145,6 @@ fun HistoryScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
-
             if (showFavoritesOnly) {
                 if (favoriteResults.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -229,7 +224,6 @@ fun HistoryScreen(
                             )
                         }
                     }
-
                     lazyPagingItems.apply {
                         when {
                             loadState.refresh is LoadState.Loading -> {
@@ -285,7 +279,6 @@ fun HistoryScreen(
         }
     }
 }
-
 @Composable
 fun HistoryItemCard(
     item: EnhancedAstronomyPicture,
@@ -295,7 +288,6 @@ fun HistoryItemCard(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "scale")
-
     Card(
         onClick = onClick,
         interactionSource = interactionSource,
@@ -329,7 +321,6 @@ fun HistoryItemCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-
                 if (item.astronomyPicture.mediaType == "video") {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -343,9 +334,7 @@ fun HistoryItemCard(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.width(16.dp))
-
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
@@ -363,7 +352,6 @@ fun HistoryItemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
             androidx.compose.material3.IconButton(onClick = onToggleFavorite) {
                 androidx.compose.material3.Icon(
                     imageVector = if (item.isFavorite) androidx.compose.material.icons.Icons.Filled.Favorite else androidx.compose.material.icons.Icons.Outlined.FavoriteBorder,

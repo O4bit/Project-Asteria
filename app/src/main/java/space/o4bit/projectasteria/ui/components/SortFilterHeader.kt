@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import space.o4bit.projectasteria.data.model.SortDirection
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SortFilterHeader(
@@ -44,7 +42,6 @@ fun SortFilterHeader(
     hazardousFilterSelected: Boolean? = null,
     onToggleHazardousFilter: (() -> Unit)? = null
 ) {
-    // Floating pill toolbar
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -92,7 +89,6 @@ fun SortFilterHeader(
                         selectedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                     )
                 )
-
                 if (hazardousFilterSelected != null && onToggleHazardousFilter != null) {
                     FilterChip(
                         selected = hazardousFilterSelected,
@@ -117,7 +113,6 @@ fun SortFilterHeader(
                     )
                 }
             }
-
             IconButton(
                 onClick = onToggleDirection,
                 modifier = Modifier.size(36.dp)
@@ -135,7 +130,6 @@ fun SortFilterHeader(
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> SortOptionBottomSheet(

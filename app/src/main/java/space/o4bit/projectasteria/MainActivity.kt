@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria
-
 import android.Manifest
 import android.app.NotificationManager
 import android.content.Intent
@@ -22,23 +21,15 @@ import space.o4bit.projectasteria.data.worker.DailySpaceWorker
 import space.o4bit.projectasteria.ui.AsteriaApp
 import space.o4bit.projectasteria.ui.theme.ThemedApp
 import space.o4bit.projectasteria.widget.WidgetClickReceiver
-
 class MainActivity : ComponentActivity() {
-
-    // Notification permission result — called when the OS dialog resolves.
-    // We don't show a Toast here; the Settings UI already reflects the state
-    // via the DataStore-backed switch, so no extra feedback is needed.
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { /* result reflected in the DataStore-backed switch in SettingsScreen */ }
-
+    ) {  }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         if (resources.configuration.smallestScreenWidthDp < 600) {
             requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-
         lifecycleScope.launch(Dispatchers.IO) {
             val imageLoader = ImageLoader.Builder(applicationContext)
                 .memoryCache {
@@ -55,18 +46,12 @@ class MainActivity : ComponentActivity() {
                 .respectCacheHeaders(false)
                 .build()
             coil.Coil.setImageLoader(imageLoader)
-
             val prefs = space.o4bit.projectasteria.data.preferences.NotificationPreferencesRepository(applicationContext)
             if (prefs.dailyNotificationsEnabled.first()) {
                 DailySpaceWorker.schedule(applicationContext)
             }
         }
-
-
-
-
         dismissNotificationIfRequested(intent)
-
         enableEdgeToEdge()
         setContent {
             ThemedApp {
@@ -78,17 +63,11 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    /**
-     * Called when a new intent is received, e.g., when a deep-link or notification intent arrives. Without this, `intent` in `setContent` is
-     * stale and the new intent is silently dropped.
-     */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         dismissNotificationIfRequested(intent)
     }
-
     override fun onPause() {
         super.onPause()
         if (intent?.getBooleanExtra(WidgetClickReceiver.EXTRA_FROM_WIDGET, false) == true) {
@@ -99,22 +78,12 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-
-    /**
-     * Called from SettingsScreen when the user turns on daily notifications.
-     * Requesting at that moment gives the OS rationale dialog the right context
-     * ("this app wants to notify you about space events") instead of asking cold
-     * before the user has seen a single screen.
-     */
     fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             when {
                 ContextCompat.checkSelfPermission(
                     this, Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Already granted — nothing to do.
                 }
                 else -> {
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -122,7 +91,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     private fun dismissNotificationIfRequested(intent: Intent?) {
         if (intent?.getBooleanExtra("DISMISS_NOTIFICATION", false) == true) {
             val notificationId = intent.getIntExtra("NOTIFICATION_ID", 0)
@@ -132,7 +100,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     private fun intentOpensFullscreen(intent: Intent?): Boolean =
         intent?.getBooleanExtra("OPEN_FULLSCREEN", false) == true ||
                 (intent?.data?.scheme == "asteria" && intent.data?.host == "image")

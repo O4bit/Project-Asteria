@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -58,20 +57,12 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
-
-/**
- * Universal video player for NASA APOD media.
- * - Uses Media3 [ExoPlayer] with hardware acceleration for direct video files (.mp4, .webm, .mov)
- * - Uses configured [WebView] for web embeds (YouTube, Vimeo)
- * - Includes buffering indicator, error state with retry, and external app launch fallback
- */
 @Composable
 fun ApodVideoPlayer(
     videoUrl: String,
     modifier: Modifier = Modifier
 ) {
     var reloadKey by remember(videoUrl) { mutableStateOf(0) }
-
     val isDirectVideo = remember(videoUrl) {
         val lower = videoUrl.lowercase()
         lower.endsWith(".mp4") ||
@@ -82,7 +73,6 @@ fun ApodVideoPlayer(
                 lower.contains(".mp4?") ||
                 (lower.contains("/image/") && lower.contains(".mp4"))
     }
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -106,7 +96,6 @@ fun ApodVideoPlayer(
         }
     }
 }
-
 @OptIn(UnstableApi::class)
 @Composable
 private fun ExoVideoPlayer(
@@ -119,7 +108,6 @@ private fun ExoVideoPlayer(
     var isBuffering by remember(videoUrl, reloadKey) { mutableStateOf(true) }
     var hasError by remember(videoUrl, reloadKey) { mutableStateOf(false) }
     var errorMessage by remember(videoUrl, reloadKey) { mutableStateOf<String?>(null) }
-
     val exoPlayer = remember(videoUrl, reloadKey) {
         ExoPlayer.Builder(context).build().apply {
             val mediaItem = MediaItem.fromUri(Uri.parse(videoUrl))
@@ -129,7 +117,6 @@ private fun ExoVideoPlayer(
             prepare()
         }
     }
-
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -147,7 +134,6 @@ private fun ExoVideoPlayer(
                     Player.STATE_IDLE -> {}
                 }
             }
-
             override fun onPlayerError(error: PlaybackException) {
                 isBuffering = false
                 hasError = true
@@ -155,13 +141,11 @@ private fun ExoVideoPlayer(
             }
         }
         exoPlayer.addListener(listener)
-
         onDispose {
             exoPlayer.removeListener(listener)
             exoPlayer.release()
         }
     }
-
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         AndroidView(
             factory = { ctx ->
@@ -182,14 +166,12 @@ private fun ExoVideoPlayer(
             },
             modifier = Modifier.fillMaxSize()
         )
-
         if (isBuffering && !hasError) {
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
         }
-
         if (hasError) {
             VideoErrorOverlay(
                 message = errorMessage ?: "Unable to stream video",
@@ -199,7 +181,6 @@ private fun ExoVideoPlayer(
         }
     }
 }
-
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 private fun WebEmbedPlayer(
@@ -211,7 +192,6 @@ private fun WebEmbedPlayer(
     var isBuffering by remember(videoUrl, reloadKey) { mutableStateOf(true) }
     var hasError by remember(videoUrl, reloadKey) { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
-
     DisposableEffect(videoUrl, reloadKey) {
         onDispose {
             webViewRef?.apply {
@@ -222,13 +202,10 @@ private fun WebEmbedPlayer(
             webViewRef = null
         }
     }
-
     val isYouTube = remember(videoUrl) {
         videoUrl.contains("youtube", ignoreCase = true) || videoUrl.contains("youtu.be", ignoreCase = true)
     }
-
     val formattedUrl = remember(videoUrl) { formatVideoUrl(videoUrl) }
-
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         AndroidView(
             factory = { ctx ->
@@ -238,7 +215,6 @@ private fun WebEmbedPlayer(
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
                     setBackgroundColor(android.graphics.Color.BLACK)
-
                     settings.apply {
                         javaScriptEnabled = true
                         domStorageEnabled = true
@@ -251,7 +227,6 @@ private fun WebEmbedPlayer(
                         cacheMode = WebSettings.LOAD_DEFAULT
                         userAgentString = "Mozilla/5.0 (Linux; Android ${Build.VERSION.RELEASE}; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                     }
-
                     webChromeClient = object : WebChromeClient() {
                         override fun onProgressChanged(view: WebView?, newProgress: Int) {
                             if (newProgress >= 70) {
@@ -259,12 +234,10 @@ private fun WebEmbedPlayer(
                             }
                         }
                     }
-
                     webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView?, url: String?) {
                             isBuffering = false
                         }
-
                         override fun onReceivedError(
                             view: WebView?,
                             request: WebResourceRequest?,
@@ -276,7 +249,6 @@ private fun WebEmbedPlayer(
                             }
                         }
                     }
-
                     if (isYouTube) {
                         val html = """
                             <!DOCTYPE html>
@@ -297,23 +269,19 @@ private fun WebEmbedPlayer(
                     } else {
                         loadUrl(formattedUrl)
                     }
-
                     webViewRef = this
                 }
             },
             update = {
-                // webview active
             },
             modifier = Modifier.fillMaxSize()
         )
-
         if (isBuffering && !hasError) {
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
         }
-
         if (hasError) {
             VideoErrorOverlay(
                 message = "Unable to load video embed",
@@ -323,7 +291,6 @@ private fun WebEmbedPlayer(
         }
     }
 }
-
 @Composable
 private fun VideoErrorOverlay(
     message: String,
@@ -332,7 +299,6 @@ private fun VideoErrorOverlay(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-
     Surface(
         color = Color(0xDD12141C),
         shape = RoundedCornerShape(16.dp),
@@ -389,7 +355,6 @@ private fun VideoErrorOverlay(
         }
     }
 }
-
 fun openVideoInExternalApp(context: Context, videoUrl: String) {
     try {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl)).apply {
@@ -400,7 +365,6 @@ fun openVideoInExternalApp(context: Context, videoUrl: String) {
         e.printStackTrace()
     }
 }
-
 private fun formatVideoUrl(url: String): String {
     return when {
         url.contains("youtube.com/watch?v=", ignoreCase = true) -> {

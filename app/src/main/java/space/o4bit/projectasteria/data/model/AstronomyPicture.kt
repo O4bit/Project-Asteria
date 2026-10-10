@@ -1,8 +1,6 @@
 package space.o4bit.projectasteria.data.model
-
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-
 @JsonClass(generateAdapter = true)
 data class AstronomyPicture(
     @param:Json(name = "date") val date: String,
@@ -15,7 +13,6 @@ data class AstronomyPicture(
     @param:Json(name = "copyright") val copyright: String? = null,
     @param:Json(name = "thumbnail") val thumbnail: String? = null
 )
-
 data class EnhancedAstronomyPicture(
     val astronomyPicture: AstronomyPicture,
     val shortFact: String,

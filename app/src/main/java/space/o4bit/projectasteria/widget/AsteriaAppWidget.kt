@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.widget
-
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -17,15 +16,12 @@ import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 import java.text.SimpleDateFormat
 import java.util.Locale
-
 class AsteriaAppWidget : AppWidgetProvider() {
-
     companion object {
         const val ACTION_REFRESH = "space.o4bit.projectasteria.ACTION_REFRESH"
         const val ACTION_OPEN_APP = "space.o4bit.projectasteria.ACTION_OPEN_APP"
         const val ACTION_SHARE = "space.o4bit.projectasteria.ACTION_SHARE"
     }
-
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -35,16 +31,12 @@ class AsteriaAppWidget : AppWidgetProvider() {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
     }
-
     override fun onEnabled(context: Context) {
     }
-
     override fun onDisabled(context: Context) {
     }
-
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-
         when (intent.action) {
             ACTION_REFRESH -> {
                 val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -66,14 +58,12 @@ class AsteriaAppWidget : AppWidgetProvider() {
             }
         }
     }
-
     private fun updateAppWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int
     ) {
         val views = RemoteViews(context.packageName, R.layout.asteria_app_widget)
-
         val openAppIntent = Intent(WidgetClickReceiver.ACTION_OPEN_APP_FROM_WIDGET).apply {
             setPackage(context.packageName)
         }
@@ -81,25 +71,19 @@ class AsteriaAppWidget : AppWidgetProvider() {
             context, 0, openAppIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         views.setOnClickPendingIntent(R.id.widget_main_card, openAppPendingIntent)
-
         val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
         val currentDate = dateFormat.format(java.util.Date())
         views.setTextViewText(R.id.widget_date, currentDate)
-
         views.setTextViewText(R.id.widget_title, "Today in Space")
-
         appWidgetManager.updateAppWidget(appWidgetId, views)
-
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val database = (context.applicationContext as space.o4bit.projectasteria.AsteriaApplication).database
                 val repository = SpaceRepository(database.apodDao())
                 val enhancedPicture = repository.getTodaysAstronomyPicture()
-
                 CoroutineScope(Dispatchers.Main).launch {
                     val apod = enhancedPicture.astronomyPicture
                     views.setTextViewText(R.id.widget_title, apod.title)
-
                     val imageUrl = apod.url ?: apod.hdUrl
                     val isVideo = apod.mediaType.equals("video", ignoreCase = true)
                     if (!isVideo && imageUrl != null) {
@@ -119,13 +103,11 @@ class AsteriaAppWidget : AppWidgetProvider() {
             } catch (_: Exception) {
                         }
                     }
-
                     appWidgetManager.updateAppWidget(appWidgetId, views)
                 }
             } catch (e: Exception) {
                 CoroutineScope(Dispatchers.Main).launch {
                     views.setTextViewText(R.id.widget_title, "Project Asteria")
-
                     appWidgetManager.updateAppWidget(appWidgetId, views)
                 }
             }

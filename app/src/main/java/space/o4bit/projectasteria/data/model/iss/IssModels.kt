@@ -1,7 +1,5 @@
 package space.o4bit.projectasteria.data.model.iss
-
 import com.squareup.moshi.JsonClass
-
 @JsonClass(generateAdapter = true)
 data class IssPosition(
     val name: String,

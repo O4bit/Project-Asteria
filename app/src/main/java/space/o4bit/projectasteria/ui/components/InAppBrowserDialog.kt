@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-
 @Composable
 fun InAppBrowserDialog(
     url: String,
@@ -43,7 +41,6 @@ fun InAppBrowserDialog(
     var canGoBack by remember { mutableStateOf(false) }
     var canGoForward by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
-
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -59,7 +56,6 @@ fun InAppBrowserDialog(
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Top Navigation Bar
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
                     shadowElevation = 4.dp
@@ -74,7 +70,6 @@ fun InAppBrowserDialog(
                             IconButton(onClick = onDismiss) {
                                 Icon(Icons.Default.Close, contentDescription = "Close browser")
                             }
-
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
@@ -96,25 +91,21 @@ fun InAppBrowserDialog(
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-
                             IconButton(
                                 onClick = { webViewRef?.goBack() },
                                 enabled = canGoBack
                             ) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                             }
-
                             IconButton(
                                 onClick = { webViewRef?.goForward() },
                                 enabled = canGoForward
                             ) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Forward")
                             }
-
                             IconButton(onClick = { webViewRef?.reload() }) {
                                 Icon(Icons.Default.Refresh, contentDescription = "Reload")
                             }
-
                             IconButton(
                                 onClick = {
                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -126,7 +117,6 @@ fun InAppBrowserDialog(
                             ) {
                                 Icon(Icons.Default.Share, contentDescription = "Share")
                             }
-
                             IconButton(
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
@@ -136,7 +126,6 @@ fun InAppBrowserDialog(
                                 Icon(Icons.Default.OpenInBrowser, contentDescription = "Open in External Browser")
                             }
                         }
-
                         if (isLoading) {
                             LinearProgressIndicator(
                                 progress = { progress / 100f },
@@ -147,8 +136,6 @@ fun InAppBrowserDialog(
                         }
                     }
                 }
-
-                // WebView Container
                 Box(modifier = Modifier.weight(1f)) {
                     AndroidView(
                         factory = { ctx ->
@@ -160,7 +147,6 @@ fun InAppBrowserDialog(
                                 settings.useWideViewPort = true
                                 settings.builtInZoomControls = true
                                 settings.displayZoomControls = false
-
                                 webViewClient = object : WebViewClient() {
                                     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                         super.onPageStarted(view, url, favicon)
@@ -169,7 +155,6 @@ fun InAppBrowserDialog(
                                         canGoBack = view?.canGoBack() ?: false
                                         canGoForward = view?.canGoForward() ?: false
                                     }
-
                                     override fun onPageFinished(view: WebView?, url: String?) {
                                         super.onPageFinished(view, url)
                                         isLoading = false
@@ -178,28 +163,24 @@ fun InAppBrowserDialog(
                                         canGoBack = view?.canGoBack() ?: false
                                         canGoForward = view?.canGoForward() ?: false
                                     }
-
                                     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                                         request?.url?.toString()?.let { targetUrl ->
                                             if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
-                                                return false // Load inside WebView
+                                                return false 
                                             }
                                         }
                                         return super.shouldOverrideUrlLoading(view, request)
                                     }
                                 }
-
                                 webChromeClient = object : WebChromeClient() {
                                     override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                         progress = newProgress
                                         if (newProgress == 100) isLoading = false
                                     }
-
                                     override fun onReceivedTitle(view: WebView?, title: String?) {
                                         title?.let { pageTitle = it }
                                     }
                                 }
-
                                 webViewRef = this
                                 loadUrl(url)
                             }

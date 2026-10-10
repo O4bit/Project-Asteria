@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -69,16 +68,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.derivedStateOf
-
-/**
- * Production-Grade Dynamic Vector World Map & ISS Tracker.
- *
- * Features:
- *  - Strict Viewport Edge Clamping (Zero blank space outside map boundaries at any zoom level)
- *  - Centroid-aware zooming
- *  - High accuracy SVG world map
- *  - Dynamic MaterialTheme 3 color palette integration
- */
 @Composable
 fun IssGlobe(
     issPosition: IssPosition?,
@@ -86,25 +75,19 @@ fun IssGlobe(
     modifier: Modifier = Modifier
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    
-    // Parse the high-accuracy world map path from raw resources
     val worldPath = remember {
         val pathStr = context.resources.openRawResource(space.o4bit.projectasteria.R.raw.world_map_path)
             .bufferedReader().use { it.readText() }
         androidx.core.graphics.PathParser.createPathFromPathData(pathStr).asComposePath()
     }
-
-    // Pan & Zoom state
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var canvasSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
-
-    // Cache the scaled world path — only recomputed when canvas dimensions change, not every frame
     val scaledWorldPath by remember(canvasSize) {
         derivedStateOf {
             if (canvasSize.width == 0 || canvasSize.height == 0) {
-                worldPath // return unscaled until canvas is measured
+                worldPath 
             } else {
                 val scaleX = canvasSize.width / 360f
                 val scaleY = canvasSize.height / 180f
@@ -117,8 +100,6 @@ fun IssGlobe(
             }
         }
     }
-
-    // Dynamic Material Theme color tokens
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryContainer = MaterialTheme.colorScheme.secondaryContainer
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
@@ -128,16 +109,12 @@ fun IssGlobe(
     val surfaceHigh = MaterialTheme.colorScheme.surfaceContainerHigh
     val onSurface = MaterialTheme.colorScheme.onSurface
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
-
-    // Map element theme derivations
     val oceanGradientStart = surfaceLowest
     val oceanGradientEnd = surfaceHigh
     val landFillColor = secondaryContainer.copy(alpha = 0.75f)
     val landBorderColor = primaryColor
     val landGlowColor = primaryColor.copy(alpha = 0.35f)
     val gridColor = outlineVariant.copy(alpha = 0.3f)
-
-    // Pulsing target animation
     val infiniteTransition = rememberInfiniteTransition(label = "mapAnim")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -166,7 +143,6 @@ fun IssGlobe(
         ),
         label = "radarRotation"
     )
-
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -187,26 +163,20 @@ fun IssGlobe(
                                 val event = awaitPointerEvent()
                                 val pointerCount = event.changes.size
                                 val shouldHandle = pointerCount > 1 || scale > 1.05f
-
                                 if (shouldHandle) {
                                     val zoom = event.calculateZoom()
                                     val pan = event.calculatePan()
                                     val centroid = event.calculateCentroid()
-
                                     if (zoom != 1f || pan != Offset.Zero) {
                                         val oldScale = scale
                                         val newScale = (scale * zoom).coerceIn(1f, 4.5f)
                                         val scaleFactor = newScale / oldScale
-
                                         val center = Offset(size.width / 2f, size.height / 2f)
                                         val centroidFromCenter = centroid - center
-
                                         val newOffsetX = offsetX * scaleFactor - centroidFromCenter.x * (scaleFactor - 1f) + pan.x
                                         val newOffsetY = offsetY * scaleFactor - centroidFromCenter.y * (scaleFactor - 1f) + pan.y
-
                                         val maxPanX = (size.width * (newScale - 1f)) / 2f
                                         val maxPanY = (size.height * (newScale - 1f)) / 2f
-
                                         scale = newScale
                                         if (newScale <= 1.01f) {
                                             scale = 1f
@@ -216,7 +186,6 @@ fun IssGlobe(
                                             offsetX = newOffsetX.coerceIn(-maxPanX, maxPanX)
                                             offsetY = newOffsetY.coerceIn(-maxPanY, maxPanY)
                                         }
-
                                         event.changes.forEach { it.consume() }
                                     }
                                 }
@@ -232,9 +201,7 @@ fun IssGlobe(
             ) {
                 val w = size.width
                 val h = size.height
-
                 clipRect {
-                    // 1. Dynamic Ocean Gradient
                     drawRect(
                         brush = Brush.radialGradient(
                             colors = listOf(oceanGradientEnd, oceanGradientStart),
@@ -242,8 +209,6 @@ fun IssGlobe(
                             radius = w * 0.75f
                         )
                     )
-
-                    // 2. Dynamic Lat/Lon Coordinate Grid
                     val gridDash = PathEffect.dashPathEffect(floatArrayOf(4f, 6f), 0f)
                     for (lat in -60..60 step 30) {
                         val y = (90f - lat) / 180f * h
@@ -265,8 +230,6 @@ fun IssGlobe(
                             pathEffect = gridDash
                         )
                     }
-
-                    // Equator & Prime Meridian lines
                     val eqY = 90f / 180f * h
                     val pmX = 180f / 360f * w
                     drawLine(
@@ -281,30 +244,20 @@ fun IssGlobe(
                         end = Offset(pmX, h),
                         strokeWidth = 1.2f
                     )
-
-                    // 3. Day / Night Solar Terminator Curve
                     drawDayNightTerminatorAccurate(w, h, surfaceColor, tertiaryColor)
-
-                    // 4. High-Fidelity Organic Vector Continents (path cached by canvas size)
                     drawPath(scaledWorldPath, landFillColor)
                     drawPath(scaledWorldPath, landGlowColor, style = Stroke(width = 3.2f))
                     drawPath(scaledWorldPath, landBorderColor, style = Stroke(width = 1.2f))
-
-                    // 5. Dynamic Orbit Trajectory Line
                     if (orbitTrail.size >= 2) {
                         for (i in 0 until orbitTrail.size - 1) {
                             val p1 = orbitTrail[i]
                             val p2 = orbitTrail[i + 1]
-
                             if (abs(p1.longitude - p2.longitude) > 180) continue
-
                             val x1 = ((p1.longitude + 180.0) / 360.0 * w).toFloat()
                             val y1 = ((90.0 - p1.latitude) / 180.0 * h).toFloat()
                             val x2 = ((p2.longitude + 180.0) / 360.0 * w).toFloat()
                             val y2 = ((90.0 - p2.latitude) / 180.0 * h).toFloat()
-
                             val progress = (1f - i.toFloat() / orbitTrail.size).coerceIn(0.15f, 0.95f)
-
                             drawLine(
                                 color = primaryColor.copy(alpha = progress * 0.45f),
                                 start = Offset(x1, y1),
@@ -321,22 +274,16 @@ fun IssGlobe(
                             )
                         }
                     }
-
-                    // 6. Dynamic ISS Target Reticle
                     issPosition?.let { pos ->
                         val targetX = ((pos.longitude + 180.0) / 360.0 * w).toFloat()
                         val targetY = ((90.0 - pos.latitude) / 180.0 * h).toFloat()
                         val targetOffset = Offset(targetX, targetY)
-
-                        // Outer pulse ring
                         drawCircle(
                             color = errorColor.copy(alpha = pulseAlpha),
                             radius = 55f * pulseScale,
                             center = targetOffset,
                             style = Stroke(width = 4f)
                         )
-
-                        // Radar arc
                         drawArc(
                             color = errorColor,
                             startAngle = radarRotation,
@@ -346,8 +293,6 @@ fun IssGlobe(
                             size = Size(80f, 80f),
                             style = Stroke(width = 4f)
                         )
-
-                        // Center glowing core
                         drawCircle(
                             color = errorColor,
                             radius = 15f,
@@ -358,8 +303,6 @@ fun IssGlobe(
                             radius = 6f,
                             center = targetOffset
                         )
-
-                        // Precision Crosshair Ticks
                         val tickLen = 35f
                         val tickGap = 20f
                         drawLine(
@@ -389,8 +332,6 @@ fun IssGlobe(
                     }
                 }
             }
-
-            // Top Floating Glass Telemetry HUD Badge
             Surface(
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -429,8 +370,6 @@ fun IssGlobe(
                     )
                 }
             }
-
-            // Bottom-Right Interactive Zoom & Recenter Pill Controls
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -460,7 +399,6 @@ fun IssGlobe(
                     }
                     Spacer(Modifier.size(8.dp))
                 }
-
                 Surface(
                     shape = CircleShape,
                     color = surfaceHigh.copy(alpha = 0.9f),
@@ -530,7 +468,6 @@ fun IssGlobe(
         }
     }
 }
-
 private fun DrawScope.drawDayNightTerminatorAccurate(
     w: Float,
     h: Float,
@@ -542,20 +479,16 @@ private fun DrawScope.drawDayNightTerminatorAccurate(
     val declination = 23.45 * sin(2 * PI * (dayOfYear - 81) / 365)
     val decRad = declination * PI / 180.0
     val sunLon = -((now % 86400) / 86400.0 * 360.0 - 180.0)
-
     val shadowPath = Path()
     val borderPath = Path()
-
     shadowPath.moveTo(0f, h)
     var firstPoint = true
-
     for (xPx in 0..w.toInt() step 4) {
         val lon = (xPx.toFloat() / w) * 360.0 - 180.0
         val lonDiffRad = (lon - sunLon) * PI / 180.0
         val latRad = kotlin.math.atan(-cos(lonDiffRad) / kotlin.math.tan(decRad))
         val lat = latRad * 180.0 / PI
         val yPx = ((90.0 - lat) / 180.0 * h).toFloat().coerceIn(0f, h)
-
         shadowPath.lineTo(xPx.toFloat(), yPx)
         if (firstPoint) {
             borderPath.moveTo(xPx.toFloat(), yPx)
@@ -566,18 +499,13 @@ private fun DrawScope.drawDayNightTerminatorAccurate(
     }
     shadowPath.lineTo(w, h)
     shadowPath.close()
-
-    // 1. Dynamic night shadow fill
     drawPath(
         path = shadowPath,
         color = nightShadowColor.copy(alpha = 0.65f)
     )
-
-    // 2. Dynamic twilight horizon border
     drawPath(
         path = borderPath,
         color = horizonBorderColor.copy(alpha = 0.85f),
         style = Stroke(width = 2.5f)
     )
 }
-

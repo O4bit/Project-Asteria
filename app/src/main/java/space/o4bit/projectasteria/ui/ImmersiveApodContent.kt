@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui
-
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
@@ -56,10 +55,6 @@ import space.o4bit.projectasteria.ui.components.PinnedLaunchCard
 import space.o4bit.projectasteria.ui.viewmodels.ApodUiState
 import space.o4bit.projectasteria.utils.Constants
 import space.o4bit.projectasteria.utils.TextUtils
-
-/**
- * Immersive APOD reading experience with a peeking preview card and pinned launches.
- */
 @Composable
 fun ImmersiveApodContent(
     state: ApodUiState.Success,
@@ -77,50 +72,37 @@ fun ImmersiveApodContent(
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val navOffsetState = LocalNavOffset.current
-    
     androidx.compose.runtime.LaunchedEffect(scrollState) {
         androidx.compose.runtime.snapshotFlow { scrollState.value }
             .collect { scroll ->
-                // Start collapsing at 50px, fully collapse at 250px
                 val fraction = ((scroll - 50f) / 200f).coerceIn(0f, 1f)
                 navOffsetState.value = fraction
             }
     }
-
-    // Scroll range over which transition occurs
     val transitionRangePx = 650
-
     val rawFraction by remember {
         derivedStateOf { (scrollState.value.toFloat() / transitionRangePx).coerceIn(0f, 1f) }
     }
-
     val fraction by animateFloatAsState(
         targetValue = rawFraction,
         animationSpec = tween(durationMillis = 80, easing = FastOutSlowInEasing),
         label = "immersiveFraction"
     )
-
-    // Keep the APOD card visible so it can go behind the text card
     val cardAlpha = (1f - fraction * 0.4f).coerceIn(0f, 1f)
     val cardScale = 1f - fraction * 0.08f
     val textAlpha = ((fraction - 0.12f) / 0.78f).coerceIn(0f, 1f)
     val textSlide = (1f - textAlpha) * 40f
-
-    // Parallax effect: moves the image down relative to the scroll so it scrolls slower
     val parallaxY by remember {
         derivedStateOf { scrollState.value * 0.5f }
     }
-
     val onSurface = MaterialTheme.colorScheme.onSurface
     val picture = state.picture
-
     Box(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
         ) {
-            // ── 0. Pinned Launches Carousel/List ─────────────────────────────
             if (pinnedLaunches.isNotEmpty()) {
                 Box(
                     modifier = Modifier
@@ -144,8 +126,6 @@ fun ImmersiveApodContent(
                     }
                 }
             }
-
-            // ── 1. APOD Picture Card ──────────────────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -164,12 +144,9 @@ fun ImmersiveApodContent(
                     onToggleFavorite = { onToggleFavorite(picture) }
                 )
             }
-
-            // ── 2. Peeking Preview Card (Visible at rest to signal scroll) ─────
             val previewAlpha = (1f - fraction * 1.5f).coerceIn(0f, 1f)
             val previewScale = (1f - fraction * 0.05f).coerceIn(0f, 1f)
             val previewSlide = fraction * 80f
-            
             Box(
                 modifier = Modifier
                     .zIndex(1f)
@@ -232,8 +209,6 @@ fun ImmersiveApodContent(
                     }
                 }
             }
-
-            // ── 3. Full Reading Content Section ──────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -257,10 +232,8 @@ fun ImmersiveApodContent(
                             .fillMaxWidth()
                             .padding(24.dp)
                     ) {
-                        // ── Make text selectable and copyable ─────────────────
                         SelectionContainer {
                             Column {
-                                // Title
                                 Text(
                                     text = picture.astronomyPicture.title,
                                     style = MaterialTheme.typography.headlineSmall,
@@ -269,10 +242,7 @@ fun ImmersiveApodContent(
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Center
                                 )
-
                                 Spacer(Modifier.height(6.dp))
-
-                                // Date
                                 Text(
                                     text = picture.astronomyPicture.date,
                                     style = MaterialTheme.typography.labelMedium,
@@ -280,7 +250,6 @@ fun ImmersiveApodContent(
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Center
                                 )
-
                                 if (!picture.astronomyPicture.copyright.isNullOrBlank()) {
                                     Spacer(Modifier.height(6.dp))
                                     val linkColor = MaterialTheme.colorScheme.primary
@@ -299,20 +268,14 @@ fun ImmersiveApodContent(
                                         textAlign = TextAlign.Center
                                     )
                                 }
-
                                 Spacer(Modifier.height(20.dp))
-
-                                // Divider line
                                 Surface(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(1.dp),
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
                                 ) {}
-
                                 Spacer(Modifier.height(20.dp))
-
-                                // Full Explanation Body (High Contrast White / onSurface)
                                 val linkColor = MaterialTheme.colorScheme.primary
                                 val explanationText = remember(picture.astronomyPicture.explanation, linkColor) {
                                     TextUtils.htmlToAnnotatedString(
@@ -330,10 +293,7 @@ fun ImmersiveApodContent(
                                 )
                             }
                         }
-
                         Spacer(Modifier.height(24.dp))
-
-                        // ── Join Discord Server Pill ──────────────────────────
                         val context = LocalContext.current
                         Surface(
                             onClick = {
@@ -367,10 +327,7 @@ fun ImmersiveApodContent(
                                 )
                             }
                         }
-
                         Spacer(Modifier.height(28.dp))
-
-                        // Return hint
                         Text(
                             text = "↑ Scroll up to return",
                             style = MaterialTheme.typography.labelSmall,
@@ -381,8 +338,6 @@ fun ImmersiveApodContent(
                     }
                 }
             }
-
-            // Bottom space
             Spacer(Modifier.height(100.dp))
         }
     }

@@ -1,10 +1,8 @@
 package space.o4bit.projectasteria.data.local
-
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import space.o4bit.projectasteria.data.model.AstronomyPicture
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
-
 @Entity(tableName = "apods")
 data class ApodEntity(
     @PrimaryKey
@@ -41,7 +39,6 @@ data class ApodEntity(
             isFavorite = isFavorite
         )
     }
-
     companion object {
         fun from(enhanced: EnhancedAstronomyPicture): ApodEntity {
             return ApodEntity(
@@ -62,4 +59,3 @@ data class ApodEntity(
         }
     }
 }
-

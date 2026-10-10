@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -39,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import space.o4bit.projectasteria.R
 import space.o4bit.projectasteria.data.model.AstronomyPicture
 import space.o4bit.projectasteria.utils.TextUtils
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExplanationDetailScreen(
@@ -48,7 +46,6 @@ fun ExplanationDetailScreen(
     modifier: Modifier = Modifier
 ) {
     var showWebBrowser by remember { mutableStateOf(false) }
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -118,16 +115,13 @@ fun ExplanationDetailScreen(
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             textAlign = TextAlign.Center
                         )
-
                         Spacer(modifier = Modifier.height(8.dp))
-
                         Text(
                             text = astronomyPicture.date,
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                             textAlign = TextAlign.Center
                         )
-
                         if (!astronomyPicture.copyright.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(6.dp))
                             val linkColor = MaterialTheme.colorScheme.primary
@@ -147,9 +141,7 @@ fun ExplanationDetailScreen(
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -168,9 +160,7 @@ fun ExplanationDetailScreen(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-
                         Spacer(modifier = Modifier.height(12.dp))
-
                         val linkColor = MaterialTheme.colorScheme.primary
                         val explanationAnnotated = remember(astronomyPicture.explanation, linkColor) {
                             TextUtils.htmlToAnnotatedString(
@@ -178,7 +168,6 @@ fun ExplanationDetailScreen(
                                 linkColor = linkColor
                             )
                         }
-
                         SelectionContainer {
                             Text(
                                 text = explanationAnnotated,
@@ -189,12 +178,10 @@ fun ExplanationDetailScreen(
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
-
     if (showWebBrowser) {
         val parts = astronomyPicture.date.split("-")
         val webUrl = if (parts.size == 3 && parts[0].length == 4) {

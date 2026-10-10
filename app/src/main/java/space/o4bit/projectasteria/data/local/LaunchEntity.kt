@@ -1,8 +1,6 @@
 package space.o4bit.projectasteria.data.local
-
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
 @Entity(tableName = "launches")
 data class LaunchEntity(
     @PrimaryKey val id: String,

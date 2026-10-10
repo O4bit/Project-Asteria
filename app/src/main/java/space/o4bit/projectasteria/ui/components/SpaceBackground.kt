@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -31,7 +30,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
-
 @Composable
 fun SpaceBackground(
     modifier: Modifier = Modifier,
@@ -50,7 +48,6 @@ fun SpaceBackground(
     val surfaceColor = MaterialTheme.colorScheme.surface
     val isDarkTheme = surfaceColor.luminance() < 0.5f
     val starColor = if (isDarkTheme) Color.White else Color(0xFF1A2530)
-
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             surfaceColor.copy(alpha = 0.98f),
@@ -59,23 +56,19 @@ fun SpaceBackground(
             surfaceColor
         )
     )
-
     val stars = remember(isDarkTheme) {
         mutableStateListOf<SpaceStarData>().apply {
             addAll(generateStarPool())
         }
     }
-
     var baseProgress by remember { mutableFloatStateOf(0f) }
     val currentSpeedMultiplier = remember { Animatable(1f) }
-
     LaunchedEffect(speedMultiplier) {
         currentSpeedMultiplier.animateTo(
             targetValue = speedMultiplier,
             animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
         )
     }
-
     LaunchedEffect(Unit) {
         var lastFrameMs = 0L
         while (true) {
@@ -83,16 +76,13 @@ fun SpaceBackground(
                 val delta = if (lastFrameMs == 0L) 16L else (frameMs - lastFrameMs)
                 lastFrameMs = frameMs
                 baseProgress += (delta / 16f) * 0.0008f * currentSpeedMultiplier.value
-
                 stars.forEachIndexed { index, star ->
                     val adjustedProgress = ((baseProgress * star.speed) + star.initialOffset) % 1f
-
                     if (adjustedProgress > 0.98f || adjustedProgress < 0.01f) {
                         if (star.lastRegen != baseProgress.toInt()) {
                             var newX: Float
                             var newY: Float
                             var newDistance: Float
-
                             do {
                                 val newAngle = Random.nextFloat() * 360f
                                 newDistance = sqrt(Random.nextFloat()) * 1.5f
@@ -100,7 +90,6 @@ fun SpaceBackground(
                                 newX = cos(newAngleRad) * newDistance
                                 newY = sin(newAngleRad) * newDistance
                             } while (newDistance < 0.15f)
-
                             stars[index] = star.copy(
                                 x = newX,
                                 y = newY,
@@ -112,20 +101,16 @@ fun SpaceBackground(
             }
         }
     }
-
     var meteor by remember { mutableStateOf<SpaceMeteorState?>(null) }
     val meteorProgress = remember { Animatable(0f) }
-
     LaunchedEffect(Unit) {
         while (true) {
             delay(Random.nextLong(40_000, 60_000))
-
             val direction = Random.nextInt(2)
             val angle = when (direction) {
                 0 -> 130f + Random.nextFloat() * 20f
                 else -> 30f + Random.nextFloat() * 20f
             }
-
             val newMeteor = SpaceMeteorState(
                 startX = Random.nextFloat(),
                 startY = Random.nextFloat() * 0.3f,
@@ -134,7 +119,6 @@ fun SpaceBackground(
                 depth = 0.4f + Random.nextFloat() * 0.6f,
                 thickness = 4f
             )
-
             meteor = newMeteor
             meteorProgress.snapTo(0f)
             meteorProgress.animateTo(
@@ -144,7 +128,6 @@ fun SpaceBackground(
             meteor = null
         }
     }
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -159,64 +142,47 @@ fun SpaceBackground(
             val centerY = height / 2f
             val tiltX = parallaxState.tiltX.value
             val tiltY = parallaxState.tiltY.value
-
             stars.forEach { star ->
                 val adjustedProgress = ((baseProgress * star.speed) + star.initialOffset) % 1f
                 val z = 1f - adjustedProgress
-
                 if (z < 0.05f || z > 1.2f) return@forEach
-
                 val perspectiveFactor = 1f / z.coerceAtLeast(0.1f)
-
                 val baseX = star.x * width * 0.5f
                 val baseY = star.y * height * 0.5f
-
                 val projectedX = baseX * perspectiveFactor
                 val projectedY = baseY * perspectiveFactor
-
                 val sizeFactor = perspectiveFactor * 0.65f
                 val finalSize = star.size * sizeFactor
-
-                // Clamp parallax so near-eye stars don't spike off-screen
                 val parallaxFactor = (1f / z.coerceAtLeast(0.1f)).coerceAtMost(400f)
                 val parallaxX = tiltX * 250f * parallaxFactor
                 val parallaxY = tiltY * 250f * parallaxFactor
-
                 val finalX = centerX + projectedX + parallaxX
                 val finalY = centerY + projectedY + parallaxY
-
                 if (finalX < -150 || finalX > width + 150 ||
                     finalY < -150 || finalY > height + 150
                 ) {
                     return@forEach
                 }
-
-
                 val fadeIn = when {
                     z > 1.0f -> ((1.2f - z) / 0.2f).coerceIn(0f, 1f)
                     else -> 1f
                 }
-
                 val fadeOut = when {
                     z < 0.15f -> (z / 0.15f).coerceIn(0f, 1f)
                     else -> 1f
                 }
-
                 val distanceAlpha = when {
                     z > 0.6f -> ((1f - z) / 0.4f).coerceIn(0f, 1f)
                     z < 0.3f -> (z / 0.3f).coerceIn(0f, 1f)
                     else -> 1f
                 }
-
                 val combinedAlpha = (star.baseAlpha * distanceAlpha * fadeIn * fadeOut).coerceIn(0f, 1f)
-
                 drawCircle(
                     color = starColor,
                     radius = finalSize * 1.8f,
                     center = Offset(finalX, finalY),
                     alpha = combinedAlpha * 0.2f
                 )
-
                 drawCircle(
                     color = starColor,
                     radius = finalSize * 1.1f,
@@ -224,22 +190,16 @@ fun SpaceBackground(
                     alpha = combinedAlpha
                 )
             }
-
             meteor?.let { m ->
                 val p = meteorProgress.value
                 val angleRad = m.angle * (Math.PI / 180f).toFloat()
-
                 val travelDistance = width * 2f * p
-
                 val cosAngle = cos(angleRad)
                 val sinAngle = sin(angleRad)
-
                 val curX = (m.startX * width) + (travelDistance * cosAngle)
                 val curY = (m.startY * height) + (travelDistance * sinAngle)
-
                 val tailX = curX - (m.length * cosAngle)
                 val tailY = curY - (m.length * sinAngle)
-
                 drawLine(
                     brush = Brush.linearGradient(
                         0.0f to starColor.copy(alpha = 0.3f),
@@ -253,7 +213,6 @@ fun SpaceBackground(
                     strokeWidth = m.thickness * 4f,
                     cap = StrokeCap.Round
                 )
-
                 drawLine(
                     brush = Brush.linearGradient(
                         0.0f to starColor.copy(alpha = 0.95f),
@@ -272,19 +231,15 @@ fun SpaceBackground(
         content()
     }
 }
-
 private fun Color.luminance(): Float {
     return 0.299f * red + 0.587f * green + 0.114f * blue
 }
-
 private fun generateStarPool(): List<SpaceStarData> {
     return List(300) { index ->
         val depthLayer = index / 300f
-
         var x: Float
         var y: Float
         var distance: Float
-
         do {
             val angle = (index * 137.5f) % 360f
             distance = sqrt(Random.nextFloat()) * 1.5f
@@ -292,7 +247,6 @@ private fun generateStarPool(): List<SpaceStarData> {
             x = cos(angleRad) * distance
             y = sin(angleRad) * distance
         } while (distance < 0.15f)
-
         SpaceStarData(
             x = x,
             y = y,
@@ -305,7 +259,6 @@ private fun generateStarPool(): List<SpaceStarData> {
         )
     }
 }
-
 private data class SpaceStarData(
     val x: Float,
     val y: Float,
@@ -316,7 +269,6 @@ private data class SpaceStarData(
     val initialOffset: Float,
     val lastRegen: Int
 )
-
 private data class SpaceMeteorState(
     val startX: Float,
     val startY: Float,

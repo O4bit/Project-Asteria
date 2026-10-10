@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -43,7 +42,6 @@ import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.chipColors
 import com.mikepenz.aboutlibraries.ui.compose.libraryColors
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OssLicensesScreen(
@@ -54,7 +52,6 @@ fun OssLicensesScreen(
     var isSearchVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val libs = remember<Libs> { Libs.Builder().withContext(context).build() }
-
     val chipColors = LibraryDefaults.chipColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -69,7 +66,6 @@ fun OssLicensesScreen(
         dialogContentColor = MaterialTheme.colorScheme.onSurface,
         dialogConfirmButtonColor = MaterialTheme.colorScheme.primary
     )
-
     val chipPadding = LibraryDefaults.chipPadding(
         containerPadding = PaddingValues(top = 10.dp, end = 6.dp),
         contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
@@ -87,7 +83,6 @@ fun OssLicensesScreen(
     val libraryDimensions = LibraryDefaults.libraryDimensions(
         itemSpacing = 2.dp
     )
-
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -175,7 +170,6 @@ fun OssLicensesScreen(
                     )
                 )
             }
-
             LibrariesContainer(
                 libraries = libs,
                 modifier = Modifier.fillMaxSize(),

@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -30,7 +29,6 @@ import coil.request.ImageRequest
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 import space.o4bit.projectasteria.utils.TextUtils
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApodDetailScreen(
@@ -39,13 +37,10 @@ fun ApodDetailScreen(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
-
     var currentApod by remember { mutableStateOf<EnhancedAstronomyPicture?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-
     var showFullscreen by remember { mutableStateOf(false) }
     var showExplanation by remember { mutableStateOf(false) }
-
     LaunchedEffect(date) {
         isLoading = true
         try {
@@ -53,14 +48,12 @@ fun ApodDetailScreen(
         } catch (_: Exception) { }
         isLoading = false
     }
-
     BackHandler(enabled = showFullscreen || showExplanation) {
         when {
             showExplanation -> showExplanation = false
             showFullscreen -> showFullscreen = false
         }
     }
-
     when {
         showExplanation && currentApod != null -> {
             ExplanationDetailScreen(
@@ -152,7 +145,6 @@ fun ApodDetailScreen(
                                 onImageClick = { showFullscreen = true }
                             )
                         }
-
                         item {
                             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
                                 Text(
@@ -190,7 +182,6 @@ fun ApodDetailScreen(
                                 }
                             }
                         }
-
                         item {
                             Card(
                                 modifier = Modifier
@@ -227,7 +218,6 @@ fun ApodDetailScreen(
                                 }
                             }
                         }
-
                         item { Spacer(modifier = Modifier.height(32.dp)) }
                     }
                 }
@@ -235,7 +225,6 @@ fun ApodDetailScreen(
         }
     }
 }
-
 @Composable
 private fun ApodMediaHeader(
     mediaType: String,
@@ -247,7 +236,6 @@ private fun ApodMediaHeader(
 ) {
     val context = LocalContext.current
     val imageUrl = hdUrl ?: url
-
     when {
         mediaType == "image" && imageUrl != null -> {
             val isGif = imageUrl.contains(".gif", ignoreCase = true)
@@ -309,7 +297,6 @@ private fun ApodMediaHeader(
         }
     }
 }
-
 private fun extractYouTubeThumbnailUrl(url: String?): String? {
     if (url == null) return null
     val patterns = listOf(

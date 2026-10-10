@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria
-
 import android.app.Application
 import android.os.Build
 import androidx.room.Room
@@ -10,9 +9,7 @@ import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import space.o4bit.projectasteria.data.local.ApodDatabase
-
 class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFactory {
-
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
             .components {
@@ -23,7 +20,6 @@ class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFac
             }
             .build()
     }
-
     val database: ApodDatabase by lazy {
         Room.databaseBuilder(
             applicationContext,
@@ -33,32 +29,25 @@ class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFac
         .fallbackToDestructiveMigration(true)
         .build()
     }
-
     val sortingPreferences: space.o4bit.projectasteria.data.preferences.SortingPreferencesRepository by lazy {
         space.o4bit.projectasteria.data.preferences.SortingPreferencesRepository(applicationContext)
     }
-
     val reminderPreferences: space.o4bit.projectasteria.data.preferences.ReminderPreferencesRepository by lazy {
         space.o4bit.projectasteria.data.preferences.ReminderPreferencesRepository(applicationContext)
     }
-
     val backgroundPreferences: space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository by lazy {
         space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository(applicationContext)
     }
-
     override fun onCreate() {
         super.onCreate()
         Coil.setImageLoader(newImageLoader())
-        
         space.o4bit.projectasteria.util.DiagnosticLogger.initialize(this)
-        
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             space.o4bit.projectasteria.util.DiagnosticLogger.log("CRASH", "Uncaught exception on thread ${thread.name}", throwable)
             defaultHandler?.uncaughtException(thread, throwable)
         }
     }
-
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setMinimumLoggingLevel(android.util.Log.INFO)

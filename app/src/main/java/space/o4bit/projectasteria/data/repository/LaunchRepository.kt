@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.data.repository
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -12,7 +11,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class LaunchRepository(
     private val launchDao: LaunchDao,
@@ -20,7 +18,6 @@ class LaunchRepository(
     private val launchService: SpaceLaunchService = SpaceLaunchService.create()
 ) {
     val allLaunches: Flow<List<LaunchEntity>> = launchDao.getAllLaunches()
-
     val launches: Flow<List<LaunchEntity>> = sortingPreferences.isLaunchesAscending.flatMapLatest { isAscending ->
         if (isAscending) {
             launchDao.getOldestLaunches()
@@ -28,7 +25,6 @@ class LaunchRepository(
             launchDao.getNewestLaunches()
         }
     }
-
     suspend fun refreshUpcomingLaunches(limit: Int = 15) = withContext(Dispatchers.IO) {
         try {
             val response = launchService.getUpcomingLaunches(limit = limit)
@@ -40,7 +36,6 @@ class LaunchRepository(
                 } catch (e: Exception) {
                     0L
                 }
-
                 LaunchEntity(
                     id = launch.id,
                     name = launch.name,
@@ -56,7 +51,6 @@ class LaunchRepository(
                     netMillis = netMillis
                 )
             }
-
             launchDao.clearLaunches()
             launchDao.insertLaunches(entities)
         } catch (e: Exception) {

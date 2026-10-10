@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
@@ -66,7 +65,6 @@ import space.o4bit.projectasteria.data.repository.AsteroidRepository
 import space.o4bit.projectasteria.ui.viewmodels.AsteroidUiState
 import space.o4bit.projectasteria.ui.viewmodels.AsteroidViewModel
 import java.util.Locale
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AsteroidScreen(
@@ -81,34 +79,27 @@ fun AsteroidScreen(
         )
     }
     val viewModel: AsteroidViewModel = viewModel(factory = AsteroidViewModel.Factory(repository))
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     val sortDirection by viewModel.sortDirection.collectAsStateWithLifecycle()
     val hazardousOnly by viewModel.hazardousOnly.collectAsStateWithLifecycle()
-
     var showSortSheet by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
     val listState = rememberSaveable(sortBy, sortDirection, hazardousOnly, saver = LazyListState.Saver) {
         LazyListState(0, 0)
     }
     val snackbarHostState = remember { SnackbarHostState() }
-
     LaunchedEffect(Unit) {
         viewModel.refresh()
     }
-
     var browserUrl by remember { mutableStateOf<String?>(null) }
-
     browserUrl?.let { url ->
         InAppBrowserDialog(
             url = url,
             onDismiss = { browserUrl = null }
         )
     }
-
     Scaffold(
         containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -146,7 +137,6 @@ fun AsteroidScreen(
                 hazardousFilterSelected = hazardousOnly,
                 onToggleHazardousFilter = { viewModel.toggleHazardousOnly() }
             )
-
             Box(modifier = Modifier.fillMaxSize()) {
                 when (val state = uiState) {
                     is AsteroidUiState.Loading -> {
@@ -208,7 +198,6 @@ fun AsteroidScreen(
                 }
             }
         }
-
         if (showSortSheet) {
             SortOptionBottomSheet(
                 options = AsteroidSortBy.entries,
@@ -220,7 +209,6 @@ fun AsteroidScreen(
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AsteroidCard(
@@ -230,17 +218,14 @@ fun AsteroidCard(
 ) {
     val diameterMin = asteroid.estimatedDiameterMinKm * 1000
     val diameterMax = asteroid.estimatedDiameterMaxKm * 1000
-
     val speed = asteroid.relativeVelocityKmh.toDoubleOrNull()
         ?.let { String.format(Locale.US, "%.0f", it) } ?: "Unknown"
     val distance = if (asteroid.missDistanceKm < Double.MAX_VALUE)
         String.format(Locale.US, "%,.0f", asteroid.missDistanceKm)
     else "Unknown"
-
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "scale")
-
     space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
@@ -265,7 +250,6 @@ fun AsteroidCard(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
-
                 if (asteroid.isPotentiallyHazardous) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -297,33 +281,25 @@ fun AsteroidCard(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Text(
                 text = "Close Approach: ${asteroid.closeApproachDate}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
             Spacer(modifier = Modifier.height(4.dp))
-
             Text(
                 text = String.format(Locale.US, "Est. Diameter: %.0fm - %.0fm", diameterMin, diameterMax),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
             Spacer(modifier = Modifier.height(4.dp))
-
             Text(
                 text = "Miss Distance: $distance km",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
             Spacer(modifier = Modifier.height(4.dp))
-
             Text(
                 text = "Relative Velocity: $speed km/h",
                 style = MaterialTheme.typography.bodyMedium,

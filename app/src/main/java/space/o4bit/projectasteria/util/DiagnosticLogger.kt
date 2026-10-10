@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.util
-
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
@@ -9,16 +8,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.io.FileWriter
-
-/**
- * Persistent diagnostic logger.
- * Logs stay on device and can be exported by the user from Settings -> About.
- */
 object DiagnosticLogger {
     private const val MAX_LOGS = 500
     private val logBuffer = ConcurrentLinkedQueue<String>()
     private var logFile: File? = null
-
     fun initialize(context: Context) {
         logFile = File(context.filesDir, "diagnostic_logs.txt")
         if (logFile?.exists() == true) {
@@ -27,12 +20,10 @@ object DiagnosticLogger {
                 val entries = lines.joinToString("\n").split("\n---\n").filter { it.isNotBlank() }
                 logBuffer.addAll(entries.takeLast(MAX_LOGS))
             } catch (e: Exception) {
-                // ignore
             }
         }
         log("DiagnosticLogger", "Diagnostic logger initialized")
     }
-
     fun log(tag: String, message: String, throwable: Throwable? = null) {
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(Date())
         val entry = buildString {
@@ -46,17 +37,13 @@ object DiagnosticLogger {
         while (logBuffer.size > MAX_LOGS) {
             logBuffer.poll()
         }
-        
-        // Persist to file
         logFile?.let { file ->
             try {
                 file.writeText(logBuffer.joinToString("\n---\n"))
             } catch (e: Exception) {
-                // ignore
             }
         }
     }
-
     fun exportLogs(context: Context): File {
         val logsDir = File(context.cacheDir, "diagnostics")
         if (!logsDir.exists()) {
@@ -67,7 +54,6 @@ object DiagnosticLogger {
         file.writeText(header + logBuffer.joinToString("\n---\n"))
         return file
     }
-
     fun shareLogs(context: Context) {
         val file = exportLogs(context)
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
@@ -81,9 +67,7 @@ object DiagnosticLogger {
         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(chooser)
     }
-
     fun getLogCount(): Int = logBuffer.size
-
     fun clearLogs() {
         logBuffer.clear()
         logFile?.delete()

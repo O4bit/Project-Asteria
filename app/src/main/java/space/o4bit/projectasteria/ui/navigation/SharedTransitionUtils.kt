@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.navigation
-
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -7,13 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope?> { null }
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 val LocalAnimatedVisibilityScope = staticCompositionLocalOf<AnimatedVisibilityScope?> { null }
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun Modifier.sharedElementIfAvailable(

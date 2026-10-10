@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +18,6 @@ import space.o4bit.projectasteria.ui.components.backgrounds.MeshBackground
 import space.o4bit.projectasteria.ui.components.backgrounds.ParticlesBackground
 import space.o4bit.projectasteria.ui.components.backgrounds.RingsBackground
 import space.o4bit.projectasteria.ui.components.backgrounds.ShapesBackground
-
 @Composable
 fun AnimatedBackground(
     modifier: Modifier = Modifier,
@@ -28,11 +26,8 @@ fun AnimatedBackground(
     content: @Composable BoxScope.() -> Unit
 ) {
     val context = LocalContext.current
-    // remember prevents re-creating the repository (and re-subscribing DataStore) on every recompose
     val bgPrefs = remember(context) { BackgroundPreferencesRepository(context) }
-    // collectAsStateWithLifecycle pauses collection when the app is in the background
     val enableParallax by bgPrefs.enableParallax.collectAsStateWithLifecycle(initialValue = true)
-
     Surface(
         modifier = modifier
             .fillMaxSize()
@@ -76,7 +71,6 @@ fun AnimatedBackground(
                 )
                 BackgroundType.NONE -> {}
             }
-
             content()
         }
     }

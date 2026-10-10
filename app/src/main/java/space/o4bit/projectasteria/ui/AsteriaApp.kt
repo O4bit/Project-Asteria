@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui
-
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
@@ -111,7 +110,6 @@ import space.o4bit.projectasteria.ui.viewmodels.ApodViewModel
 import space.o4bit.projectasteria.ui.viewmodels.LaunchUiState
 import space.o4bit.projectasteria.ui.viewmodels.LaunchViewModel
 import space.o4bit.projectasteria.util.NetworkConnectivityObserver
-
 enum class MainTab(
     val title: String,
     val selectedIconFactory: @androidx.compose.runtime.Composable () -> androidx.compose.ui.graphics.vector.ImageVector,
@@ -122,12 +120,7 @@ enum class MainTab(
     LAUNCHES("Launches", { Icons.Filled.RocketLaunch }, { Icons.Outlined.RocketLaunch }),
     ASTEROIDS("Asteroids", { Icons.Filled.Public }, { Icons.Outlined.Public })
 }
-
-
-
-
 val LocalNavOffset = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<Float>> { error("No LocalNavOffset") }
-
 @Composable
 fun AsteriaApp(
     openDirectlyFromNotification: Boolean = false,
@@ -137,18 +130,13 @@ fun AsteriaApp(
     val application = context.applicationContext as AsteriaApplication
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
-
-    // ── Pager state persisted across config changes via rememberSaveable ──────
     val initialPage = rememberSaveable { 0 }
     val pagerState = rememberPagerState(
         initialPage = initialPage,
         pageCount = { MainTab.entries.size }
     )
-
     val navOffset = remember { mutableStateOf(0f) }
     androidx.compose.runtime.CompositionLocalProvider(LocalNavOffset provides navOffset) {
-
-    // ── Repositories & ViewModels ─────────────────────────────────────────────
     val spaceRepository = remember { SpaceRepository(application.database.apodDao()) }
     val launchRepository = remember {
         LaunchRepository(
@@ -164,23 +152,17 @@ fun AsteriaApp(
     }
     val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
     val uiHintsPrefs = remember { UiHintsPreferencesRepository(context) }
-
     val apodViewModel: ApodViewModel =
         viewModel(factory = ApodViewModel.Factory(spaceRepository))
     val launchViewModel: LaunchViewModel =
         viewModel(factory = LaunchViewModel.Factory(launchRepository, backgroundPrefs))
-
     val apodState by apodViewModel.uiState.collectAsStateWithLifecycle()
     val launchState by launchViewModel.uiState.collectAsStateWithLifecycle()
-
     val backgroundTypeName by backgroundPrefs.backgroundType.collectAsStateWithLifecycle(initialValue = BackgroundType.SPACE.name)
     val backgroundType = BackgroundType.fromName(backgroundTypeName)
     val mainTabsHintShown by uiHintsPrefs.mainTabsHintShown.collectAsStateWithLifecycle(initialValue = false)
-
     val currentApodPicture = { (apodState as? ApodUiState.Success)?.picture }
     val launchSpeedMultiplier = (launchState as? LaunchUiState.Success)?.launchSpeedMultiplier ?: 1f
-
-    // Track hint when user swipes tabs.
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }
             .collectLatest { page ->
@@ -189,19 +171,12 @@ fun AsteriaApp(
                 }
             }
     }
-
-    // Handle OPEN_FULLSCREEN notification extra — navigate to the fullscreen route.
-    // Deep-link URI intents (asteria://image) are handled automatically by NavHost
-    // because the intent-filter is declared in AndroidManifest.xml.
     LaunchedEffect(openDirectlyFromNotification) {
         if (openDirectlyFromNotification) {
             navController.navigate("fullscreen")
         }
     }
-
-    // ── Full-screen splash overlay — shown once per process start ─────────────
     var splashVisible by rememberSaveable { mutableStateOf(true) }
-
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedBackground(
             type = backgroundType,
@@ -214,7 +189,6 @@ fun AsteriaApp(
             currentApodPicture = currentApodPicture,
             onRequestNotificationPermission = onRequestNotificationPermission
         ) {
-            // ── "main" destination: the tab pager ────────────────────────────
             Scaffold(
                 containerColor = Color.Transparent,
                 bottomBar = {
@@ -293,7 +267,6 @@ fun AsteriaApp(
                                     )
                             }
                     }
-
                     if (!mainTabsHintShown) {
                         SwipeHintOverlay(
                             modifier = Modifier
@@ -305,21 +278,14 @@ fun AsteriaApp(
                 }
             }
         }
-    }   // AnimatedBackground
-
-        // Splash overlay — shown over everything, fades automatically
+    }   
         SplashOverlay(
             visible = splashVisible,
             onDismissed = { splashVisible = false }
         )
-    }   // outer Box
-    }   // CompositionLocalProvider
-}   // AsteriaApp
-
-// ─────────────────────────────────────────────────────────────────────────────
-// APOD tab composable
-// ─────────────────────────────────────────────────────────────────────────────
-
+    }   
+    }   
+}   
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ApodTab(
@@ -338,7 +304,6 @@ private fun ApodTab(
     val bgPrefs = remember { application.backgroundPreferences }
     val launchRepo = remember { LaunchRepository(application.database.launchDao(), application.sortingPreferences) }
     val scope = rememberCoroutineScope()
-
     val pinnedIds by bgPrefs.pinnedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
     val autoRemoveSetting by bgPrefs.autoRemovePinnedLaunches.collectAsStateWithLifecycle(initialValue = false)
     val neverAskSetting by bgPrefs.neverAskRemovePinned.collectAsStateWithLifecycle(initialValue = false)
@@ -346,13 +311,11 @@ private fun ApodTab(
     val pinnedLaunches = remember(allLaunches, pinnedIds) {
         allLaunches.filter { pinnedIds.contains(it.id) }
     }
-
     val connectivityObserver = remember { NetworkConnectivityObserver(context) }
     val isOnline by connectivityObserver.observe().collectAsStateWithLifecycle(
         initialValue = connectivityObserver.isCurrentlyOnline()
     )
     var showOfflineDialog by remember { mutableStateOf(false) }
-
     if (showOfflineDialog) {
         AlertDialog(
             onDismissRequest = { showOfflineDialog = false },
@@ -381,7 +344,6 @@ private fun ApodTab(
             }
         )
     }
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -468,7 +430,6 @@ private fun ApodTab(
     ) { paddingValues ->
         val configuration = androidx.compose.ui.platform.LocalConfiguration.current
         val isTablet = configuration.smallestScreenWidthDp >= 600
-
         if (isTablet && apodState is ApodUiState.Success) {
         Row(
             modifier = Modifier
@@ -490,7 +451,6 @@ private fun ApodTab(
                         onCardClick = onCardClick,
                         onToggleFavorite = { onToggleFavorite(apodState.picture) }
                     )
-
                     if (pinnedLaunches.isNotEmpty()) {
                         Column {
                             pinnedLaunches.forEach { launch ->
@@ -524,9 +484,6 @@ private fun ApodTab(
             }
         }
     } else {
-        // ── Success: immersive scroll reader owns the full height ─────────────
-        // ImmersiveApodContent uses Modifier.verticalScroll internally, so it must
-        // NOT be inside a LazyColumn (that gives unbounded height → crash).
         if (apodState is ApodUiState.Success) {
             ImmersiveApodContent(
                 state = apodState,
@@ -555,9 +512,7 @@ private fun ApodTab(
                     is ApodUiState.Loading -> item {
                         CircularProgressIndicator(modifier = Modifier.padding(32.dp))
                     }
-
                     is ApodUiState.Error -> item {
-                        // If we have cached content, show it with a slim error banner on top.
                         if (apodState.cachedPicture != null) {
                             Column {
                                 Surface(
@@ -593,22 +548,13 @@ private fun ApodTab(
                             }
                         }
                     }
-
-                    else -> { /* Success handled above */ }
+                    else -> {  }
                 }
             }
         }
     }
     }
 }
-
-// ─── Splash Screen Overlay ───────────────────────────────────────────────────
-
-/**
- * Full-screen wordmark splash that shows immediately on app start and fades
- * out after [holdMs] ms. The system splash screen (just a dark background)
- * transitions seamlessly into this overlay.
- */
 @Composable
 private fun SplashOverlay(
     visible: Boolean,
@@ -617,7 +563,6 @@ private fun SplashOverlay(
     fadeDurationMs: Int = 500
 ) {
     var fading by remember { mutableStateOf(false) }
-
     LaunchedEffect(visible) {
         if (visible) {
             delay(holdMs)
@@ -626,13 +571,11 @@ private fun SplashOverlay(
             onDismissed()
         }
     }
-
     val alpha by animateFloatAsState(
         targetValue = if (fading) 0f else 1f,
         animationSpec = tween(durationMillis = fadeDurationMs, easing = FastOutSlowInEasing),
         label = "splashAlpha"
     )
-
     if (visible) {
         Box(
             modifier = Modifier
@@ -654,23 +597,19 @@ private fun SplashOverlay(
         }
     }
 }
-
 @Composable
 fun AnimatedSatelliteEasterEgg() {
     val context = LocalContext.current
     var clickCount by remember { mutableStateOf(0) }
     var showDialog by remember { mutableStateOf(false) }
-    
     val rotation = remember { androidx.compose.animation.core.Animatable(0f) }
     val scope = rememberCoroutineScope()
-
     LaunchedEffect(Unit) {
         rotation.animateTo(
             targetValue = 360f,
             animationSpec = tween(1500, easing = FastOutSlowInEasing)
         )
     }
-
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -711,7 +650,6 @@ fun AnimatedSatelliteEasterEgg() {
             }
         )
     }
-
     Icon(
         imageVector = ImageVector.vectorResource(id = R.drawable.outline_satellite_alt_24),
         contentDescription = "Satellite",

@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.navigation
-
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
@@ -33,19 +32,13 @@ import space.o4bit.projectasteria.ui.components.SettingsScreen
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
 private const val SLIDE_MS = 350
 private const val FADE_MS  = 300
-
-/**
- * Root navigation graph with SharedTransitionLayout support.
- */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AsteriaNavGraph(
     navController: NavHostController,
     spaceRepository: SpaceRepository,
-    /** Returns the currently loaded APOD picture from the ViewModel; null until loaded. */
     currentApodPicture: () -> EnhancedAstronomyPicture?,
     onRequestNotificationPermission: () -> Unit = {},
     mainContent: @Composable () -> Unit
@@ -60,10 +53,8 @@ fun AsteriaNavGraph(
             ) == 0f
         } catch (_: Exception) { false }
     }
-
     val slideMs = if (animationsDisabled) 0 else SLIDE_MS
     val fadeMs = if (animationsDisabled) 0 else FADE_MS
-
     SharedTransitionLayout {
         CompositionLocalProvider(LocalSharedTransitionScope provides this) {
             NavHost(
@@ -86,15 +77,11 @@ fun AsteriaNavGraph(
                         slideOutHorizontally(tween(slideMs)) { (it * 0.1f).toInt() }
                 }
             ) {
-
-                // ── Main (HorizontalPager with 4 tabs) ──────────────────────────────
                 composable("main") {
                     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
                         mainContent()
                     }
                 }
-
-                // ── Settings ─────────────────────────────────────────────────────────
                 composable("settings") {
                     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
                         SettingsScreen(
@@ -104,8 +91,6 @@ fun AsteriaNavGraph(
                         )
                     }
                 }
-
-                // ── History ───────────────────────────────────────────────────────────
                 composable(
                     route = "history?favorites={favorites}",
                     arguments = listOf(navArgument("favorites") {
@@ -127,8 +112,6 @@ fun AsteriaNavGraph(
                         )
                     }
                 }
-
-                // ── Fullscreen image viewer (slide up from bottom) ────────────────────
                 composable(
                     route = "fullscreen?date={date}",
                     arguments = listOf(
@@ -153,7 +136,6 @@ fun AsteriaNavGraph(
                     }
                 ) { backStackEntry ->
                     val date = backStackEntry.arguments?.getString("date")
-
                     val picture by produceState<AstronomyPicture?>(
                         initialValue = currentApodPicture()?.astronomyPicture
                     ) {
@@ -163,7 +145,6 @@ fun AsteriaNavGraph(
                             value = spaceRepository.getApodByDate(target)?.astronomyPicture
                         }
                     }
-
                     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
                         picture?.let {
                             FullscreenImageViewer(
@@ -173,8 +154,6 @@ fun AsteriaNavGraph(
                         }
                     }
                 }
-
-                // ── Explanation detail (slide up from bottom) ─────────────────────────
                 composable(
                     route = "explanation/{date}",
                     arguments = listOf(navArgument("date") { type = NavType.StringType }),
@@ -189,7 +168,6 @@ fun AsteriaNavGraph(
                     }
                 ) { backStackEntry ->
                     val date = backStackEntry.arguments?.getString("date") ?: return@composable
-
                     val picture by produceState<AstronomyPicture?>(
                         initialValue = currentApodPicture()?.astronomyPicture
                     ) {
@@ -197,7 +175,6 @@ fun AsteriaNavGraph(
                             value = spaceRepository.getApodByDate(date)?.astronomyPicture
                         }
                     }
-
                     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
                         picture?.let {
                             ExplanationDetailScreen(
@@ -207,15 +184,11 @@ fun AsteriaNavGraph(
                         }
                     }
                 }
-
-                // ── OSS Licenses ──────────────────────────────────────────────────────
                 composable("licenses") {
                     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
                         OssLicensesScreen(onNavigateUp = { navController.popBackStack() })
                     }
                 }
-
-                // ── Launch detail (existing) ──────────────────────────────────────────
                 composable(
                     route = "launch_detail/{launchId}",
                     arguments = listOf(navArgument("launchId") { type = NavType.StringType })
@@ -229,8 +202,6 @@ fun AsteriaNavGraph(
                         )
                     }
                 }
-
-                // ── APOD detail (existing) ────────────────────────────────────────────
                 composable(
                     route = "apod_detail/{date}",
                     arguments = listOf(navArgument("date") { type = NavType.StringType })

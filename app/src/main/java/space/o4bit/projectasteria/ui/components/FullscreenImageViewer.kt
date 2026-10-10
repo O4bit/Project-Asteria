@@ -90,7 +90,6 @@ fun FullscreenImageViewer(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val displayFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
     val formattedDate = try {
@@ -100,7 +99,6 @@ fun FullscreenImageViewer(
     } catch (_: Exception) {
         astronomyPicture.date
     }
-
     if (astronomyPicture.mediaType == "video") {
         val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
         if (videoUrl != null) {
@@ -109,7 +107,6 @@ fun FullscreenImageViewer(
                 targetValue = if (showVideoControls) 1f else 0f,
                 label = "videoControlsAlpha"
             )
-
             LaunchedEffect(showVideoControls) {
                 if (showVideoControls) {
                     try {
@@ -118,7 +115,6 @@ fun FullscreenImageViewer(
                     } catch (_: Exception) {}
                 }
             }
-
             Box(
                 modifier = modifier
                     .fillMaxSize()
@@ -133,8 +129,6 @@ fun FullscreenImageViewer(
                     videoUrl = videoUrl,
                     modifier = Modifier.fillMaxSize()
                 )
-
-                // Top bar with Back button, Title, Date, Share & External App
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -207,7 +201,6 @@ fun FullscreenImageViewer(
         }
         return
     }
-
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var showControls by remember { mutableStateOf(true) }

@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -44,12 +43,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import space.o4bit.projectasteria.data.local.LaunchEntity
-
-/**
- * Pinned Launch Card displayed on the APOD Home tab.
- *
- * Provides real-time countdown, mission details, and automatic post-launch completion dialog.
- */
 @Composable
 fun PinnedLaunchCard(
     launch: LaunchEntity,
@@ -65,16 +58,10 @@ fun PinnedLaunchCard(
     val isCompleted = launch.statusName.equals("In Flight", ignoreCase = true) ||
             launch.statusName.equals("Success", ignoreCase = true) ||
             (launch.netMillis > 0 && now >= launch.netMillis + 15 * 60 * 1000L)
-
     var showRemovalDialog by remember { mutableStateOf(false) }
     var showConfirmUnpinDialog by remember { mutableStateOf(false) }
     var dontAskAgainChecked by remember { mutableStateOf(false) }
-    // Tracks whether we've already shown the post-launch prompt so that
-    // dismissing it ("Keep Pinned") doesn't instantly re-trigger the dialog
-    // on the very next recomposition.
     var hasPromptedForRemoval by remember { mutableStateOf(false) }
-
-    // Handle post-launch state changes exactly once per transition.
     LaunchedEffect(isCompleted, autoRemoveSetting) {
         if (!isCompleted) return@LaunchedEffect
         if (autoRemoveSetting) {
@@ -84,7 +71,6 @@ fun PinnedLaunchCard(
             hasPromptedForRemoval = true
         }
     }
-
     if (showRemovalDialog) {
         AlertDialog(
             onDismissRequest = { showRemovalDialog = false },
@@ -151,7 +137,6 @@ fun PinnedLaunchCard(
             }
         )
     }
-
     if (showConfirmUnpinDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmUnpinDialog = false },
@@ -190,7 +175,6 @@ fun PinnedLaunchCard(
             }
         )
     }
-
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -212,9 +196,7 @@ fun PinnedLaunchCard(
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
-
             Spacer(Modifier.width(12.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -232,9 +214,7 @@ fun PinnedLaunchCard(
                         letterSpacing = 0.8.sp
                     )
                 }
-
                 Spacer(Modifier.height(2.dp))
-
                 Text(
                     text = launch.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -243,14 +223,12 @@ fun PinnedLaunchCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 Text(
                     text = "${launch.providerName} • ${launch.statusName}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             IconButton(
                 onClick = { showConfirmUnpinDialog = true },
                 modifier = Modifier.size(32.dp)

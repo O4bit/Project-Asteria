@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.data.repository
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -13,7 +12,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class AsteroidRepository(
     private val asteroidDao: AsteroidDao,
@@ -21,7 +19,6 @@ class AsteroidRepository(
     private val neoWsService: NasaNeoWsService = NasaNeoWsService.create()
 ) {
     val allAsteroids: Flow<List<AsteroidEntity>> = asteroidDao.getAllAsteroids()
-
     val asteroids: Flow<List<AsteroidEntity>> = sortingPreferences.isAsteroidsClosest.flatMapLatest { isClosest ->
         if (isClosest) {
             asteroidDao.getClosestAsteroids()
@@ -29,18 +26,15 @@ class AsteroidRepository(
             asteroidDao.getFarthestAsteroids()
         }
     }
-
     suspend fun refreshTodaysAsteroids() = withContext(Dispatchers.IO) {
         try {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
             dateFormat.timeZone = TimeZone.getTimeZone("UTC")
             val todayStr = dateFormat.format(Date())
-
             val response = neoWsService.getNearEarthObjects(
                 startDate = todayStr,
                 endDate = todayStr
             )
-
             val networkAsteroids = response.nearEarthObjects.values.flatten()
             val entities = networkAsteroids.map { asteroid ->
                 val approachData = asteroid.closeApproachData.firstOrNull()
@@ -60,7 +54,6 @@ class AsteroidRepository(
                     missDistanceLunar = approachData?.missDistance?.lunar ?: ""
                 )
             }
-
             asteroidDao.clearAsteroids()
             asteroidDao.insertAsteroids(entities)
         } catch (e: Exception) {

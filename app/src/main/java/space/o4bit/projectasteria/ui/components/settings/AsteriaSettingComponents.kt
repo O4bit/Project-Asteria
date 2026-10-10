@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components.settings
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -29,7 +28,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-
 @Composable
 fun AsteriaCard(
     modifier: Modifier = Modifier,
@@ -47,7 +45,6 @@ fun AsteriaCard(
         )
     }
 }
-
 @Composable
 fun SectionCard(
     modifier: Modifier = Modifier,
@@ -62,7 +59,6 @@ fun SectionCard(
         )
     }
 }
-
 @Composable
 fun SectionTitle(
     title: String,
@@ -87,7 +83,6 @@ fun SectionTitle(
         }
     }
 }
-
 @Composable
 fun GradientCircleIcon(
     icon: ImageVector,
@@ -109,7 +104,6 @@ fun GradientCircleIcon(
         )
     }
 }
-
 @Composable
 fun AsteriaIcon(
     icon: ImageVector,
@@ -132,7 +126,6 @@ fun AsteriaIcon(
         )
     }
 }
-
 @Composable
 fun BaseSettingsItem(
     title: String,
@@ -154,7 +147,6 @@ fun BaseSettingsItem(
             icon()
             Spacer(modifier = Modifier.width(16.dp))
         }
-
         Column(
             modifier = Modifier.weight(1f)
         ) {
@@ -178,14 +170,12 @@ fun BaseSettingsItem(
                 subtitleContent()
             }
         }
-
         if (action != null) {
             Spacer(modifier = Modifier.width(16.dp))
             action()
         }
     }
 }
-
 @Composable
 fun RichSettingsItem(
     title: String,
@@ -221,7 +211,6 @@ fun RichSettingsItem(
         action = action
     )
 }
-
 @Composable
 fun SettingsItemCard(
     modifier: Modifier = Modifier,
@@ -239,7 +228,6 @@ fun SettingsItemCard(
         )
     }
 }
-
 @Composable
 fun AsteriaSettingsDivider() {
     HorizontalDivider(
@@ -247,7 +235,6 @@ fun AsteriaSettingsDivider() {
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     )
 }
-
 @Composable
 fun ExpandableSection(
     title: String,
@@ -259,7 +246,6 @@ fun ExpandableSection(
 ) {
     var isExpanded by remember { mutableStateOf(defaultExpanded) }
     val rotation by animateFloatAsState(if (isExpanded) 180f else 0f, label = "ExpandRotation")
-
     Column(modifier = modifier) {
         RichSettingsItem(
             title = title,
@@ -275,7 +261,6 @@ fun ExpandableSection(
                 )
             }
         )
-
         AnimatedVisibility(
             visible = isExpanded,
             enter = expandVertically(),
@@ -290,7 +275,6 @@ fun ExpandableSection(
         }
     }
 }
-
 @Composable
 fun AsteriaBottomNavigation(
     tabs: List<String>,
@@ -303,7 +287,7 @@ fun AsteriaBottomNavigation(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .navigationBarsPadding()          // respect 3-button / gesture nav bar
+            .navigationBarsPadding()          
             .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
@@ -321,19 +305,16 @@ fun AsteriaBottomNavigation(
             tabs.forEachIndexed { index, label ->
                 val isSelected = selectedIndex == index
                 val icon = if (isSelected) selectedIcons[index] else unselectedIcons[index]
-
                 val backgroundColor by animateColorAsState(
                     targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                     animationSpec = tween(durationMillis = 300),
                     label = "tab_bg_color"
                 )
-
                 val contentColor by animateColorAsState(
                     targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                     animationSpec = tween(durationMillis = 300),
                     label = "tab_content_color"
                 )
-
                 Row(
                     modifier = Modifier
                         .clip(CircleShape)

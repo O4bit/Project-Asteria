@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components.settings
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import space.o4bit.projectasteria.ui.components.BackgroundType
 import space.o4bit.projectasteria.util.darken
 import space.o4bit.projectasteria.util.toColorOrNull
-
 @Composable
 fun ModernIconOptionCard(
     selected: Boolean,
@@ -83,8 +81,6 @@ fun ModernIconOptionCard(
         }
     }
 }
-
-
 @Composable
 fun CompactOptionCard(
     selected: Boolean,
@@ -132,14 +128,12 @@ fun CompactOptionCard(
         }
     }
 }
-
 val THEME_PRESET_COLORS = listOf(
     Color(0xFF6750A4), Color(0xFF386641), Color(0xFF0061A4), Color(0xFF8E24AA),
     Color(0xFFEF6C00), Color(0xFF00897B), Color(0xFFD81B60), Color(0xFF5C6BC0),
     Color(0xFF43A047), Color(0xFFFF7043), Color(0xFF1DE9B6), Color(0xFFFFC400),
     Color(0xFF00B8D4), Color(0xFFBA68C8)
 )
-
 @Composable
 fun AccentColorSelector(
     selectedColorHex: String?,
@@ -149,7 +143,6 @@ fun AccentColorSelector(
     val columns = 7
     val selectedArgb = selectedColorHex.toColorOrNull()?.toArgb()
     val isEnabled = !dynamicColorEnabled
-
     SectionCard {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -179,7 +172,6 @@ fun AccentColorSelector(
                     repeat(columns - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }
             }
-
             CompactOptionCard(
                 selected = selectedArgb == null,
                 onClick = { if (isEnabled) onColorSelected(null) },
@@ -191,14 +183,12 @@ fun AccentColorSelector(
         }
     }
 }
-
 @Composable
 fun BackgroundSelector(
     selectedBackground: BackgroundType,
     onBackgroundSelected: (BackgroundType) -> Unit
 ) {
     val columns = 4
-
     SectionCard {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -224,7 +214,6 @@ fun BackgroundSelector(
         }
     }
 }
-
 private fun getBackgroundIcon(type: BackgroundType): ImageVector = when (type) {
     BackgroundType.STARRY    -> Icons.Outlined.Star
     BackgroundType.SPACE     -> Icons.Outlined.NightsStay

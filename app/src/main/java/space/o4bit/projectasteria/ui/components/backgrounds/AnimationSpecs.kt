@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components.backgrounds
-
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -22,13 +21,11 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-
 @Composable
 fun rememberAnimatedTime(speedMultiplier: Float): State<Float> {
     val time = remember { mutableFloatStateOf(0f) }
     val targetSpeed = remember { mutableFloatStateOf(speedMultiplier) }
     SideEffect { targetSpeed.floatValue = speedMultiplier }
-
     LaunchedEffect(Unit) {
         var lastFrameMs = withInfiniteAnimationFrameMillis { it }
         var currentSpeed = targetSpeed.floatValue
@@ -43,12 +40,10 @@ fun rememberAnimatedTime(speedMultiplier: Float): State<Float> {
     }
     return time
 }
-
 data class ParallaxState(
     val tiltX: State<Float>,
     val tiltY: State<Float>
 )
-
 @Composable
 fun rememberParallaxState(
     enableParallax: Boolean,
@@ -58,11 +53,9 @@ fun rememberParallaxState(
 ): ParallaxState {
     val smoothTiltX = remember { Animatable(0f) }
     val smoothTiltY = remember { Animatable(0f) }
-
     var baselineX by remember { mutableFloatStateOf(0f) }
     var baselineY by remember { mutableFloatStateOf(0f) }
     var isCalibrated by remember { mutableStateOf(false) }
-
     LaunchedEffect(enableParallax) {
         if (!enableParallax) {
             smoothTiltX.snapTo(0f)
@@ -76,51 +69,37 @@ fun rememberParallaxState(
             baselineY = 0f
         }
     }
-
     DisposableEffect(enableParallax) {
         if (!enableParallax) {
             return@DisposableEffect onDispose { }
         }
-
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-
         if (accelerometer == null) {
             return@DisposableEffect onDispose { }
         }
-
-        // Throttle: only process sensor events max every 50ms (20fps is plenty for parallax)
         var lastSensorMs = 0L
-        // Reuse a single Job per axis; cancel the previous one so we don't accumulate coroutines
         var jobX: Job? = null
         var jobY: Job? = null
-
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 val now = System.currentTimeMillis()
-                if (now - lastSensorMs < 50L) return   // throttle to ~20fps
+                if (now - lastSensorMs < 50L) return   
                 lastSensorMs = now
-
                 if (!isCalibrated) {
                     baselineX = event.values[0]
                     baselineY = event.values[1]
                     isCalibrated = true
                 }
-
                 val rawTiltX = event.values[0] - baselineX
                 val rawTiltY = event.values[1] - baselineY
-
-                // Tight deadzone — filters micro-tremor without killing responsiveness
                 val deadzone = 0.12f
                 val finalTiltX = if (kotlin.math.abs(rawTiltX) < deadzone) 0f
                     else rawTiltX - kotlin.math.sign(rawTiltX) * deadzone
                 val finalTiltY = if (kotlin.math.abs(rawTiltY) < deadzone) 0f
                     else rawTiltY - kotlin.math.sign(rawTiltY) * deadzone
-
-                // Cancel previous jobs before launching new ones — prevents job accumulation
                 jobX?.cancel()
                 jobY?.cancel()
-
                 jobX = coroutineScope.launch {
                     smoothTiltX.animateTo(
                         targetValue = finalTiltX * (sensitivity * 0.35f),
@@ -140,26 +119,20 @@ fun rememberParallaxState(
                     )
                 }
             }
-
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // Re-calibrate baseline when sensor accuracy changes
                 if (accuracy == SensorManager.SENSOR_STATUS_ACCURACY_HIGH ||
                     accuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
                     isCalibrated = false
                 }
             }
         }
-
-        // Use SENSOR_DELAY_UI instead of SENSOR_DELAY_GAME — still smooth enough for parallax
         sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
-
         onDispose {
             sensorManager.unregisterListener(listener)
             jobX?.cancel()
             jobY?.cancel()
         }
     }
-
     return ParallaxState(
         tiltX = smoothTiltX.asState(),
         tiltY = smoothTiltY.asState()

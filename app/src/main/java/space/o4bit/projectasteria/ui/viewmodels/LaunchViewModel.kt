@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.viewmodels
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -19,7 +18,6 @@ import space.o4bit.projectasteria.data.model.LaunchSortBy
 import space.o4bit.projectasteria.data.model.SortDirection
 import space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository
 import space.o4bit.projectasteria.data.repository.LaunchRepository
-
 sealed interface LaunchUiState {
     data object Loading : LaunchUiState
     data class Success(
@@ -28,25 +26,20 @@ sealed interface LaunchUiState {
     ) : LaunchUiState
     data class Error(val message: String) : LaunchUiState
 }
-
 class LaunchViewModel(
     private val launchRepository: LaunchRepository,
     private val backgroundPrefs: BackgroundPreferencesRepository
 ) : ViewModel() {
-
     private val _sortBy = MutableStateFlow(LaunchSortBy.DATE)
     val sortBy: StateFlow<LaunchSortBy> = _sortBy.asStateFlow()
-
     private val _sortDirection = MutableStateFlow(SortDirection.ASCENDING)
     val sortDirection: StateFlow<SortDirection> = _sortDirection.asStateFlow()
-
     private val tickerFlow = flow {
         while (true) {
             emit(System.currentTimeMillis())
             delay(1000L)
         }
     }
-
     val uiState: StateFlow<LaunchUiState> = combine(
         launchRepository.allLaunches,
         backgroundPrefs.hyperdriveThresholdMinutes,
@@ -63,13 +56,11 @@ class LaunchViewModel(
                                 now - launchEntity.netMillis < 15 * 60 * 1000L)
             }
             val speed = if (isLaunchActive) 15f else 1f
-
             val sorted = when (by) {
                 LaunchSortBy.DATE -> launches.sortedBy { it.netMillis }
                 LaunchSortBy.NAME -> launches.sortedBy { it.name }
             }
             val finalResult = if (dir == SortDirection.DESCENDING) sorted.reversed() else sorted
-
             LaunchUiState.Success(finalResult, speed)
         }
     }.catch { e ->
@@ -79,25 +70,20 @@ class LaunchViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = LaunchUiState.Loading
     )
-
     fun setSortBy(sortBy: LaunchSortBy) {
         _sortBy.update { sortBy }
     }
-
     fun toggleDirection() {
         _sortDirection.update { it.toggle() }
     }
-
     fun refresh() {
         viewModelScope.launch {
             try {
                 launchRepository.refreshUpcomingLaunches()
             } catch (_: Exception) {
-                // Room Flow will surface cached data
             }
         }
     }
-
     class Factory(
         private val launchRepository: LaunchRepository,
         private val backgroundPrefs: BackgroundPreferencesRepository

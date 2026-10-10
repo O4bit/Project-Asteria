@@ -1,11 +1,9 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-
 import android.content.Intent
 import android.net.Uri
 import coil.compose.AsyncImage
@@ -54,7 +52,6 @@ import space.o4bit.projectasteria.data.preferences.NotificationPreferencesReposi
 import space.o4bit.projectasteria.data.preferences.ThemePreferencesRepository
 import space.o4bit.projectasteria.data.preferences.UiHintsPreferencesRepository
 import space.o4bit.projectasteria.ui.components.settings.*
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SettingsScreen(
@@ -68,7 +65,6 @@ fun SettingsScreen(
     val context = LocalContext.current
     val uiHintsPrefs = remember { UiHintsPreferencesRepository(context) }
     val settingsTabsHintShown by uiHintsPrefs.settingsTabsHintShown.collectAsState(initial = false)
-
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }
             .collectLatest { page ->
@@ -77,7 +73,6 @@ fun SettingsScreen(
                 }
             }
     }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -121,7 +116,6 @@ fun SettingsScreen(
                     2 -> AboutTabContent(onShowLicenses = onShowLicenses)
                 }
             }
-
             if (!settingsTabsHintShown) {
                 SwipeHintOverlay(
                     modifier = Modifier
@@ -133,26 +127,21 @@ fun SettingsScreen(
         }
     }
 }
-
 @Composable
 fun AppearanceTabContent() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val themePrefs = remember { ThemePreferencesRepository(context) }
     val bgPrefs = remember { BackgroundPreferencesRepository(context) }
-
     val followSystem by themePrefs.followSystem.collectAsState(initial = true)
     val isDarkMode by themePrefs.isDarkMode.collectAsState(initial = false)
     val pureBlack by themePrefs.pureBlack.collectAsState(initial = false)
     val customAccent by themePrefs.customAccent.collectAsState(initial = null)
     val customThemeColor by themePrefs.customThemeColor.collectAsState(initial = null)
     val dynamicColor by themePrefs.dynamicColor.collectAsState(initial = true)
-
     val currentBgName by bgPrefs.backgroundType.collectAsState(initial = BackgroundType.DEFAULT.name)
     val enableParallax by bgPrefs.enableParallax.collectAsState(initial = true)
-
     val supportsDynamicColor = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -161,7 +150,6 @@ fun AppearanceTabContent() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(title = "Theme Preferences")
-
         SectionCard {
             RichSettingsItem(
                 title = "Follow System Theme",
@@ -214,7 +202,6 @@ fun AppearanceTabContent() {
                 )
             }
         }
-
         SectionTitle(title = "Accent Color")
         AccentColorSelector(
             selectedColorHex = customAccent ?: customThemeColor,
@@ -232,7 +219,6 @@ fun AppearanceTabContent() {
             },
             dynamicColorEnabled = dynamicColor && supportsDynamicColor
         )
-
         SectionTitle(title = "Animated Background")
         BackgroundSelector(
             selectedBackground = BackgroundType.fromName(currentBgName),
@@ -240,7 +226,6 @@ fun AppearanceTabContent() {
                 coroutineScope.launch { bgPrefs.updateBackgroundType(type.name) }
             }
         )
-
         SectionCard {
             RichSettingsItem(
                 title = "Parallax Effect",
@@ -256,24 +241,19 @@ fun AppearanceTabContent() {
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val notificationPrefs = remember { NotificationPreferencesRepository(context) }
-
     val dailyNotificationsEnabled by notificationPrefs.dailyNotificationsEnabled.collectAsState(initial = true)
     val wifiOnlyPrefetch by notificationPrefs.wifiOnlyPrefetch.collectAsState(initial = false)
     val notificationHour by notificationPrefs.notificationHour.collectAsState(initial = 9)
     val notificationMinute by notificationPrefs.notificationMinute.collectAsState(initial = 0)
-
     val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
     val hyperdriveThreshold by backgroundPrefs.hyperdriveThresholdMinutes.collectAsState(initial = 1)
-
     var showTimePicker by remember { mutableStateOf(false) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -282,7 +262,6 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(title = "Notifications")
-
         SectionCard {
             RichSettingsItem(
                 title = "Daily Space Notifications",
@@ -327,14 +306,11 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
                 }
             )
         }
-
         SectionTitle(title = "ISS & Pinned Launch Settings")
-
         SectionCard {
             val autoRemovePinned by backgroundPrefs.autoRemovePinnedLaunches.collectAsState(initial = false)
             val widgetInterval by backgroundPrefs.issWidgetUpdateIntervalHours.collectAsState(initial = 1)
             val pinnedIds by backgroundPrefs.pinnedLaunchIds.collectAsState(initial = emptySet())
-
             RichSettingsItem(
                 title = "Auto-Remove Launched Missions",
                 subtitle = "Automatically unpin missions from Home after liftoff",
@@ -350,11 +326,8 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
                     )
                 }
             )
-
             AsteriaSettingsDivider()
-
             var showIntervalDropdown by remember { mutableStateOf(false) }
-
             Box {
                 RichSettingsItem(
                     title = "ISS Widget Refresh Rate",
@@ -366,7 +339,6 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
                         }
                     }
                 )
-
                 DropdownMenu(
                     expanded = showIntervalDropdown,
                     onDismissRequest = { showIntervalDropdown = false }
@@ -384,7 +356,6 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
                     }
                 }
             }
-
             if (pinnedIds.isNotEmpty()) {
                 AsteriaSettingsDivider()
                 RichSettingsItem(
@@ -405,7 +376,6 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
                 )
             }
         }
-
         SectionTitle(title = "Launch Alerts")
         SectionCard {
             RichSettingsItem(
@@ -424,14 +394,12 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
             )
         }
     }
-
     if (showTimePicker) {
         val timePickerState = androidx.compose.material3.rememberTimePickerState(
             initialHour = notificationHour,
             initialMinute = notificationMinute,
             is24Hour = true
         )
-
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showTimePicker = false },
             confirmButton = {
@@ -463,18 +431,15 @@ fun GeneralTabContent(onRequestNotificationPermission: () -> Unit = {}) {
         )
     }
 }
-
 @Composable
 fun AboutTabContent(onShowLicenses: () -> Unit) {
     val context = LocalContext.current
     var showDebugDialog by remember { mutableStateOf(false) }
     var tapCount by remember { mutableStateOf(0) }
     var lastTapTime by remember { mutableStateOf(0L) }
-
     if (showDebugDialog) {
         DebugMenuDialog(onDismiss = { showDebugDialog = false })
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -483,7 +448,6 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(title = "Project Asteria")
-
         SectionCard {
             RichSettingsItem(
                 title = "Version",
@@ -496,7 +460,6 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
                         tapCount = 1
                     }
                     lastTapTime = now
-
                     if (tapCount >= 3) {
                         tapCount = 0
                         showDebugDialog = true
@@ -548,7 +511,6 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
                 onClick = onShowLicenses
             )
         }
-
         SectionTitle(title = "Feedback")
         SectionCard {
             RichSettingsItem(
@@ -565,7 +527,6 @@ fun AboutTabContent(onShowLicenses: () -> Unit) {
                 }
             )
         }
-
         SectionTitle(title = "Diagnostics")
         SectionCard {
             var logCount by remember { mutableStateOf(space.o4bit.projectasteria.util.DiagnosticLogger.getLogCount()) }

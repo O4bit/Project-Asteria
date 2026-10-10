@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +35,6 @@ import coil.request.ImageRequest
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import java.text.SimpleDateFormat
 import java.util.Locale
-
 @Composable
 fun WidgetPreviewComponent(
     enhancedPicture: EnhancedAstronomyPicture,
@@ -45,7 +43,6 @@ fun WidgetPreviewComponent(
     onWidgetClick: () -> Unit = {}
 ) {
     val astronomyPicture = enhancedPicture.astronomyPicture
-
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val displayFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
     val formattedDate = try {
@@ -54,7 +51,6 @@ fun WidgetPreviewComponent(
     } catch (_: Exception) {
         astronomyPicture.date
     }
-
     ElevatedCard(
         onClick = onWidgetClick,
         modifier = modifier
@@ -75,7 +71,6 @@ fun WidgetPreviewComponent(
         ) {
             val imageUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
             val isVideo = astronomyPicture.mediaType == "video"
-
             if (imageUrl != null && !isVideo) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -116,7 +111,6 @@ fun WidgetPreviewComponent(
                     }
                 }
             }
-
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -132,7 +126,6 @@ fun WidgetPreviewComponent(
                     )
                     .clip(RoundedCornerShape(24.dp))
             )
-
             Column(
                 modifier = Modifier
                     .matchParentSize()
@@ -159,7 +152,6 @@ fun WidgetPreviewComponent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -172,7 +164,6 @@ fun WidgetPreviewComponent(
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
-
                         FilledTonalIconButton(
                             onClick = onShareClick,
                             modifier = Modifier.size(40.dp)
@@ -184,9 +175,7 @@ fun WidgetPreviewComponent(
                             )
                         }
                     }
-
                     Spacer(modifier = Modifier.height(8.dp))
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier

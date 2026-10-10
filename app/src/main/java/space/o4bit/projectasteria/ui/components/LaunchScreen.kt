@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -77,7 +76,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaunchScreen(
@@ -95,24 +93,19 @@ fun LaunchScreen(
     val viewModel: LaunchViewModel = viewModel(
         factory = LaunchViewModel.Factory(repository, application.backgroundPreferences)
     )
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     val sortDirection by viewModel.sortDirection.collectAsStateWithLifecycle()
-
     var showSortSheet by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
     val listState = rememberSaveable(sortBy, sortDirection, saver = LazyListState.Saver) {
         LazyListState(0, 0)
     }
     val snackbarHostState = remember { SnackbarHostState() }
-
     LaunchedEffect(Unit) {
         viewModel.refresh()
     }
-
     Scaffold(
         containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -148,7 +141,6 @@ fun LaunchScreen(
                 onOpenSortSheet = { showSortSheet = true },
                 onToggleDirection = { viewModel.toggleDirection() }
             )
-
             Box(modifier = Modifier.fillMaxSize()) {
                 when (val state = uiState) {
                     is LaunchUiState.Loading -> {
@@ -214,7 +206,6 @@ fun LaunchScreen(
                 }
             }
         }
-
         if (showSortSheet) {
             SortOptionBottomSheet(
                 options = LaunchSortBy.entries,
@@ -226,7 +217,6 @@ fun LaunchScreen(
         }
     }
 }
-
 @Composable
 fun LaunchCard(
     launch: LaunchEntity,
@@ -240,10 +230,8 @@ fun LaunchCard(
     val bgPrefs = remember { application.backgroundPreferences }
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-
     val remindedIds by reminderPrefs.remindedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
     val isReminded = remindedIds.contains(launch.id)
-
     val formattedDate = remember(launch.net) {
         try {
             val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
@@ -262,11 +250,9 @@ fun LaunchCard(
             launch.net
         }
     }
-
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "scale")
-
     space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
@@ -291,7 +277,6 @@ fun LaunchCard(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val isPinned by bgPrefs.pinnedLaunchIds.map { it.contains(launch.id) }.collectAsStateWithLifecycle(initialValue = false)
                     IconButton(
@@ -310,7 +295,6 @@ fun LaunchCard(
                             tint = if (isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }
-
                     IconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -335,15 +319,12 @@ fun LaunchCard(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(8.dp))
-
             Text(
                 text = "Launch Time: $formattedDate",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
             if (!launch.providerName.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -352,7 +333,6 @@ fun LaunchCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             if (!launch.locationName.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -361,7 +341,6 @@ fun LaunchCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             if (!launch.statusName.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -374,27 +353,22 @@ fun LaunchCard(
         }
     }
 }
-
 private fun scheduleLaunchReminder(context: Context, launch: LaunchEntity) {
     val workManager = WorkManager.getInstance(context)
     val delayMillis = launch.netMillis - System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(15)
-
     if (delayMillis > 0) {
         val inputData = Data.Builder()
             .putString("LAUNCH_ID", launch.id)
             .putString("LAUNCH_NAME", launch.name)
             .build()
-
         val reminderWork = OneTimeWorkRequestBuilder<LaunchReminderWorker>()
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
             .setInputData(inputData)
             .addTag("reminder_${launch.id}")
             .build()
-
         workManager.enqueue(reminderWork)
     }
 }
-
 private fun cancelLaunchReminder(context: Context, launchId: String) {
     val workManager = WorkManager.getInstance(context)
     workManager.cancelAllWorkByTag("reminder_$launchId")

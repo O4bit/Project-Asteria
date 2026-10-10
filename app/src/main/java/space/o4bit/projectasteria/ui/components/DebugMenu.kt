@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -52,14 +51,12 @@ import space.o4bit.projectasteria.utils.TestCrashActivity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
 @Composable
 fun DebugMenuDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = {
@@ -91,7 +88,6 @@ fun DebugMenuDialog(
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
-
                 DebugDialogItem(
                     icon = Icons.Default.NotificationsActive,
                     title = "Trigger APOD Notification",
@@ -105,7 +101,6 @@ fun DebugMenuDialog(
                         }
                     }
                 )
-
                 DebugDialogItem(
                     icon = Icons.Default.RocketLaunch,
                     title = "Trigger Launch Alert",
@@ -117,12 +112,10 @@ fun DebugMenuDialog(
                         }
                     }
                 )
-
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                     modifier = Modifier.padding(vertical = 6.dp)
                 )
-
                 Text(
                     text = "Diagnostic Tools",
                     style = MaterialTheme.typography.labelMedium,
@@ -130,7 +123,6 @@ fun DebugMenuDialog(
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
-
                 DebugDialogItem(
                     icon = Icons.Default.BugReport,
                     title = "Crash Reporter Simulation",
@@ -140,7 +132,6 @@ fun DebugMenuDialog(
                         onDismiss()
                     }
                 )
-
                 DebugDialogItem(
                     icon = Icons.Default.ContentCopy,
                     title = "Copy System Info",
@@ -150,13 +141,10 @@ fun DebugMenuDialog(
                         Toast.makeText(context, "System info copied to clipboard", Toast.LENGTH_SHORT).show()
                     }
                 )
-
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                     modifier = Modifier.padding(vertical = 6.dp)
                 )
-
-                // Build specs footer
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -189,7 +177,6 @@ fun DebugMenuDialog(
         }
     )
 }
-
 @Composable
 private fun DebugDialogItem(
     icon: ImageVector,
@@ -214,16 +201,13 @@ private fun DebugDialogItem(
                 modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
-
             Spacer(modifier = Modifier.width(12.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
@@ -233,16 +217,13 @@ private fun DebugDialogItem(
         }
     }
 }
-
 private tailrec fun Context.findActivity(): android.app.Activity? = when (this) {
     is android.app.Activity -> this
     is android.content.ContextWrapper -> baseContext.findActivity()
     else -> null
 }
-
 private fun checkAndTriggerNotification(context: Context, onPermitted: () -> Unit) {
     val notificationManager = androidx.core.app.NotificationManagerCompat.from(context)
-
     if (!notificationManager.areNotificationsEnabled()) {
         Toast.makeText(context, "Notifications disabled for Asteria. Opening settings...", Toast.LENGTH_LONG).show()
         val intent = Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -252,7 +233,6 @@ private fun checkAndTriggerNotification(context: Context, onPermitted: () -> Uni
         context.startActivity(intent)
         return
     }
-
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
     ) {
@@ -279,7 +259,6 @@ private fun checkAndTriggerNotification(context: Context, onPermitted: () -> Uni
     }
     onPermitted()
 }
-
 private suspend fun triggerTestApodNotification(context: Context) {
     val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
     val sampleApod = AstronomyPicture(
@@ -299,7 +278,6 @@ private suspend fun triggerTestApodNotification(context: Context) {
     val notifId = (System.currentTimeMillis() % 100000).toInt() + 100
     SpaceNotificationBuilder.showAstronomyNotification(context, enhanced, customNotificationId = notifId)
 }
-
 private fun triggerTestLaunchNotification(context: Context) {
     SpaceNotificationBuilder.showLaunchReminderNotification(
         context = context,
@@ -307,7 +285,6 @@ private fun triggerTestLaunchNotification(context: Context) {
         launchId = "debug-launch-${System.currentTimeMillis()}"
     )
 }
-
 private fun copySystemInfo(context: Context) {
     val info = buildString {
         appendLine("Project Asteria Debug Info")
@@ -321,7 +298,6 @@ private fun copySystemInfo(context: Context) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     clipboard.setPrimaryClip(ClipData.newPlainText("Asteria System Info", info))
 }
-
 private fun launchTestCrashActivity(context: Context) {
     val intent = Intent(context, TestCrashActivity::class.java)
     context.startActivity(intent)

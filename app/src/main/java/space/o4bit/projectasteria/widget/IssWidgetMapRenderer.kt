@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.widget
-
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -16,20 +15,9 @@ import space.o4bit.projectasteria.data.model.iss.IssPosition
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
-
-/**
- * High-Accuracy ISS Widget Map Renderer.
- *
- * Uses the same high-fidelity SVG path as the in-app IssGlobe composable.
- * Colors adapt based on Android 12+ system dynamic color attributes where available,
- * with a polished dark fallback for older devices.
- */
 object IssWidgetMapRenderer {
-
-    // Cache the parsed world path — parse once, reuse forever across widget updates
     @Volatile private var cachedPathString: String? = null
     @Volatile private var cachedAndroidPath: Path? = null
-
     private fun getWorldPath(context: Context): Path {
         cachedAndroidPath?.let { return it }
         val pathStr = cachedPathString ?: run {
@@ -39,16 +27,12 @@ object IssWidgetMapRenderer {
         }
         return PathParser.createPathFromPathData(pathStr).also { cachedAndroidPath = it }
     }
-
     fun generateMapBitmap(
         context: Context,
         widthPx: Int = 540,
         heightPx: Int = 290,
         issPosition: IssPosition? = null
     ): Bitmap {
-        // Use fixed, premium dark-mode colors. The widget card background is hardcoded dark (#121820),
-        // so we must use dark-mode map colors regardless of the system's day/night mode to prevent
-        // a "color inverted" look (e.g. white ocean on a dark widget card).
         val surfaceColor     = Color.parseColor("#090F19")
         val surfaceHighColor = Color.parseColor("#111A29")
         val landFill         = Color.parseColor("#1D385C")
@@ -56,13 +40,10 @@ object IssWidgetMapRenderer {
         val gridLineColor    = Color.parseColor("#1A293D")
         val errorColor       = Color.parseColor("#F43F5E")
         val nightColor       = Color.parseColor("#03070D")
-
         val bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val w = widthPx.toFloat()
         val h = heightPx.toFloat()
-
-        // Clip canvas to smooth rounded rectangle (e.g. 24px radius)
         val cornerRadius = 24f
         val clipPath = Path().apply {
             addRoundRect(
@@ -73,8 +54,6 @@ object IssWidgetMapRenderer {
             )
         }
         canvas.clipPath(clipPath)
-
-        // 1. Ocean gradient background
         val bgPaint = Paint().apply {
             shader = LinearGradient(
                 w * 0.5f, 0f, w * 0.5f, h,
@@ -83,8 +62,6 @@ object IssWidgetMapRenderer {
             )
         }
         canvas.drawRect(0f, 0f, w, h, bgPaint)
-
-        // 2. Lat/Lon Grid
         val gridPaint = Paint().apply {
             color = gridLineColor; strokeWidth = 1f
             style = Paint.Style.STROKE
@@ -98,21 +75,16 @@ object IssWidgetMapRenderer {
             val x = (lon + 180f) / 360f * w
             canvas.drawLine(x, 0f, x, h, gridPaint)
         }
-
         val axisPaint = Paint().apply {
             color = gridLineColor; strokeWidth = 1.5f; style = Paint.Style.STROKE
         }
         canvas.drawLine(0f, 90f / 180f * h, w, 90f / 180f * h, axisPaint)
         canvas.drawLine(180f / 360f * w, 0f, 180f / 360f * w, h, axisPaint)
-
         drawDayNightTerminator(canvas, w, h, nightColor)
-
         drawSvgContinents(context, canvas, w, h, landFill, landStroke)
-
         issPosition?.let { pos ->
             val tx = ((pos.longitude + 180.0) / 360.0 * w).toFloat()
             val ty = ((90.0 - pos.latitude) / 180.0 * h).toFloat()
-
             canvas.drawCircle(tx, ty, 30f, Paint().apply {
                 color = errorColor; strokeWidth = 4f
                 style = Paint.Style.STROKE; isAntiAlias = true; alpha = 75
@@ -129,7 +101,6 @@ object IssWidgetMapRenderer {
             canvas.drawLine(tx, ty - tL, tx, ty - tG, tickPaint)
             canvas.drawLine(tx, ty + tG, tx, ty + tL, tickPaint)
         }
-
         val mapBorderPaint = Paint().apply {
             color = Color.parseColor("#263D5C")
             strokeWidth = 3f
@@ -142,10 +113,8 @@ object IssWidgetMapRenderer {
             cornerRadius,
             mapBorderPaint
         )
-
         return bitmap
     }
-
     private fun drawSvgContinents(
         context: Context, canvas: Canvas, w: Float, h: Float,
         landFill: Int, landStroke: Int
@@ -153,7 +122,6 @@ object IssWidgetMapRenderer {
         val srcPath = getWorldPath(context)
         val matrix = Matrix().apply { setScale(w / 360f, h / 180f) }
         val scaledPath = Path(srcPath).apply { transform(matrix) }
-
         canvas.drawPath(scaledPath, Paint().apply {
             color = landFill; style = Paint.Style.FILL; isAntiAlias = true
         })
@@ -162,16 +130,13 @@ object IssWidgetMapRenderer {
             strokeWidth = 1.5f; isAntiAlias = true
         })
     }
-
     private fun drawDayNightTerminator(canvas: Canvas, w: Float, h: Float, nightColor: Int) {
         val now = System.currentTimeMillis() / 1000.0
         val dayOfYear = ((now % 31536000) / 86400).toInt()
         val decRad = 23.45 * sin(2 * PI * (dayOfYear - 81) / 365) * PI / 180.0
         val sunLon = -((now % 86400) / 86400.0 * 360.0 - 180.0)
-
         val shadow = Path()
         shadow.moveTo(0f, h)
-        
         for (xPx in 0..w.toInt() step 4) {
             val lon = (xPx.toFloat() / w) * 360.0 - 180.0
             val lonDiffRad = (lon - sunLon) * PI / 180.0
@@ -179,7 +144,6 @@ object IssWidgetMapRenderer {
             val yPx = ((90.0 - latRad * 180.0 / PI) / 180.0 * h).toFloat().coerceIn(0f, h)
             shadow.lineTo(xPx.toFloat(), yPx)
         }
-        
         shadow.lineTo(w, h)
         shadow.close()
         canvas.drawPath(shadow, Paint().apply { color = nightColor; alpha = 130; isAntiAlias = true })

@@ -1,7 +1,5 @@
 package space.o4bit.projectasteria.ui.theme
-
 import androidx.compose.ui.graphics.Color
-
 internal val DeepSpace = Color(0xFF0A1128)
 internal val SpaceBlack = Color(0xFF000814)
 internal val StardustSilver = Color(0xFFCCD6F6)

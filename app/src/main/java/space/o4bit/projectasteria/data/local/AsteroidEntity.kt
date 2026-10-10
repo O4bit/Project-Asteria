@@ -1,8 +1,6 @@
 package space.o4bit.projectasteria.data.local
-
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
 @Entity(tableName = "asteroids")
 data class AsteroidEntity(
     @PrimaryKey val id: String,
@@ -13,7 +11,6 @@ data class AsteroidEntity(
     val estimatedDiameterMaxKm: Double,
     val isPotentiallyHazardous: Boolean,
     val isSentryObject: Boolean,
-
     val closeApproachDate: String,
     val relativeVelocityKms: String,
     val relativeVelocityKmh: String,

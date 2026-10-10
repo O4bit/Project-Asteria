@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -84,7 +83,6 @@ import space.o4bit.projectasteria.data.model.iss.IssPosition
 import space.o4bit.projectasteria.ui.viewmodels.IssUiState
 import space.o4bit.projectasteria.ui.viewmodels.IssUpdateInterval
 import space.o4bit.projectasteria.ui.viewmodels.IssViewModel
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IssScreen(
@@ -93,7 +91,6 @@ fun IssScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -114,7 +111,6 @@ fun IssScreen(
                     }
                 },
                 actions = {
-                    // ── Update interval dropdown ──────────────────────────────
                     val currentInterval by viewModel.updateInterval.collectAsStateWithLifecycle()
                     var showIntervalMenu by remember { mutableStateOf(false) }
                     Box {
@@ -201,7 +197,6 @@ fun IssScreen(
             ) {
                 val isTablet = maxWidth >= 680.dp
                 if (isTablet) {
-                    // Two-pane tablet / landscape layout
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
@@ -209,7 +204,6 @@ fun IssScreen(
                         horizontalArrangement = Arrangement.spacedBy(24.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Left pane: Constrained Interactive Globe
                         Box(
                             modifier = Modifier
                                 .weight(1.2f)
@@ -224,8 +218,6 @@ fun IssScreen(
                                     .aspectRatio(1.85f)
                             )
                         }
-
-                        // Right pane: Telemetry details column
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -238,7 +230,6 @@ fun IssScreen(
                         }
                     }
                 } else {
-                    // Phone / narrow portrait layout
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -264,8 +255,6 @@ fun IssScreen(
                                 )
                             }
                         }
-
-                        // Interactive globe with constrained max width
                         IssGlobe(
                             issPosition = state.location,
                             orbitTrail = state.orbitTrail,
@@ -275,7 +264,6 @@ fun IssScreen(
                                 .aspectRatio(1.85f)
                                 .padding(horizontal = 4.dp)
                         )
-
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -291,7 +279,6 @@ fun IssScreen(
         }
     }
 }
-
 @Composable
 private fun IssTelemetryDetails(
     state: IssUiState,
@@ -312,10 +299,8 @@ private fun IssTelemetryDetails(
             )
         }
     }
-
     IssStatCardsAndButton(state = state, context = context)
 }
-
 @Composable
 private fun IssStatCardsAndButton(
     state: IssUiState,
@@ -357,7 +342,6 @@ private fun IssStatCardsAndButton(
                 modifier = Modifier.weight(1f)
             )
         }
-
         FilledTonalButton(
             onClick = {
                 val uri = "geo:${position.latitude},${position.longitude}?q=${position.latitude},${position.longitude}(International Space Station)"
@@ -379,7 +363,6 @@ private fun IssStatCardsAndButton(
             Spacer(Modifier.width(8.dp))
             Text("View on Map", fontWeight = FontWeight.SemiBold)
         }
-        
         if (state.lastUpdateTime > 0) {
             val timeAgoSecs = (System.currentTimeMillis() - state.lastUpdateTime) / 1000
             val updateText = if (timeAgoSecs < 5) "Updated just now" else "Updated ${timeAgoSecs}s ago"
@@ -392,9 +375,6 @@ private fun IssStatCardsAndButton(
         }
     }
 }
-
-// ── Animated pulsing satellite orb ────────────────────────────────────────────
-
 @Composable
 private fun SatelliteOrb(isLive: Boolean, isLoading: Boolean) {
     val infiniteTransition = rememberInfiniteTransition(label = "orb")
@@ -416,9 +396,7 @@ private fun SatelliteOrb(isLive: Boolean, isLoading: Boolean) {
         ),
         label = "ringAlpha"
     )
-
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(160.dp)) {
-        // Outer pulse ring
         if (isLive) {
             Box(
                 modifier = Modifier
@@ -441,8 +419,6 @@ private fun SatelliteOrb(isLive: Boolean, isLoading: Boolean) {
                     )
             )
         }
-
-        // Core icon surface
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceContainer,
@@ -473,9 +449,6 @@ private fun SatelliteOrb(isLive: Boolean, isLoading: Boolean) {
         }
     }
 }
-
-// ── Stat tile ─────────────────────────────────────────────────────────────────
-
 @Composable
 private fun IssStatCard(
     label: String,
@@ -519,9 +492,6 @@ private fun IssStatCard(
         }
     }
 }
-
-// ── Blinking LIVE badge ────────────────────────────────────────────────────────
-
 @Composable
 private fun LivePulsingBadge() {
     val infiniteTransition = rememberInfiniteTransition(label = "liveBadge")
@@ -534,7 +504,6 @@ private fun LivePulsingBadge() {
         ),
         label = "liveDot"
     )
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -560,8 +529,6 @@ private fun LivePulsingBadge() {
         )
     }
 }
-
-// Keep DataItem for any other usage
 @Composable
 fun DataItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {

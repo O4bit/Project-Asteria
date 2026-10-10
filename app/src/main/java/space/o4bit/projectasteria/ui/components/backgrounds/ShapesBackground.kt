@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components.backgrounds
-
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -18,7 +17,6 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
-
 @Composable
 fun ShapesBackground(
     modifier: Modifier = Modifier,
@@ -30,12 +28,10 @@ fun ShapesBackground(
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-
     val parallaxState = rememberParallaxState(
         enableParallax = enableParallax, sensitivity = 0.3f,
         context = context, coroutineScope = coroutineScope
     )
-
     val configs = remember {
         listOf(
             SolidConfig(0.15f, 0.13f, 1.00f, 1.35f, 0.85f, 1.20f, 0.090f, 0.060f, Vec3(0.30f, 0.80f, 0.50f), SolidType.CUBE, 0.80f, 138f, 0),
@@ -49,24 +45,20 @@ fun ShapesBackground(
             SolidConfig(0.88f, 0.80f, 0.70f, 1.45f, 1.00f, 1.35f, 0.090f, 0.060f, Vec3(0.80f, 0.45f, 0.75f), SolidType.PRISM, 0.65f, 148f, 1),
         )
     }
-
     val time = rememberAnimatedTime(speedMultiplier)
     val smoothedPositions = remember { mutableStateListOf<Offset>() }
     if (smoothedPositions.isEmpty()) smoothedPositions.addAll(configs.map { Offset(it.cx, it.cy) })
-
     Canvas(modifier = modifier.fillMaxSize()) {
         val t = time.value
         val tiltX = parallaxState.tiltX.value
         val tiltY = parallaxState.tiltY.value
         val twoPi = 2f * PI.toFloat()
         val base = 18000f
-
         configs.forEachIndexed { i, c ->
             val px = c.cx + c.ampX * sin(t * twoPi * c.fx1 / base) + c.ampX * 0.25f * sin(t * twoPi * c.fx2 / base + 1.4f)
             val py = c.cy + c.ampY * sin(t * twoPi * c.fy1 / base + 0.8f) + c.ampY * 0.20f * cos(t * twoPi * c.fy2 / base + 0.3f)
             smoothedPositions[i] = lerp(smoothedPositions[i], Offset(px, py), 0.04f)
         }
-
         configs.forEachIndexed { index, config ->
             val pos = smoothedPositions[index]
             val parallaxStrength = config.depth * 300f
@@ -76,7 +68,6 @@ fun ShapesBackground(
             val angleY = t * config.rotSpeeds.y * 0.0003f
             val angleZ = t * config.rotSpeeds.z * 0.0002f
             val color = when (config.colorIdx) { 0 -> primaryColor; 1 -> secondaryColor; else -> tertiaryColor }
-
             drawSolid(
                 solid = config.solidType.def, angleX = angleX, angleY = angleY, angleZ = angleZ,
                 cx = centerX, cy = centerY, scale = config.scale, color = color, alpha = 0.20f
@@ -84,7 +75,6 @@ fun ShapesBackground(
         }
     }
 }
-
 private data class Vec3(val x: Float, val y: Float, val z: Float) {
     operator fun minus(o: Vec3) = Vec3(x - o.x, y - o.y, z - o.z)
     fun cross(o: Vec3) = Vec3(y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x)
@@ -93,23 +83,19 @@ private data class Vec3(val x: Float, val y: Float, val z: Float) {
         return Vec3(x / len, y / len, z / len)
     }
 }
-
 private fun rotateVertex(v: Vec3, cosX: Float, sinX: Float, cosY: Float, sinY: Float, cosZ: Float, sinZ: Float): Vec3 {
     val x1 = v.x; val y1 = v.y * cosX - v.z * sinX; val z1 = v.y * sinX + v.z * cosX
     val x2 = x1 * cosY + z1 * sinY; val y2 = y1; val z2 = -x1 * sinY + z1 * cosY
     return Vec3(x2 * cosZ - y2 * sinZ, x2 * sinZ + y2 * cosZ, z2)
 }
-
 private fun projectVertex(v: Vec3, cx: Float, cy: Float, scale: Float, focalLength: Float = 2000f, cameraZ: Float = 4f): Offset {
     val perspective = focalLength / (focalLength + (cameraZ + v.z) * 70f)
     return Offset(cx + v.x * scale * perspective, cy + v.y * scale * perspective)
 }
-
 private fun DrawScope.drawSolid(solid: SolidDef, angleX: Float, angleY: Float, angleZ: Float, cx: Float, cy: Float, scale: Float, color: Color, alpha: Float) {
     val cosX = cos(angleX); val sinX = sin(angleX); val cosY = cos(angleY); val sinY = sin(angleY); val cosZ = cos(angleZ); val sinZ = sin(angleZ)
     val rotated = solid.vertices.map { v -> rotateVertex(v, cosX, sinX, cosY, sinY, cosZ, sinZ) }
     val projected = rotated.map { v -> projectVertex(v, cx, cy, scale) }
-
     data class FaceInfo(val indices: List<Int>, val depth: Float, val normalZ: Float)
     val faceInfos = solid.faces.map { idx ->
         val v0 = rotated[idx[0]]; val v1 = rotated[idx[1]]; val v2 = rotated[idx[2]]
@@ -118,14 +104,12 @@ private fun DrawScope.drawSolid(solid: SolidDef, angleX: Float, angleY: Float, a
         FaceInfo(idx, depth, normal.z)
     }
     val sorted = faceInfos.sortedWith(compareByDescending { it.depth })
-
     sorted.forEach { face ->
         if (face.normalZ >= 0f) return@forEach
         val pts = face.indices.map { projected[it] }
         val path = Path().apply { moveTo(pts[0].x, pts[0].y); for (i in 1 until pts.size) lineTo(pts[i].x, pts[i].y); close() }
         drawPath(path, color.copy(alpha = alpha * 0.28f))
     }
-
     solid.edges.forEach { (a, b) ->
         val avgZ = (rotated[a].z + rotated[b].z) * 0.5f
         val t = ((avgZ + 1f) * 0.5f).coerceIn(0f, 1f)
@@ -133,7 +117,6 @@ private fun DrawScope.drawSolid(solid: SolidDef, angleX: Float, angleY: Float, a
         drawLine(color = color.copy(alpha = edgeAlpha), start = projected[a], end = projected[b], strokeWidth = 2.0f)
     }
 }
-
 private data class SolidDef(val vertices: List<Vec3>, val faces: List<List<Int>>, val edges: List<Pair<Int, Int>>) {
     companion object {
         fun build(vertices: List<Vec3>, faces: List<List<Int>>): SolidDef {
@@ -148,7 +131,6 @@ private data class SolidDef(val vertices: List<Vec3>, val faces: List<List<Int>>
         }
     }
 }
-
 private enum class SolidType {
     CUBE, TETRAHEDRON, OCTAHEDRON, ICOSAHEDRON, PRISM;
     val def: SolidDef by lazy { buildDef() }
@@ -182,7 +164,6 @@ private enum class SolidType {
         }
     }
 }
-
 private data class SolidConfig(
     val cx: Float, val cy: Float, val fx1: Float, val fx2: Float, val fy1: Float, val fy2: Float,
     val ampX: Float, val ampY: Float, val rotSpeeds: Vec3, val solidType: SolidType,

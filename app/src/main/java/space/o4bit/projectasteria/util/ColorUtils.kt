@@ -1,15 +1,11 @@
 package space.o4bit.projectasteria.util
-
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.toColorInt
-
 fun Color.isDarkBackground(): Boolean = luminance() < 0.5f
-
 fun Color.luminance(): Float {
     return 0.299f * red + 0.587f * green + 0.114f * blue
 }
-
 fun Color.lighten(factor: Float): Color {
     return Color(
         red = red + (1f - red) * factor,
@@ -18,7 +14,6 @@ fun Color.lighten(factor: Float): Color {
         alpha = alpha
     )
 }
-
 fun Color.darken(factor: Float): Color {
     return Color(
         red = red * (1f - factor),
@@ -27,7 +22,6 @@ fun Color.darken(factor: Float): Color {
         alpha = alpha
     )
 }
-
 fun Color.toHexString(includeAlpha: Boolean = false): String {
     val argb = toArgb()
     return if (includeAlpha) {
@@ -36,7 +30,6 @@ fun Color.toHexString(includeAlpha: Boolean = false): String {
         String.format(java.util.Locale.US, "#%06X", argb and 0xFFFFFF)
     }
 }
-
 fun String?.toColorOrNull(): Color? {
     val value = this?.trim().orEmpty()
     if (value.isEmpty()) return null

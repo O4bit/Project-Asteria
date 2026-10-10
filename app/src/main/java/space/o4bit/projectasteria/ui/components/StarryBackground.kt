@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -25,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import kotlin.math.min
 import kotlin.random.Random
-
 @Composable
 fun StarryBackground(
     modifier: Modifier = Modifier,
@@ -41,14 +39,12 @@ fun StarryBackground(
         context = context,
         coroutineScope = coroutineScope
     )
-
     val surfaceColor = MaterialTheme.colorScheme.surface
     val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
     val onSurface = MaterialTheme.colorScheme.onSurface
-
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             surfaceColor.copy(alpha = 0.98f),
@@ -57,7 +53,6 @@ fun StarryBackground(
             surfaceColor
         )
     )
-
     val stars = remember {
         List(starsCount) {
             Star(
@@ -69,7 +64,6 @@ fun StarryBackground(
             )
         }
     }
-
     val nebulae = remember {
         List(5) {
             Nebula(
@@ -86,7 +80,6 @@ fun StarryBackground(
             )
         }
     }
-
     val infiniteTransition = rememberInfiniteTransition(label = "starryBackground")
     val twinkleBase = infiniteTransition.animateFloat(
         initialValue = 0.3f,
@@ -97,7 +90,6 @@ fun StarryBackground(
         ),
         label = "baseTwinkle"
     )
-
     val nebulaPulse = infiniteTransition.animateFloat(
         initialValue = 0.5f,
         targetValue = 1.2f,
@@ -107,7 +99,6 @@ fun StarryBackground(
         ),
         label = "nebulaPulse"
     )
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -120,14 +111,12 @@ fun StarryBackground(
         ) {
             val tiltX = parallaxState.tiltX.value
             val tiltY = parallaxState.tiltY.value
-
             nebulae.forEachIndexed { index, nebula ->
                 val depth = 0.2f + (index * 0.1f)
                 val pX = tiltX * 400f * depth
                 val pY = tiltY * 400f * depth
                 drawNebula(nebula, nebulaPulse.value, pX, pY)
             }
-
             stars.forEachIndexed { index, star ->
                 val depth = 0.5f + (index % 5) * 0.1f
                 val pX = tiltX * 600f * depth
@@ -135,14 +124,12 @@ fun StarryBackground(
                 val individualTwinkle = (twinkleBase.value +
                     kotlin.math.sin((System.currentTimeMillis() % star.twinkleSpeed.toLong()) / star.twinkleSpeed * 2 * kotlin.math.PI).toFloat() * 0.3f)
                     .coerceIn(0.4f, 1f)
-
                 drawStar(star, onSurface, individualTwinkle, pX, pY)
             }
         }
         content()
     }
 }
-
 private data class Star(
     val x: Float,
     val y: Float,
@@ -150,7 +137,6 @@ private data class Star(
     val alpha: Float,
     val twinkleSpeed: Float
 )
-
 private data class Nebula(
     val x: Float,
     val y: Float,
@@ -158,18 +144,15 @@ private data class Nebula(
     val color: Color,
     val pulseSpeed: Float
 )
-
 private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
     val x = star.x * size.width + offsetX
     val y = star.y * size.height + offsetY
     val finalAlpha = (star.alpha * twinkleMultiplier).coerceIn(0.1f, 1f)
-
     drawCircle(
         color = starColor.copy(alpha = finalAlpha),
         radius = star.size,
         center = Offset(x, y)
     )
-
     if (star.size > 2f) {
         drawCircle(
             color = starColor.copy(alpha = finalAlpha * 0.3f),
@@ -178,18 +161,15 @@ private fun DrawScope.drawStar(star: Star, starColor: Color, twinkleMultiplier: 
         )
     }
 }
-
 private fun DrawScope.drawNebula(nebula: Nebula, pulseMultiplier: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
     val x = nebula.x * size.width + offsetX
     val y = nebula.y * size.height + offsetY
     val radius = min(size.width, size.height) * nebula.radius * pulseMultiplier
-
     drawCircle(
         color = nebula.color,
         radius = radius,
         center = Offset(x, y)
     )
-
     drawCircle(
         color = nebula.color.copy(alpha = nebula.color.alpha * 0.5f),
         radius = radius * 1.5f,

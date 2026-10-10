@@ -1,16 +1,14 @@
 package space.o4bit.projectasteria.widget
-
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-
 class WidgetBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED,
-            "android.intent.action.QUICKBOOT_POWERON",  // Qualcomm devices fast boot
-            "com.htc.intent.action.QUICKBOOT_POWERON",  // HTC devices quick boot
+            "android.intent.action.QUICKBOOT_POWERON",  
+            "com.htc.intent.action.QUICKBOOT_POWERON",  
             Intent.ACTION_MY_PACKAGE_REPLACED -> {
                 Log.d(TAG, "Boot completed or app updated, scheduling widget updates")
                 WidgetUpdateWorker.schedulePeriodicUpdates(context)
@@ -19,7 +17,6 @@ class WidgetBootReceiver : BroadcastReceiver() {
             }
         }
     }
-
     companion object {
         private const val TAG = "WidgetBootReceiver"
     }

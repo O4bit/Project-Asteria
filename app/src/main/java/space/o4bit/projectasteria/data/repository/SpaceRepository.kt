@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.data.repository
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -11,33 +10,26 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Random
-
 class SpaceRepository(
     private val apodDao: space.o4bit.projectasteria.data.local.ApodDao,
     private val nasaApodService: NasaApodService = NasaApodService.create()
 ) {
-
     private var memoryCache: EnhancedAstronomyPicture? = null
-
     suspend fun getTodaysAstronomyPicture(): EnhancedAstronomyPicture = withContext(Dispatchers.IO) {
         memoryCache?.let { return@withContext it }
-
         try {
             val apod = nasaApodService.getLatestAstronomyPicture()
             val spaceFact = getRandomSpaceFact()
             val notificationTitle = "Today's Space Discovery: ${apod.title}"
             val notificationBody = createNotificationBody(apod)
-
             val enhanced = EnhancedAstronomyPicture(
                 astronomyPicture = apod,
                 shortFact = spaceFact,
                 notificationTitle = notificationTitle,
                 notificationBody = notificationBody
             )
-
             apodDao.insertApod(space.o4bit.projectasteria.data.local.ApodEntity.from(enhanced))
             memoryCache = enhanced
-
             enhanced
         } catch (e: Exception) {
             val cached = apodDao.getLatestApod()
@@ -50,7 +42,6 @@ class SpaceRepository(
             }
         }
     }
-
     suspend fun getHistory(limit: Int = 20, offset: Int = 0): List<EnhancedAstronomyPicture> = withContext(Dispatchers.IO) {
         val cached = apodDao.getPagedApods(limit, offset)
         if (cached.isEmpty() && offset == 0) {
@@ -63,35 +54,27 @@ class SpaceRepository(
             cached.map { it.toEnhancedAstronomyPicture() }
         }
     }
-
-
     @Suppress("unused")
     internal suspend fun getAstronomyPictureForDate(date: Date): EnhancedAstronomyPicture = withContext(Dispatchers.IO) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val formattedDate = dateFormat.format(date)
-
         val cached = apodDao.getApodByDate(formattedDate)
         if (cached != null) {
             return@withContext cached.toEnhancedAstronomyPicture()
         }
-
         val apod = nasaApodService.getAstronomyPictureByDate(formattedDate)
         val spaceFact = getRandomSpaceFact()
         val notificationTitle = "Space Discovery: ${apod.title}"
         val notificationBody = createNotificationBody(apod)
-
         val enhanced = EnhancedAstronomyPicture(
             astronomyPicture = apod,
             shortFact = spaceFact,
             notificationTitle = notificationTitle,
             notificationBody = notificationBody
         )
-
         apodDao.insertApod(space.o4bit.projectasteria.data.local.ApodEntity.from(enhanced))
-
         enhanced
     }
-
     suspend fun getApodByDate(dateString: String): EnhancedAstronomyPicture? = withContext(Dispatchers.IO) {
         try {
             val cached = apodDao.getApodByDate(dateString)
@@ -111,18 +94,15 @@ class SpaceRepository(
             null
         }
     }
-
     suspend fun fetchHistory(days: Int = 10) {
         val today = Date()
         val calendar = java.util.Calendar.getInstance()
         calendar.time = today
-
         val jobs = (0 until days).map { i ->
             val date = calendar.time
             calendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
             date
         }
-
         withContext(Dispatchers.IO) {
             jobs.forEach { date ->
                 try {
@@ -133,19 +113,15 @@ class SpaceRepository(
             }
         }
     }
-
-
     private fun createNotificationBody(apod: AstronomyPicture): String {
         val explanation = apod.explanation
         val firstSentence = explanation.split(". ").firstOrNull()?.plus(".") ?: explanation
-
         return if (firstSentence.length <= 100) {
             firstSentence
         } else {
             firstSentence.substring(0, 97) + "..."
         }
     }
-
     private fun getRandomSpaceFact(): String {
         val facts = listOf(
             "Light from the Sun takes about 8 minutes to reach Earth.",
@@ -169,34 +145,28 @@ class SpaceRepository(
             "The Moon is moving away from Earth at a rate of about 1.5 inches per year.",
             "Pluto's orbit is so eccentric that it sometimes comes closer to the Sun than Neptune."
         )
-
         return facts[Random().nextInt(facts.size)]
     }
-
     suspend fun getPagedHistory(page: Int, pageSize: Int): List<EnhancedAstronomyPicture> {
         val offset = (page - 1) * pageSize
         return getHistory(limit = pageSize, offset = offset)
     }
-
     fun searchApods(query: String): Flow<List<EnhancedAstronomyPicture>> {
         return apodDao.searchApods(query).map { list ->
             list.map { it.toEnhancedAstronomyPicture() }
         }
     }
-
     suspend fun setFavorite(date: String, isFavorite: Boolean) = withContext(Dispatchers.IO) {
         apodDao.setFavorite(date, isFavorite)
         if (memoryCache?.astronomyPicture?.date == date) {
             memoryCache = memoryCache?.copy(isFavorite = isFavorite)
         }
     }
-
     fun getFavoriteApods(): Flow<List<EnhancedAstronomyPicture>> {
         return apodDao.getFavoriteApods().map { list ->
             list.map { it.toEnhancedAstronomyPicture() }
         }
     }
-
     fun getApodHistory(): kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<EnhancedAstronomyPicture>> {
         return androidx.paging.Pager(
             config = androidx.paging.PagingConfig(

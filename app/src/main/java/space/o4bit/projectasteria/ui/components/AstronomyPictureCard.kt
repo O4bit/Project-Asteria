@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.components
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -75,14 +74,6 @@ import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
 import space.o4bit.projectasteria.ui.components.settings.AsteriaCard
 import space.o4bit.projectasteria.ui.navigation.sharedElementIfAvailable
 import space.o4bit.projectasteria.utils.TextUtils
-
-/**
- * Premium APOD Picture Card.
- *
- * Designed with a clean, unobscured image preview (no dark gradient masks covering the photo),
- * accompanied by metadata, short fact box, and sleek tonal action buttons cleanly presented
- * in the card container below the image.
- */
 @Composable
 fun AstronomyPictureCard(
     enhancedPicture: EnhancedAstronomyPicture,
@@ -95,7 +86,6 @@ fun AstronomyPictureCard(
     val astronomyPicture = enhancedPicture.astronomyPicture
     var isImageLoaded by remember { mutableStateOf(false) }
     var showWebBrowser by remember { mutableStateOf(false) }
-
     val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
     val displayFormat = java.text.SimpleDateFormat("MMMM d, yyyy", java.util.Locale.US)
     val formattedDate = try {
@@ -104,11 +94,9 @@ fun AstronomyPictureCard(
     } catch (_: Exception) {
         astronomyPicture.date
     }
-
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, label = "card_scale")
-
     AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
@@ -129,8 +117,6 @@ fun AstronomyPictureCard(
             val configuration = LocalConfiguration.current
             val isLandscapePhone = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && configuration.smallestScreenWidthDp < 600
             val mediaHeight = if (isLandscapePhone) 190.dp else 280.dp
-
-            // ── 1. Unobscured Media Preview ──────────────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,7 +151,6 @@ fun AstronomyPictureCard(
                     isVideo -> {
                         val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
                         var isPlayingInline by remember { mutableStateOf(false) }
-
                         if (isPlayingInline && videoUrl != null) {
                             ApodVideoPlayer(
                                 videoUrl = videoUrl,
@@ -230,14 +215,11 @@ fun AstronomyPictureCard(
                     }
                 }
             }
-
-            // ── 2. Clean Metadata & Actions Below Image ────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                // Header row: Date pill & Favorite heart button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -264,8 +246,6 @@ fun AstronomyPictureCard(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
-
-                    // Favorite Button
                     val isFav = enhancedPicture.isFavorite
                     IconButton(
                         onClick = { onToggleFavorite(!isFav) },
@@ -282,10 +262,7 @@ fun AstronomyPictureCard(
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(12.dp))
-
-                // Title & Action Icon Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -298,9 +275,7 @@ fun AstronomyPictureCard(
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
-
                     Spacer(modifier = Modifier.width(12.dp))
-
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         FilledTonalIconButton(
                             onClick = { showWebBrowser = true },
@@ -313,9 +288,7 @@ fun AstronomyPictureCard(
                                 modifier = Modifier.size(18.dp)
                             )
                         }
-
                         Spacer(modifier = Modifier.width(8.dp))
-
                         FilledTonalIconButton(
                             onClick = onAddToHomeScreenClick,
                             modifier = Modifier.size(36.dp)
@@ -327,9 +300,7 @@ fun AstronomyPictureCard(
                                 modifier = Modifier.size(18.dp)
                             )
                         }
-
                         Spacer(modifier = Modifier.width(8.dp))
-
                         FilledTonalIconButton(
                             onClick = onShareClick,
                             modifier = Modifier.size(36.dp)
@@ -343,8 +314,6 @@ fun AstronomyPictureCard(
                         }
                     }
                 }
-
-                // Image Credit (if available)
                 if (!astronomyPicture.copyright.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     val linkColor = MaterialTheme.colorScheme.primary
@@ -364,7 +333,6 @@ fun AstronomyPictureCard(
             }
         }
     }
-
     if (showWebBrowser) {
         val parts = astronomyPicture.date.split("-")
         val webUrl = if (parts.size == 3 && parts[0].length == 4) {
@@ -381,7 +349,6 @@ fun AstronomyPictureCard(
         )
     }
 }
-
 @Composable
 fun AstronomyExplanationCard(
     explanation: String,
@@ -399,7 +366,6 @@ fun AstronomyExplanationCard(
         )
     }
     val context = LocalContext.current
-
     AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
@@ -411,7 +377,6 @@ fun AstronomyExplanationCard(
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
         ) {
-            // Header: Category label + Date
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -431,7 +396,6 @@ fun AstronomyExplanationCard(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
                 }
-
                 if (date != null) {
                     Text(
                         text = date,
@@ -441,7 +405,6 @@ fun AstronomyExplanationCard(
                     )
                 }
             }
-
             if (title != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -451,7 +414,6 @@ fun AstronomyExplanationCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
-
             if (copyright != null && copyright.isNotBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 val creditText = remember(copyright, linkColor) {
@@ -467,17 +429,12 @@ fun AstronomyExplanationCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             Spacer(modifier = Modifier.height(18.dp))
-
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                 thickness = 1.dp
             )
-
             Spacer(modifier = Modifier.height(18.dp))
-
-            // Full, high-contrast, larger text filling the available height
             SelectionContainer {
                 Text(
                     text = cleanExplanation,
@@ -489,10 +446,7 @@ fun AstronomyExplanationCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Discord Community banner
             Surface(
                 onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Constants.DISCORD_INVITE_URL))
@@ -528,7 +482,6 @@ fun AstronomyExplanationCard(
         }
     }
 }
-
 private fun extractYouTubeThumbnail(url: String?): String? {
     if (url == null) return null
     val patterns = listOf(

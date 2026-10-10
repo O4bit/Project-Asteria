@@ -1,5 +1,4 @@
 package space.o4bit.projectasteria.ui.theme
-
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -18,7 +17,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 import space.o4bit.projectasteria.util.toColorOrNull
-
 private val DarkColorScheme = darkColorScheme(
     primary = CosmicAccent,
     secondary = StardustSilver,
@@ -31,7 +29,6 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = StardustSilver,
     onSurface = StardustSilver
 )
-
 private val LightColorScheme = lightColorScheme(
     primary = CosmicAccent,
     secondary = StardustSilver,
@@ -39,12 +36,11 @@ private val LightColorScheme = lightColorScheme(
     background = Color.White,
     surface = Color(0xFFF8F9FA),
     onPrimary = Color.White,
-    onSecondary = SpaceBlack,  // StardustSilver is light (luminance 0.67) — white-on-silver ratio was 1.45:1
-    onTertiary = Color.White,  // NebulaViolet is dark (luminance 0.12) — white gives 6.32:1 ✓
+    onSecondary = SpaceBlack,  
+    onTertiary = Color.White,  
     onBackground = SpaceBlack,
     onSurface = SpaceBlack
 )
-
 @Composable
 fun ProjectAsteriaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -55,7 +51,6 @@ fun ProjectAsteriaTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-
     val baseScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -64,8 +59,6 @@ fun ProjectAsteriaTheme(
         else -> LightColorScheme
     }.let {
         if (darkTheme && pureBlack) {
-            // Override the entire container/surface family so M3 components
-            // (cards, sheets, nav bar) don't float as dark-gray islands on true black.
             it.copy(
                 background              = Color.Black,
                 surface                 = Color.Black,
@@ -79,38 +72,31 @@ fun ProjectAsteriaTheme(
             )
         } else it
     }
-
     val schemeWithAccent = if (!dynamicColor) {
         customAccentHex.toColorOrNull()?.let {
             applyCustomAccent(baseScheme, it, darkTheme)
         } ?: baseScheme
     } else baseScheme
-
     val finalScheme = if (!dynamicColor) {
         customThemeColorHex.toColorOrNull()?.let {
             applyCustomThemeColor(schemeWithAccent, it, darkTheme)
         } ?: schemeWithAccent
     } else schemeWithAccent
-
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val activity = view.context as Activity
-            // enableEdgeToEdge() in MainActivity already clears status/nav bar colors.
-            // We only need to set the icon appearance for the current theme.
             val controller = WindowCompat.getInsetsController(activity.window, view)
             controller.isAppearanceLightStatusBars = !darkTheme
             controller.isAppearanceLightNavigationBars = !darkTheme
         }
     }
-
     MaterialTheme(
         colorScheme = finalScheme,
         typography = Typography,
         content = content
     )
 }
-
 private fun applyCustomAccent(
     colorScheme: ColorScheme,
     accent: Color,
@@ -139,7 +125,6 @@ private fun applyCustomAccent(
         inversePrimary = primary.adjustLightness(if (darkTheme) -0.4f else 0.4f)
     )
 }
-
 private fun applyCustomThemeColor(
     colorScheme: ColorScheme,
     themeColor: Color,
@@ -155,11 +140,9 @@ private fun applyCustomThemeColor(
     val containerHighest = if (darkTheme) themeColor.adjustLightness(0.32f) else themeColor.adjustLightness(0.28f)
     val surfaceBright = if (darkTheme) themeColor.adjustLightness(0.4f) else themeColor.adjustLightness(0.12f)
     val surfaceDim = if (darkTheme) themeColor.adjustLightness(-0.1f) else themeColor.adjustLightness(0.6f)
-
     val onBackground = background.contrastingForeground()
     val onSurface = surface.contrastingForeground()
     val onSurfaceVariant = surfaceVariant.contrastingForeground()
-
     return colorScheme.copy(
         background = background,
         onBackground = onBackground,
@@ -177,20 +160,12 @@ private fun applyCustomThemeColor(
         surfaceDim = surfaceDim
     )
 }
-
 private fun Color.adjustLightness(delta: Float): Color {
     val hsl = FloatArray(3)
     ColorUtils.colorToHSL(this.toArgb(), hsl)
     hsl[2] = (hsl[2] + delta).coerceIn(0f, 1f)
     return Color(ColorUtils.HSLToColor(hsl))
 }
-
-/**
- * Picks white or black text to overlay this color, using the actual WCAG contrast
- * ratio rather than a naive luminance threshold. The 0.5 threshold fails for
- * mid-tone colors (e.g. medium gray gives ~3.9:1 with white vs. ~5.3:1 with black
- * but the old code always picked white).
- */
 private fun Color.contrastingForeground(): Color {
     val lum = ColorUtils.calculateLuminance(this.toArgb())
     val contrastWithWhite = 1.05 / (lum + 0.05)
