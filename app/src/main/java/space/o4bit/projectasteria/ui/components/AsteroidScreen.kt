@@ -188,7 +188,12 @@ fun AsteroidScreen(
                                         AsteroidCard(
                                             asteroid = asteroid,
                                             onClick = {
-                                                browserUrl = asteroid.nasaJplUrl
+                                                val raw = asteroid.nasaJplUrl
+                                                browserUrl = if (raw.startsWith("http://", ignoreCase = true)) {
+                                                    raw.replaceFirst("http://", "https://", ignoreCase = true)
+                                                } else {
+                                                    raw
+                                                }
                                             }
                                         )
                                     }

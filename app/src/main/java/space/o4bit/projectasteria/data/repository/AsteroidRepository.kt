@@ -41,7 +41,11 @@ class AsteroidRepository(
                 AsteroidEntity(
                     id = asteroid.id,
                     name = asteroid.name,
-                    nasaJplUrl = asteroid.nasaJplUrl,
+                    nasaJplUrl = if (asteroid.nasaJplUrl.startsWith("http://", ignoreCase = true)) {
+                        asteroid.nasaJplUrl.replaceFirst("http://", "https://", ignoreCase = true)
+                    } else {
+                        asteroid.nasaJplUrl
+                    },
                     absoluteMagnitudeH = asteroid.absoluteMagnitudeH,
                     estimatedDiameterMinKm = asteroid.estimatedDiameter.kilometers.min,
                     estimatedDiameterMaxKm = asteroid.estimatedDiameter.kilometers.max,
