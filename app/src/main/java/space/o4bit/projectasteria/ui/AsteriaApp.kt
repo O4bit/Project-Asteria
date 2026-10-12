@@ -93,6 +93,7 @@ import space.o4bit.projectasteria.data.preferences.UiHintsPreferencesRepository
 import space.o4bit.projectasteria.data.repository.AsteroidRepository
 import space.o4bit.projectasteria.utils.Constants
 import space.o4bit.projectasteria.data.repository.LaunchRepository
+import space.o4bit.projectasteria.data.repository.SolarSystemRepository
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 import space.o4bit.projectasteria.ui.components.AnimatedBackground
 import space.o4bit.projectasteria.ui.components.AsteroidScreen
@@ -102,6 +103,7 @@ import space.o4bit.projectasteria.ui.components.BackgroundType
 import space.o4bit.projectasteria.ui.components.IssScreen
 import space.o4bit.projectasteria.ui.components.LaunchScreen
 import space.o4bit.projectasteria.ui.components.PinnedLaunchCard
+import space.o4bit.projectasteria.ui.components.SolarSystemScreen
 import space.o4bit.projectasteria.ui.components.SwipeHintOverlay
 import space.o4bit.projectasteria.ui.components.settings.AsteriaBottomNavigation
 import space.o4bit.projectasteria.ui.navigation.AsteriaNavGraph
@@ -116,6 +118,7 @@ enum class MainTab(
     val unselectedIconFactory: @androidx.compose.runtime.Composable () -> androidx.compose.ui.graphics.vector.ImageVector
 ) {
     APOD("APOD", { Icons.Filled.Image }, { Icons.Outlined.Image }),
+    PLANETS("Planets", { ImageVector.vectorResource(id = space.o4bit.projectasteria.R.drawable.orbit_24px) }, { ImageVector.vectorResource(id = space.o4bit.projectasteria.R.drawable.orbit_24px) }),
     ISS("ISS", { ImageVector.vectorResource(id = space.o4bit.projectasteria.R.drawable.outline_satellite_alt_24) }, { ImageVector.vectorResource(id = space.o4bit.projectasteria.R.drawable.outline_satellite_alt_24) }),
     LAUNCHES("Launches", { Icons.Filled.RocketLaunch }, { Icons.Outlined.RocketLaunch }),
     ASTEROIDS("Asteroids", { Icons.Filled.Public }, { Icons.Outlined.Public })
@@ -148,6 +151,11 @@ fun AsteriaApp(
         AsteroidRepository(
             asteroidDao = application.database.asteroidDao(),
             sortingPreferences = application.sortingPreferences
+        )
+    }
+    val solarSystemRepository = remember {
+        SolarSystemRepository(
+            celestialBodyDao = application.database.celestialBodyDao()
         )
     }
     val backgroundPrefs = remember { BackgroundPreferencesRepository(context) }
@@ -186,6 +194,7 @@ fun AsteriaApp(
         AsteriaNavGraph(
             navController = navController,
             spaceRepository = spaceRepository,
+            solarSystemRepository = solarSystemRepository,
             currentApodPicture = currentApodPicture,
             onRequestNotificationPermission = onRequestNotificationPermission
         ) {
@@ -250,6 +259,14 @@ fun AsteriaApp(
                                         navController.navigate("launch_detail/$launchId")
                                     }
                                 )
+                                MainTab.PLANETS ->
+                                    SolarSystemScreen(
+                                        repository = solarSystemRepository,
+                                        onSettingsClick = { navController.navigate("settings") },
+                                        onBodyClick = { bodyId ->
+                                            navController.navigate("celestial_detail/$bodyId")
+                                        }
+                                    )
                                 MainTab.ASTEROIDS ->
                                     AsteroidScreen(
                                         onSettingsClick = { navController.navigate("settings") }
@@ -614,7 +631,7 @@ fun AnimatedSatelliteEasterEgg() {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Enjoying Project Asteria?") },
-            text = { Text("If you like the app, it means a lot to me if you could star the repository or join our Discord community! 💜") },
+            text = { Text("If you like the app, it means a lot to me if you could star the repository or join our Discord community!") },
             confirmButton = {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

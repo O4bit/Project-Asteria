@@ -152,7 +152,9 @@ class SpaceRepository(
         return getHistory(limit = pageSize, offset = offset)
     }
     fun searchApods(query: String): Flow<List<EnhancedAstronomyPicture>> {
-        return apodDao.searchApods(query).map { list ->
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return kotlinx.coroutines.flow.flowOf(emptyList())
+        return apodDao.searchApods(trimmed).map { list ->
             list.map { it.toEnhancedAstronomyPicture() }
         }
     }
@@ -164,6 +166,13 @@ class SpaceRepository(
     }
     fun getFavoriteApods(): Flow<List<EnhancedAstronomyPicture>> {
         return apodDao.getFavoriteApods().map { list ->
+            list.map { it.toEnhancedAstronomyPicture() }
+        }
+    }
+    fun searchFavoriteApods(query: String): Flow<List<EnhancedAstronomyPicture>> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return getFavoriteApods()
+        return apodDao.searchFavoriteApods(trimmed).map { list ->
             list.map { it.toEnhancedAstronomyPicture() }
         }
     }

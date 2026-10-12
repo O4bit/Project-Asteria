@@ -84,6 +84,8 @@ class ApodViewModel(
             }
         }
     }
+    fun searchApods(query: String) = spaceRepository.searchApods(query)
+    fun searchFavoriteApods(query: String) = spaceRepository.searchFavoriteApods(query)
     private suspend fun safeGetCached(): EnhancedAstronomyPicture? = try {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         spaceRepository.getApodByDate(today)

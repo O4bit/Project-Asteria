@@ -11,11 +11,12 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 
 dependencyResolutionManagement {
-    // Using enableFeaturePreview() to safely declare we want to use the incubating features
     enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
-    // We directly manage repositories in the settings file instead of using repositoriesMode
     @Suppress("UnstableApiUsage")
     repositories {
         google()

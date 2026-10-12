@@ -77,16 +77,17 @@ fun HistoryScreen(
     val pagingDataFlow = remember { repository.getApodHistory() }
     val lazyPagingItems = pagingDataFlow.collectAsLazyPagingItems()
     var searchQuery by remember { mutableStateOf("") }
-    val searchResults by remember(searchQuery) {
-        if (searchQuery.isNotBlank()) repository.searchApods(searchQuery)
-        else kotlinx.coroutines.flow.flowOf(emptyList())
+    var showFavoritesOnly by remember { mutableStateOf(initialShowFavorites) }
+    val activeResults by remember(searchQuery, showFavoritesOnly) {
+        val trimmed = searchQuery.trim()
+        when {
+            showFavoritesOnly && trimmed.isNotBlank() -> repository.searchFavoriteApods(trimmed)
+            showFavoritesOnly -> repository.getFavoriteApods()
+            trimmed.isNotBlank() -> repository.searchApods(trimmed)
+            else -> kotlinx.coroutines.flow.flowOf(emptyList())
+        }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     val scope = rememberCoroutineScope()
-    var showFavoritesOnly by remember { mutableStateOf(initialShowFavorites) }
-    val favoriteResults by remember(showFavoritesOnly) {
-        if (showFavoritesOnly) repository.getFavoriteApods()
-        else kotlinx.coroutines.flow.flowOf(emptyList())
-    }.collectAsStateWithLifecycle(initialValue = emptyList())
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -131,7 +132,7 @@ fun HistoryScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search title or explanation...") },
+                placeholder = { Text("Search title, explanation, or date...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
@@ -146,58 +147,102 @@ fun HistoryScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
             if (showFavoritesOnly) {
-                if (favoriteResults.isEmpty()) {
+                if (activeResults.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "No favorite APODs saved yet.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (searchQuery.isNotBlank()) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "No favorite APODs matching \"$searchQuery\"",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                androidx.compose.material3.OutlinedButton(onClick = { searchQuery = "" }) {
+                                    Text("Clear Search")
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = "No favorite APODs saved yet.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(favoriteResults, key = { it.astronomyPicture.date }) { item ->
-                            HistoryItemCard(
-                                item = item,
-                                onClick = { onApodClick(item) },
-                                onToggleFavorite = {
-                                    scope.launch {
-                                        repository.setFavorite(item.astronomyPicture.date, !item.isFavorite)
-                                    }
-                                }
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (searchQuery.isNotBlank()) {
+                            Text(
+                                text = "${activeResults.size} favorite APODs found",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                             )
+                        }
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(activeResults, key = { it.astronomyPicture.date }) { item ->
+                                HistoryItemCard(
+                                    item = item,
+                                    onClick = { onApodClick(item) },
+                                    onToggleFavorite = {
+                                        scope.launch {
+                                            repository.setFavorite(item.astronomyPicture.date, !item.isFavorite)
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             } else if (searchQuery.isNotBlank()) {
-                if (searchResults.isEmpty()) {
+                if (activeResults.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "No APODs matching \"$searchQuery\"",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "No APODs matching \"$searchQuery\"",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            androidx.compose.material3.OutlinedButton(onClick = { searchQuery = "" }) {
+                                Text("Clear Search")
+                            }
+                        }
                     }
                 } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(searchResults, key = { it.astronomyPicture.date }) { item ->
-                            HistoryItemCard(
-                                item = item,
-                                onClick = { onApodClick(item) },
-                                onToggleFavorite = {
-                                    scope.launch {
-                                        repository.setFavorite(item.astronomyPicture.date, !item.isFavorite)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = "${activeResults.size} APODs found",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(activeResults, key = { it.astronomyPicture.date }) { item ->
+                                HistoryItemCard(
+                                    item = item,
+                                    onClick = { onApodClick(item) },
+                                    onToggleFavorite = {
+                                        scope.launch {
+                                            repository.setFavorite(item.astronomyPicture.date, !item.isFavorite)
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
@@ -209,6 +254,7 @@ fun HistoryScreen(
                 ) {
                     items(
                         count = lazyPagingItems.itemCount,
+                        key = lazyPagingItems.itemKey { it.astronomyPicture.date },
                         contentType = lazyPagingItems.itemContentType { "ApodItem" }
                     ) { index ->
                         val item = lazyPagingItems[index]

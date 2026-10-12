@@ -8,6 +8,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import space.o4bit.projectasteria.data.api.NasaApodService
 import space.o4bit.projectasteria.data.local.ApodDao
 import space.o4bit.projectasteria.data.local.ApodEntity
@@ -61,7 +63,6 @@ class SpaceRepositoryTest {
 
         val result = spaceRepository.getApodByDate("2026-01-01")
 
-        // When DAO returns null and the network call throws, getApodByDate returns null gracefully.
         assertEquals(null, result)
     }
 
@@ -72,5 +73,36 @@ class SpaceRepositoryTest {
         val result = spaceRepository.getPagedHistory(1, 20)
 
         assertEquals(emptyList<Any>(), result)
+    }
+
+    @Test
+    fun searchApods_delegatesToDaoAndMapsResults() = runTest {
+        val testEntity = fakeApodEntity("2026-07-21", "Searchable Star")
+        coEvery { apodDao.searchApods("Star") } returns flowOf(listOf(testEntity))
+
+        val results = spaceRepository.searchApods("Star").first()
+
+        assertEquals(1, results.size)
+        assertEquals("Searchable Star", results[0].astronomyPicture.title)
+        assertEquals("2026-07-21", results[0].astronomyPicture.date)
+    }
+
+    @Test
+    fun searchApods_blankQuery_returnsEmptyWithoutCallingDao() = runTest {
+        val results = spaceRepository.searchApods("   ").first()
+
+        assertEquals(0, results.size)
+        io.mockk.verify(exactly = 0) { apodDao.searchApods(any()) }
+    }
+
+    @Test
+    fun searchFavoriteApods_delegatesToDaoAndMapsResults() = runTest {
+        val testEntity = fakeApodEntity("2026-07-21", "Favorite Moon")
+        coEvery { apodDao.searchFavoriteApods("Moon") } returns flowOf(listOf(testEntity))
+
+        val results = spaceRepository.searchFavoriteApods("Moon").first()
+
+        assertEquals(1, results.size)
+        assertEquals("Favorite Moon", results[0].astronomyPicture.title)
     }
 }

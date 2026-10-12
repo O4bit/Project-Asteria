@@ -325,7 +325,7 @@ fun AsteriaBottomNavigation(
                         ) {
                             onTabSelected(index)
                         }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = if (isSelected) 12.dp else 8.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {

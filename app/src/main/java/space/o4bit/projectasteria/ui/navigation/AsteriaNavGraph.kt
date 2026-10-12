@@ -21,8 +21,10 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import space.o4bit.projectasteria.data.model.AstronomyPicture
 import space.o4bit.projectasteria.data.model.EnhancedAstronomyPicture
+import space.o4bit.projectasteria.data.repository.SolarSystemRepository
 import space.o4bit.projectasteria.data.repository.SpaceRepository
 import space.o4bit.projectasteria.ui.components.ApodDetailScreen
+import space.o4bit.projectasteria.ui.components.CelestialBodyDetailScreen
 import space.o4bit.projectasteria.ui.components.ExplanationDetailScreen
 import space.o4bit.projectasteria.ui.components.FullscreenImageViewer
 import space.o4bit.projectasteria.ui.components.HistoryScreen
@@ -39,6 +41,7 @@ private const val FADE_MS  = 300
 fun AsteriaNavGraph(
     navController: NavHostController,
     spaceRepository: SpaceRepository,
+    solarSystemRepository: SolarSystemRepository? = null,
     currentApodPicture: () -> EnhancedAstronomyPicture?,
     onRequestNotificationPermission: () -> Unit = {},
     mainContent: @Composable () -> Unit
@@ -213,6 +216,25 @@ fun AsteriaNavGraph(
                             repository = spaceRepository,
                             onBackClick = { navController.popBackStack() }
                         )
+                    }
+                }
+                composable(
+                    route = "celestial_detail/{bodyId}",
+                    arguments = listOf(navArgument("bodyId") { type = NavType.StringType }),
+                    deepLinks = listOf(
+                        navDeepLink { uriPattern = "asteria://planet/{bodyId}" },
+                        navDeepLink { uriPattern = "asteria://body/{bodyId}" }
+                    )
+                ) { backStackEntry ->
+                    val bodyId = backStackEntry.arguments?.getString("bodyId") ?: return@composable
+                    solarSystemRepository?.let { repo ->
+                        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                            CelestialBodyDetailScreen(
+                                bodyId = bodyId,
+                                repository = repo,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
                     }
                 }
             }
