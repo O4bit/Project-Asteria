@@ -38,17 +38,21 @@ data class CelestialBodyEntity(
     val axialTilt: Double,
     val avgTemp: Double,
     val moonCount: Int,
-    val moonsSummary: String
+    val moonsSummary: String,
+    val constellation: String = "",
+    val description: String = "",
+    val spectralType: String = "",
+    val distanceLightYears: Double = 0.0
 ) {
     companion object {
-        fun fromDto(dto: CelestialBodyDto): CelestialBodyEntity {
+        fun fromDto(dto: CelestialBodyDto, fallback: CelestialBodyEntity? = null): CelestialBodyEntity {
             val resolvedId = dto.id ?: dto.name ?: dto.englishName ?: java.util.UUID.randomUUID().toString()
             val english = if (!dto.englishName.isNullOrBlank()) dto.englishName else (dto.name ?: resolvedId)
             val type = when {
                 !dto.bodyType.isNullOrBlank() -> dto.bodyType
                 dto.isPlanet == true -> "Planet"
                 dto.aroundPlanet != null -> "Moon"
-                else -> "Asteroid"
+                else -> fallback?.bodyType ?: "Asteroid"
             }
             val moonsList = dto.moons?.mapNotNull { it.moon } ?: emptyList()
             val rawAround = dto.aroundPlanet?.planet
@@ -62,42 +66,50 @@ data class CelestialBodyEntity(
                 "uranus" -> "Uranus"
                 "neptune" -> "Neptune"
                 "pluton" -> "Pluto"
-                null -> null
+                null -> fallback?.aroundPlanetName
                 else -> rawAround.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
             }
+            val resolvedConstellation = dto.constellation?.takeIf { it.isNotBlank() } ?: fallback?.constellation ?: ""
+            val resolvedDescription = dto.description?.takeIf { it.isNotBlank() } ?: fallback?.description ?: ""
+            val resolvedSpectralType = dto.spectralType?.takeIf { it.isNotBlank() } ?: fallback?.spectralType ?: ""
+            val resolvedDistance = dto.distanceLightYears?.takeIf { it > 0.0 } ?: fallback?.distanceLightYears ?: 0.0
             return CelestialBodyEntity(
                 id = resolvedId,
-                name = dto.name ?: english,
+                name = dto.name ?: fallback?.name ?: english,
                 englishName = english,
-                isPlanet = dto.isPlanet ?: (type.equals("Planet", ignoreCase = true)),
+                isPlanet = dto.isPlanet ?: fallback?.isPlanet ?: (type.equals("Planet", ignoreCase = true)),
                 bodyType = type,
-                semimajorAxis = dto.semimajorAxis ?: 0.0,
-                perihelion = dto.perihelion ?: 0.0,
-                aphelion = dto.aphelion ?: 0.0,
-                eccentricity = dto.eccentricity ?: 0.0,
-                inclination = dto.inclination ?: 0.0,
-                massValue = dto.mass?.massValue,
-                massExponent = dto.mass?.massExponent,
-                volValue = dto.vol?.volValue,
-                volExponent = dto.vol?.volExponent,
-                density = dto.density ?: 0.0,
-                gravity = dto.gravity ?: 0.0,
-                escape = dto.escape ?: 0.0,
-                meanRadius = dto.meanRadius ?: 0.0,
-                equaRadius = dto.equaRadius ?: 0.0,
-                polarRadius = dto.polarRadius ?: 0.0,
-                flattening = dto.flattening ?: 0.0,
-                dimension = dto.dimension ?: "",
-                sideralOrbit = dto.sideralOrbit ?: 0.0,
-                sideralRotation = dto.sideralRotation ?: 0.0,
+                semimajorAxis = dto.semimajorAxis ?: fallback?.semimajorAxis ?: 0.0,
+                perihelion = dto.perihelion ?: fallback?.perihelion ?: 0.0,
+                aphelion = dto.aphelion ?: fallback?.aphelion ?: 0.0,
+                eccentricity = dto.eccentricity ?: fallback?.eccentricity ?: 0.0,
+                inclination = dto.inclination ?: fallback?.inclination ?: 0.0,
+                massValue = dto.mass?.massValue ?: fallback?.massValue,
+                massExponent = dto.mass?.massExponent ?: fallback?.massExponent,
+                volValue = dto.vol?.volValue ?: fallback?.volValue,
+                volExponent = dto.vol?.volExponent ?: fallback?.volExponent,
+                density = dto.density ?: fallback?.density ?: 0.0,
+                gravity = dto.gravity ?: fallback?.gravity ?: 0.0,
+                escape = dto.escape ?: fallback?.escape ?: 0.0,
+                meanRadius = dto.meanRadius ?: fallback?.meanRadius ?: 0.0,
+                equaRadius = dto.equaRadius ?: fallback?.equaRadius ?: 0.0,
+                polarRadius = dto.polarRadius ?: fallback?.polarRadius ?: 0.0,
+                flattening = dto.flattening ?: fallback?.flattening ?: 0.0,
+                dimension = dto.dimension ?: fallback?.dimension ?: "",
+                sideralOrbit = dto.sideralOrbit ?: fallback?.sideralOrbit ?: 0.0,
+                sideralRotation = dto.sideralRotation ?: fallback?.sideralRotation ?: 0.0,
                 aroundPlanetName = aroundPlanetFormatted,
-                discoveredBy = dto.discoveredBy ?: "",
-                discoveryDate = dto.discoveryDate ?: "",
-                alternativeName = dto.alternativeName ?: "",
-                axialTilt = dto.axialTilt ?: 0.0,
-                avgTemp = dto.avgTemp ?: 0.0,
-                moonCount = moonsList.size,
-                moonsSummary = moonsList.joinToString(", ")
+                discoveredBy = dto.discoveredBy ?: fallback?.discoveredBy ?: "",
+                discoveryDate = dto.discoveryDate ?: fallback?.discoveryDate ?: "",
+                alternativeName = dto.alternativeName ?: fallback?.alternativeName ?: "",
+                axialTilt = dto.axialTilt ?: fallback?.axialTilt ?: 0.0,
+                avgTemp = dto.avgTemp ?: fallback?.avgTemp ?: 0.0,
+                moonCount = if (moonsList.isNotEmpty()) moonsList.size else (fallback?.moonCount ?: 0),
+                moonsSummary = if (moonsList.isNotEmpty()) moonsList.joinToString(", ") else (fallback?.moonsSummary ?: ""),
+                constellation = resolvedConstellation,
+                description = resolvedDescription,
+                spectralType = resolvedSpectralType,
+                distanceLightYears = resolvedDistance
             )
         }
     }

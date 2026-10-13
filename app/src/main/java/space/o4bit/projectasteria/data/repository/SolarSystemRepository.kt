@@ -21,12 +21,15 @@ class SolarSystemRepository(
     }
 
     fun getBodiesByType(type: String): Flow<List<CelestialBodyEntity>> =
-        if (type.equals("All", ignoreCase = true)) {
-            celestialBodyDao.getAllBodies()
-        } else if (type.equals("Planets", ignoreCase = true)) {
-            celestialBodyDao.getPlanets()
-        } else {
-            celestialBodyDao.getBodiesByType(type)
+        when {
+            type.equals("All", ignoreCase = true) -> celestialBodyDao.getAllBodies()
+            type.equals("Planets", ignoreCase = true) || type.equals("Planet", ignoreCase = true) -> celestialBodyDao.getPlanets()
+            type.equals("Moons", ignoreCase = true) || type.equals("Moon", ignoreCase = true) -> celestialBodyDao.getBodiesByTypes(listOf("Moon", "Moons"))
+            type.equals("Stars", ignoreCase = true) || type.equals("Star", ignoreCase = true) -> celestialBodyDao.getBodiesByTypes(listOf("Star", "Stars"))
+            type.equals("Exoplanets", ignoreCase = true) || type.equals("Exoplanet", ignoreCase = true) -> celestialBodyDao.getBodiesByTypes(listOf("Exoplanet", "Exoplanets"))
+            type.equals("Deep Sky", ignoreCase = true) || type.equals("Deep Sky Object", ignoreCase = true) -> celestialBodyDao.getBodiesByTypes(listOf("Deep Sky", "Deep Sky Object"))
+            type.equals("Asteroids", ignoreCase = true) || type.equals("Asteroid", ignoreCase = true) -> celestialBodyDao.getBodiesByTypes(listOf("Asteroid", "Asteroids", "Dwarf Planet", "Comet"))
+            else -> celestialBodyDao.getBodiesByType(type)
         }
 
     suspend fun getBodyById(id: String): CelestialBodyEntity? = withContext(Dispatchers.IO) {
@@ -45,7 +48,11 @@ class SolarSystemRepository(
             val authHeader = apiKey?.let { if (it.isNotBlank()) "Bearer $it" else null }
             val response = solarSystemService.getBodies(authHeader = authHeader)
             if (response.bodies.isNotEmpty()) {
-                val entities = response.bodies.map { CelestialBodyEntity.fromDto(it) }
+                val defaultById = DefaultSolarSystemData.initialBodies.associateBy { it.id }
+                val entities = response.bodies.map { dto ->
+                    val resolvedId = dto.id ?: dto.name ?: dto.englishName ?: ""
+                    CelestialBodyEntity.fromDto(dto, defaultById[resolvedId])
+                }
                 celestialBodyDao.insertBodies(entities)
             }
         } catch (e: Exception) {

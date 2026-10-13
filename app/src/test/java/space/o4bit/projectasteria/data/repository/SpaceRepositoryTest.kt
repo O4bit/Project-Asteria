@@ -105,4 +105,37 @@ class SpaceRepositoryTest {
         assertEquals(1, results.size)
         assertEquals("Favorite Moon", results[0].astronomyPicture.title)
     }
+
+    @Test
+    fun getApodByDate_fetchesFromNetworkAndInsertsToDao_whenDaoHasNoData() = runTest {
+        val remoteApod = space.o4bit.projectasteria.data.model.AstronomyPicture(
+            date = "1995-06-16",
+            explanation = "First APOD",
+            hdUrl = null,
+            mediaType = "image",
+            title = "Neutron Star",
+            url = "https://apod.nasa.gov/apod/image/neutron_star.jpg"
+        )
+        coEvery { apodDao.getApodByDate("1995-06-16") } returns null
+        coEvery { nasaApodService.getAstronomyPictureByDate("1995-06-16") } returns remoteApod
+
+        val result = spaceRepository.getApodByDate("1995-06-16")
+
+        assertNotNull(result)
+        assertEquals("Neutron Star", result?.astronomyPicture?.title)
+        assertEquals("1995-06-16", result?.astronomyPicture?.date)
+        coVerify(exactly = 1) { apodDao.insertApod(any()) }
+    }
+
+    @Test
+    fun getApodByDate_handlesLeapDayBoundary() = runTest {
+        val testEntity = fakeApodEntity("1996-02-29", "Leap Day APOD")
+        coEvery { apodDao.getApodByDate("1996-02-29") } returns testEntity
+
+        val result = spaceRepository.getApodByDate("1996-02-29")
+
+        assertNotNull(result)
+        assertEquals("Leap Day APOD", result?.astronomyPicture?.title)
+        assertEquals("1996-02-29", result?.astronomyPicture?.date)
+    }
 }

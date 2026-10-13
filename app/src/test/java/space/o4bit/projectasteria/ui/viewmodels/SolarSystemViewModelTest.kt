@@ -187,4 +187,94 @@ class SolarSystemViewModelTest {
         assertEquals(1, success.bodies.size)
         assertEquals("Earth", success.bodies[0].englishName)
     }
+
+    @Test
+    fun onFilterSelected_stars_observesStars() = runTest {
+        val sirius = earth.copy(id = "sirius", name = "Sirius", englishName = "Sirius", isPlanet = false, bodyType = "Star")
+        every { repository.getBodiesByType("Stars") } returns flowOf(listOf(sirius))
+
+        viewModel = SolarSystemViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onFilterSelected("Stars")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is SolarSystemUiState.Success)
+        val success = state as SolarSystemUiState.Success
+        assertEquals(1, success.bodies.size)
+        assertEquals("Sirius", success.bodies[0].englishName)
+        assertEquals("Stars", success.selectedFilter)
+    }
+
+    @Test
+    fun onFilterSelected_exoplanets_observesExoplanets() = runTest {
+        val trappist = earth.copy(id = "trappist1e", name = "TRAPPIST-1e", englishName = "TRAPPIST-1e", isPlanet = false, bodyType = "Exoplanet")
+        every { repository.getBodiesByType("Exoplanets") } returns flowOf(listOf(trappist))
+
+        viewModel = SolarSystemViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onFilterSelected("Exoplanets")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is SolarSystemUiState.Success)
+        val success = state as SolarSystemUiState.Success
+        assertEquals(1, success.bodies.size)
+        assertEquals("TRAPPIST-1e", success.bodies[0].englishName)
+        assertEquals("Exoplanets", success.selectedFilter)
+    }
+
+    @Test
+    fun onFilterSelected_deepSky_observesDeepSky() = runTest {
+        val andromeda = earth.copy(id = "andromeda", name = "Andromeda Galaxy", englishName = "Andromeda Galaxy", isPlanet = false, bodyType = "Deep Sky")
+        every { repository.getBodiesByType("Deep Sky") } returns flowOf(listOf(andromeda))
+
+        viewModel = SolarSystemViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onFilterSelected("Deep Sky")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is SolarSystemUiState.Success)
+        val success = state as SolarSystemUiState.Success
+        assertEquals(1, success.bodies.size)
+        assertEquals("Andromeda Galaxy", success.bodies[0].englishName)
+        assertEquals("Deep Sky", success.selectedFilter)
+    }
+
+    @Test
+    fun searchWithFilter_filtersStarsAndExoplanetsAndDeepSky() = runTest {
+        val sirius = earth.copy(id = "sirius", name = "Sirius", englishName = "Sirius", isPlanet = false, bodyType = "Star")
+        val trappist = earth.copy(id = "trappist1e", name = "TRAPPIST-1e", englishName = "TRAPPIST-1e", isPlanet = false, bodyType = "Exoplanet")
+        val andromeda = earth.copy(id = "andromeda", name = "Andromeda Galaxy", englishName = "Andromeda Galaxy", isPlanet = false, bodyType = "Deep Sky")
+        every { repository.searchBodies("a") } returns flowOf(listOf(sirius, trappist, andromeda))
+
+        viewModel = SolarSystemViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onFilterSelected("Stars")
+        viewModel.onSearchQueryChanged("a")
+        advanceUntilIdle()
+
+        val stateStars = viewModel.uiState.value as SolarSystemUiState.Success
+        assertEquals(1, stateStars.bodies.size)
+        assertEquals("Sirius", stateStars.bodies[0].englishName)
+
+        viewModel.onFilterSelected("Exoplanets")
+        advanceUntilIdle()
+
+        val stateExo = viewModel.uiState.value as SolarSystemUiState.Success
+        assertEquals(1, stateExo.bodies.size)
+        assertEquals("TRAPPIST-1e", stateExo.bodies[0].englishName)
+
+        viewModel.onFilterSelected("Deep Sky")
+        advanceUntilIdle()
+
+        val stateDeep = viewModel.uiState.value as SolarSystemUiState.Success
+        assertEquals(1, stateDeep.bodies.size)
+        assertEquals("Andromeda Galaxy", stateDeep.bodies[0].englishName)
+    }
 }

@@ -131,6 +131,66 @@ class SolarSystemRepositoryTest {
     }
 
     @Test
+    fun getBodiesByType_stars_callsGetBodiesByTypes() = runTest {
+        val sirius = fakeBodyEntity("sirius", "Sirius", isPlanet = false, type = "Star")
+        every { celestialBodyDao.getBodiesByTypes(listOf("Star", "Stars")) } returns flowOf(listOf(sirius))
+
+        val results = repository.getBodiesByType("Stars").first()
+
+        assertEquals(1, results.size)
+        assertEquals("Sirius", results[0].englishName)
+        coVerify(exactly = 1) { celestialBodyDao.getBodiesByTypes(listOf("Star", "Stars")) }
+    }
+
+    @Test
+    fun getBodiesByType_exoplanets_callsGetBodiesByTypes() = runTest {
+        val trappist = fakeBodyEntity("trappist1e", "TRAPPIST-1e", isPlanet = false, type = "Exoplanet")
+        every { celestialBodyDao.getBodiesByTypes(listOf("Exoplanet", "Exoplanets")) } returns flowOf(listOf(trappist))
+
+        val results = repository.getBodiesByType("Exoplanets").first()
+
+        assertEquals(1, results.size)
+        assertEquals("TRAPPIST-1e", results[0].englishName)
+        coVerify(exactly = 1) { celestialBodyDao.getBodiesByTypes(listOf("Exoplanet", "Exoplanets")) }
+    }
+
+    @Test
+    fun getBodiesByType_deepSky_callsGetBodiesByTypes() = runTest {
+        val andromeda = fakeBodyEntity("andromeda", "Andromeda Galaxy", isPlanet = false, type = "Deep Sky")
+        every { celestialBodyDao.getBodiesByTypes(listOf("Deep Sky", "Deep Sky Object")) } returns flowOf(listOf(andromeda))
+
+        val results = repository.getBodiesByType("Deep Sky").first()
+
+        assertEquals(1, results.size)
+        assertEquals("Andromeda Galaxy", results[0].englishName)
+        coVerify(exactly = 1) { celestialBodyDao.getBodiesByTypes(listOf("Deep Sky", "Deep Sky Object")) }
+    }
+
+    @Test
+    fun getBodiesByType_moons_callsGetBodiesByTypes() = runTest {
+        val moon = fakeBodyEntity("moon", "Moon", isPlanet = false, type = "Moon")
+        every { celestialBodyDao.getBodiesByTypes(listOf("Moon", "Moons")) } returns flowOf(listOf(moon))
+
+        val results = repository.getBodiesByType("Moons").first()
+
+        assertEquals(1, results.size)
+        assertEquals("Moon", results[0].englishName)
+        coVerify(exactly = 1) { celestialBodyDao.getBodiesByTypes(listOf("Moon", "Moons")) }
+    }
+
+    @Test
+    fun getBodiesByType_asteroids_callsGetBodiesByTypes() = runTest {
+        val bennu = fakeBodyEntity("bennu", "Bennu", isPlanet = false, type = "Asteroid")
+        every { celestialBodyDao.getBodiesByTypes(listOf("Asteroid", "Asteroids", "Dwarf Planet", "Comet")) } returns flowOf(listOf(bennu))
+
+        val results = repository.getBodiesByType("Asteroids").first()
+
+        assertEquals(1, results.size)
+        assertEquals("Bennu", results[0].englishName)
+        coVerify(exactly = 1) { celestialBodyDao.getBodiesByTypes(listOf("Asteroid", "Asteroids", "Dwarf Planet", "Comet")) }
+    }
+
+    @Test
     fun refreshBodies_fetchesFromServiceAndInsertsToDao() = runTest {
         coEvery { celestialBodyDao.countBodies() } returns 5
         val dto = CelestialBodyDto(

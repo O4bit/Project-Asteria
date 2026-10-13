@@ -40,7 +40,11 @@ data class CelestialBodyDto(
     val mainAnomaly: Double? = null,
     val argPeriapsis: Double? = null,
     val nodeLon: Double? = null,
-    val bodyType: String? = null
+    val bodyType: String? = null,
+    val constellation: String? = null,
+    val description: String? = null,
+    val spectralType: String? = null,
+    val distanceLightYears: Double? = null
 )
 
 @JsonClass(generateAdapter = true)

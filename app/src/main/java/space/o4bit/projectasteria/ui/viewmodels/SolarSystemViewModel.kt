@@ -97,10 +97,21 @@ class SolarSystemViewModel(
                 _uiState.update { SolarSystemUiState.Error(e.message ?: "Failed to load solar system bodies") }
             }.collectLatest { list ->
                 val filtered = if (currentSearch.isNotBlank() && !currentFilter.equals("All", ignoreCase = true)) {
-                    if (currentFilter.equals("Planets", ignoreCase = true)) {
-                        list.filter { it.isPlanet || it.bodyType.equals("Planet", ignoreCase = true) }
-                    } else {
-                        list.filter { it.bodyType.equals(currentFilter, ignoreCase = true) }
+                    when {
+                        currentFilter.equals("Planets", ignoreCase = true) || currentFilter.equals("Planet", ignoreCase = true) ->
+                            list.filter { it.isPlanet || it.bodyType.equals("Planet", ignoreCase = true) }
+                        currentFilter.equals("Moons", ignoreCase = true) || currentFilter.equals("Moon", ignoreCase = true) ->
+                            list.filter { it.bodyType.equals("Moon", ignoreCase = true) || it.bodyType.equals("Moons", ignoreCase = true) }
+                        currentFilter.equals("Stars", ignoreCase = true) || currentFilter.equals("Star", ignoreCase = true) ->
+                            list.filter { it.bodyType.equals("Star", ignoreCase = true) || it.bodyType.equals("Stars", ignoreCase = true) }
+                        currentFilter.equals("Exoplanets", ignoreCase = true) || currentFilter.equals("Exoplanet", ignoreCase = true) ->
+                            list.filter { it.bodyType.equals("Exoplanet", ignoreCase = true) || it.bodyType.equals("Exoplanets", ignoreCase = true) }
+                        currentFilter.equals("Deep Sky", ignoreCase = true) || currentFilter.equals("Deep Sky Object", ignoreCase = true) || currentFilter.equals("Deep Sky Objects", ignoreCase = true) ->
+                            list.filter { it.bodyType.equals("Deep Sky", ignoreCase = true) || it.bodyType.equals("Deep Sky Object", ignoreCase = true) || it.bodyType.equals("Deep Sky Objects", ignoreCase = true) }
+                        currentFilter.equals("Asteroids", ignoreCase = true) || currentFilter.equals("Asteroid", ignoreCase = true) ->
+                            list.filter { it.bodyType.equals("Asteroid", ignoreCase = true) || it.bodyType.equals("Asteroids", ignoreCase = true) || it.bodyType.equals("Dwarf Planet", ignoreCase = true) || it.bodyType.equals("Comet", ignoreCase = true) }
+                        else ->
+                            list.filter { it.bodyType.equals(currentFilter, ignoreCase = true) }
                     }
                 } else {
                     list

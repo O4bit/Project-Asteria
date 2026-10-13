@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
         AsteroidEntity::class,
         CelestialBodyEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class ApodDatabase : RoomDatabase() {

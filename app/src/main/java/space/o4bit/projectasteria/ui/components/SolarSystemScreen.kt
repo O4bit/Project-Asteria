@@ -67,7 +67,7 @@ fun SolarSystemScreen(
 ) {
     val viewModel: SolarSystemViewModel = viewModel(factory = SolarSystemViewModel.Factory(repository))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val filterOptions = listOf("All", "Planets", "Dwarf Planet", "Moon", "Asteroid", "Comet", "Star")
+    val filterOptions = listOf("All", "Planets", "Moons", "Stars", "Exoplanets", "Deep Sky", "Asteroids")
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -112,7 +112,7 @@ fun SolarSystemScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
-                placeholder = { Text("Search planets, moons, asteroids...") },
+                placeholder = { Text("Search planets, stars, exoplanets, deep sky...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
@@ -288,6 +288,8 @@ fun CelestialBodyCard(
                         "dwarf planet" -> MaterialTheme.colorScheme.secondaryContainer
                         "moon" -> MaterialTheme.colorScheme.tertiaryContainer
                         "star" -> MaterialTheme.colorScheme.errorContainer
+                        "exoplanet" -> MaterialTheme.colorScheme.secondaryContainer
+                        "deep sky", "deep sky object" -> MaterialTheme.colorScheme.tertiaryContainer
                         else -> MaterialTheme.colorScheme.surfaceVariant
                     },
                     shape = RoundedCornerShape(12.dp)
@@ -301,6 +303,8 @@ fun CelestialBodyCard(
                             "dwarf planet" -> MaterialTheme.colorScheme.onSecondaryContainer
                             "moon" -> MaterialTheme.colorScheme.onTertiaryContainer
                             "star" -> MaterialTheme.colorScheme.onErrorContainer
+                            "exoplanet" -> MaterialTheme.colorScheme.onSecondaryContainer
+                            "deep sky", "deep sky object" -> MaterialTheme.colorScheme.onTertiaryContainer
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -308,7 +312,22 @@ fun CelestialBodyCard(
                 }
             }
 
-            if (!body.aroundPlanetName.isNullOrBlank()) {
+            if (body.bodyType.equals("Exoplanet", ignoreCase = true) && !body.aroundPlanetName.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                val hostText = if (body.constellation.isNotBlank()) "Host Star: ${body.aroundPlanetName} (${body.constellation})" else "Host Star: ${body.aroundPlanetName}"
+                Text(
+                    text = hostText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else if (body.constellation.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Constellation: ${body.constellation}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else if (!body.aroundPlanetName.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Satellite of ${body.aroundPlanetName}",
@@ -323,10 +342,15 @@ fun CelestialBodyCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                if (body.meanRadius > 0.0) {
+                if (body.distanceLightYears > 0.0) {
+                    val distStr = if (body.distanceLightYears >= 1000.0) "%,.0f ly".format(body.distanceLightYears) else "%.2f ly".format(body.distanceLightYears)
+                    BodyStatItem(label = "Distance", value = distStr)
+                } else if (body.meanRadius > 0.0 && body.meanRadius < 1e12) {
                     BodyStatItem(label = "Radius", value = "${formatNumber(body.meanRadius)} km")
                 }
-                if (body.gravity > 0.0) {
+                if (body.spectralType.isNotBlank()) {
+                    BodyStatItem(label = "Class", value = body.spectralType)
+                } else if (body.gravity > 0.0) {
                     BodyStatItem(label = "Gravity", value = "${body.gravity} m/s²")
                 }
                 if (kotlin.math.abs(body.sideralOrbit) > 0.0) {
@@ -337,9 +361,16 @@ fun CelestialBodyCard(
                         "${"%.1f".format(absOrbit)} d"
                     }
                     BodyStatItem(label = "Orbit", value = orbitStr)
+                } else if (body.avgTemp > 0.0) {
+                    BodyStatItem(label = "Temp", value = "${body.avgTemp.toInt()} K")
                 }
                 if (body.moonCount > 0) {
-                    BodyStatItem(label = "Moons", value = "${body.moonCount}")
+                    val countLabel = when {
+                        body.bodyType.equals("Star", ignoreCase = true) -> "Planets"
+                        body.bodyType.equals("Deep Sky", ignoreCase = true) || body.bodyType.equals("Deep Sky Object", ignoreCase = true) -> "Members"
+                        else -> "Moons"
+                    }
+                    BodyStatItem(label = countLabel, value = "${body.moonCount}")
                 }
             }
         }
@@ -361,7 +392,9 @@ private fun BodyStatItem(
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

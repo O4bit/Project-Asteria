@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
@@ -28,6 +29,8 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -35,16 +38,27 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.ui.window.Dialog
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -88,8 +102,101 @@ fun HistoryScreen(
         }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     val scope = rememberCoroutineScope()
+    val apodLaunchDate = remember { LocalDate.of(1995, 6, 16) }
+    val today = remember { LocalDate.now() }
+    val minEpochMillis = remember(apodLaunchDate) {
+        apodLaunchDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    }
+    val maxEpochMillis = remember(today) {
+        today.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    }
+
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var isLoadingDate by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = maxEpochMillis,
+        yearRange = 1995..today.year,
+        selectableDates = remember(minEpochMillis, maxEpochMillis, today) {
+            object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    return utcTimeMillis in minEpochMillis..maxEpochMillis
+                }
+                override fun isSelectableYear(year: Int): Boolean {
+                    return year in 1995..today.year
+                }
+            }
+        }
+    )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val selectedMillis = datePickerState.selectedDateMillis
+                        showDatePicker = false
+                        if (selectedMillis != null) {
+                            val selectedDate = Instant.ofEpochMilli(selectedMillis)
+                                .atZone(ZoneOffset.UTC)
+                                .toLocalDate()
+                            val formattedDate = DateTimeFormatter.ISO_LOCAL_DATE.format(selectedDate)
+                            scope.launch {
+                                isLoadingDate = true
+                                try {
+                                    val apod = repository.getApodByDate(formattedDate)
+                                    if (apod != null) {
+                                        onApodClick(apod)
+                                    } else {
+                                        snackbarHostState.showSnackbar("Unable to load APOD for $formattedDate")
+                                    }
+                                } finally {
+                                    isLoadingDate = false
+                                }
+                            }
+                        }
+                    },
+                    enabled = datePickerState.selectedDateMillis != null
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (isLoadingDate) {
+        Dialog(onDismissRequest = {}) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
+            ) {
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                    Text(
+                        text = "Loading APOD...",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Previous APODs") },
@@ -102,6 +209,12 @@ fun HistoryScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Select APOD by date"
+                        )
+                    }
                     FilterChip(
                         selected = showFavoritesOnly,
                         onClick = { showFavoritesOnly = !showFavoritesOnly },

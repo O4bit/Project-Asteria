@@ -163,6 +163,8 @@ fun CelestialBodyDetailScreen(
                                     "dwarf planet" -> MaterialTheme.colorScheme.secondaryContainer
                                     "moon" -> MaterialTheme.colorScheme.tertiaryContainer
                                     "star" -> MaterialTheme.colorScheme.errorContainer
+                                    "exoplanet" -> MaterialTheme.colorScheme.secondaryContainer
+                                    "deep sky", "deep sky object" -> MaterialTheme.colorScheme.tertiaryContainer
                                     else -> MaterialTheme.colorScheme.surfaceVariant
                                 },
                                 shape = RoundedCornerShape(12.dp)
@@ -176,19 +178,60 @@ fun CelestialBodyDetailScreen(
                                         "dwarf planet" -> MaterialTheme.colorScheme.onSecondaryContainer
                                         "moon" -> MaterialTheme.colorScheme.onTertiaryContainer
                                         "star" -> MaterialTheme.colorScheme.onErrorContainer
+                                        "exoplanet" -> MaterialTheme.colorScheme.onSecondaryContainer
+                                        "deep sky", "deep sky object" -> MaterialTheme.colorScheme.onTertiaryContainer
                                         else -> MaterialTheme.colorScheme.onSurfaceVariant
                                     },
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 )
                             }
                         }
-                        if (!body.aroundPlanetName.isNullOrBlank()) {
+                        if (body.constellation.isNotBlank()) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Natural satellite orbiting ${body.aroundPlanetName}",
+                                text = "Constellation: ${body.constellation}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
+                            )
+                        }
+                        if (!body.aroundPlanetName.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = if (body.bodyType.equals("Exoplanet", ignoreCase = true)) "Host Star: ${body.aroundPlanetName}" else "Natural satellite orbiting ${body.aroundPlanetName}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
+                if (body.description.isNotBlank()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Overview",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            Text(
+                                text = body.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -214,13 +257,20 @@ fun CelestialBodyDetailScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                        if (body.meanRadius > 0.0) {
+                        if (body.spectralType.isNotBlank()) {
+                            DetailRow(label = "Spectral Class", value = body.spectralType)
+                        }
+                        if (body.distanceLightYears > 0.0) {
+                            val distFormatted = if (body.distanceLightYears >= 1000.0) "%,.0f light-years".format(body.distanceLightYears) else "%.3f light-years".format(body.distanceLightYears)
+                            DetailRow(label = "Distance from Earth", value = distFormatted)
+                        }
+                        if (body.meanRadius > 0.0 && body.meanRadius < 1e12) {
                             DetailRow(label = "Mean Radius", value = "${formatValue(body.meanRadius)} km")
                         }
-                        if (body.equaRadius > 0.0) {
+                        if (body.equaRadius > 0.0 && body.equaRadius < 1e12) {
                             DetailRow(label = "Equatorial Radius", value = "${formatValue(body.equaRadius)} km")
                         }
-                        if (body.polarRadius > 0.0) {
+                        if (body.polarRadius > 0.0 && body.polarRadius < 1e12) {
                             DetailRow(label = "Polar Radius", value = "${formatValue(body.polarRadius)} km")
                         }
                         if (body.massValue != null && body.massExponent != null) {
@@ -239,7 +289,7 @@ fun CelestialBodyDetailScreen(
                             DetailRow(label = "Flattening Factor", value = "${body.flattening}")
                         }
                         if (body.dimension.isNotBlank()) {
-                            DetailRow(label = "Dimensions", value = "${body.dimension} km")
+                            DetailRow(label = "Dimensions", value = body.dimension)
                         }
                         if (body.avgTemp > 0.0) {
                             val celsius = body.avgTemp - 273.15
@@ -248,56 +298,64 @@ fun CelestialBodyDetailScreen(
                     }
                 }
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Orbital Mechanics",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                val isDeepSky = body.bodyType.equals("Deep Sky", ignoreCase = true) || body.bodyType.equals("Deep Sky Object", ignoreCase = true)
+                val hasOrbitalData = body.semimajorAxis > 0.0 || body.perihelion > 0.0 || body.aphelion > 0.0 ||
+                    body.eccentricity > 0.0 || body.inclination > 0.0 || body.axialTilt != 0.0 ||
+                    body.sideralOrbit != 0.0 || body.sideralRotation != 0.0
+
+                if (hasOrbitalData) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
                         )
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                        if (body.semimajorAxis > 0.0) {
-                            val au = body.semimajorAxis / 149597870.7
-                            DetailRow(label = "Semi-major Axis", value = "${formatValue(body.semimajorAxis)} km (${"%.3f".format(au)} AU)")
-                        }
-                        if (body.perihelion > 0.0) {
-                            DetailRow(label = "Perihelion", value = "${formatValue(body.perihelion)} km")
-                        }
-                        if (body.aphelion > 0.0) {
-                            DetailRow(label = "Aphelion", value = "${formatValue(body.aphelion)} km")
-                        }
-                        if (body.eccentricity > 0.0) {
-                            DetailRow(label = "Eccentricity", value = "${body.eccentricity}")
-                        }
-                        if (body.inclination > 0.0) {
-                            DetailRow(label = "Orbital Inclination", value = "${body.inclination}°")
-                        }
-                        if (body.axialTilt != 0.0) {
-                            DetailRow(label = "Axial Tilt", value = "${body.axialTilt}°")
-                        }
-                        if (body.sideralOrbit != 0.0) {
-                            val days = body.sideralOrbit
-                            val orbitFormatted = if (kotlin.math.abs(days) >= 365.25) {
-                                "${"%.2f".format(days / 365.256)} Earth years (${formatValue(days)} days)"
-                            } else {
-                                "${formatValue(days)} days"
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = if (isDeepSky) "Spatial Orientation & Kinematics" else "Orbital Mechanics",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            if (body.semimajorAxis > 0.0) {
+                                val au = body.semimajorAxis / 149597870.7
+                                DetailRow(label = "Semi-major Axis", value = "${formatValue(body.semimajorAxis)} km (${"%.3f".format(au)} AU)")
                             }
-                            DetailRow(label = "Sidereal Orbit Period", value = orbitFormatted)
-                        }
-                        if (body.sideralRotation != 0.0) {
-                            DetailRow(label = "Rotation Period", value = "${formatValue(body.sideralRotation)} hours")
+                            if (body.perihelion > 0.0) {
+                                DetailRow(label = "Perihelion", value = "${formatValue(body.perihelion)} km")
+                            }
+                            if (body.aphelion > 0.0) {
+                                DetailRow(label = "Aphelion", value = "${formatValue(body.aphelion)} km")
+                            }
+                            if (body.eccentricity > 0.0) {
+                                DetailRow(label = "Eccentricity", value = "${body.eccentricity}")
+                            }
+                            if (body.inclination > 0.0) {
+                                val inclLabel = if (isDeepSky) "Galactic Disk Inclination" else "Orbital Inclination"
+                                DetailRow(label = inclLabel, value = "${body.inclination}°")
+                            }
+                            if (body.axialTilt != 0.0) {
+                                DetailRow(label = "Axial Tilt", value = "${body.axialTilt}°")
+                            }
+                            if (body.sideralOrbit != 0.0) {
+                                val days = body.sideralOrbit
+                                val orbitFormatted = if (kotlin.math.abs(days) >= 365.25) {
+                                    "${"%.2f".format(days / 365.256)} Earth years (${formatValue(days)} days)"
+                                } else {
+                                    "${formatValue(days)} days"
+                                }
+                                DetailRow(label = "Sidereal Orbit Period", value = orbitFormatted)
+                            }
+                            if (body.sideralRotation != 0.0) {
+                                DetailRow(label = "Rotation Period", value = "${formatValue(body.sideralRotation)} hours")
+                            }
                         }
                     }
                 }
@@ -322,6 +380,9 @@ fun CelestialBodyDetailScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        if (body.constellation.isNotBlank()) {
+                            DetailRow(label = "Constellation", value = body.constellation)
+                        }
                         DetailRow(
                             label = "Discovered By",
                             value = if (body.discoveredBy.isNotBlank()) body.discoveredBy else "Known since antiquity"
@@ -338,6 +399,7 @@ fun CelestialBodyDetailScreen(
                 }
 
                 if (body.moonCount > 0) {
+                    val isHostStar = body.bodyType.equals("Star", ignoreCase = true)
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
@@ -351,18 +413,36 @@ fun CelestialBodyDetailScreen(
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            val sectionTitle = when {
+                                isHostStar -> "Planetary System"
+                                isDeepSky -> "Satellites & Member Objects"
+                                else -> "Moons & Satellites"
+                            }
                             Text(
-                                text = "Moons & Satellites",
+                                text = sectionTitle,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                            DetailRow(label = "Total Known Satellites", value = "${body.moonCount}")
+                            val countLabel = when {
+                                isHostStar -> "Known Orbiting Planets"
+                                isDeepSky -> "Prominent Members / Satellites"
+                                else -> "Total Known Satellites"
+                            }
+                            DetailRow(
+                                label = countLabel,
+                                value = "${body.moonCount}"
+                            )
                             if (body.moonsSummary.isNotBlank()) {
                                 Spacer(modifier = Modifier.height(4.dp))
+                                val summaryLabel = when {
+                                    isHostStar -> "Confirmed Planets"
+                                    isDeepSky -> "Notable Members / Satellites"
+                                    else -> "Notable Moons"
+                                }
                                 Text(
-                                    text = "Notable Moons",
+                                    text = summaryLabel,
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
