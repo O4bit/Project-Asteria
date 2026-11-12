@@ -2,6 +2,7 @@ package space.o4bit.projectasteria
 import android.Manifest
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -25,11 +26,13 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {  }
+    private val activeLaunchIdState = androidx.compose.runtime.mutableStateOf<String?>(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (resources.configuration.smallestScreenWidthDp < 600) {
-            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+        activeLaunchIdState.value = intent?.getStringExtra(space.o4bit.projectasteria.widget.LaunchAppWidgetProvider.EXTRA_LAUNCH_ID)
         lifecycleScope.launch(Dispatchers.IO) {
             val imageLoader = ImageLoader.Builder(applicationContext)
                 .memoryCache {
@@ -53,11 +56,17 @@ class MainActivity : ComponentActivity() {
         }
         dismissNotificationIfRequested(intent)
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         setContent {
             ThemedApp {
                 val openFullscreen = intentOpensFullscreen(intent)
+                val targetLaunchId = activeLaunchIdState.value
                 AsteriaApp(
                     openDirectlyFromNotification = openFullscreen,
+                    initialLaunchId = targetLaunchId,
+                    onLaunchIdHandled = { activeLaunchIdState.value = null },
                     onRequestNotificationPermission = ::requestNotificationPermission
                 )
             }
@@ -67,6 +76,9 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         dismissNotificationIfRequested(intent)
+        intent.getStringExtra(space.o4bit.projectasteria.widget.LaunchAppWidgetProvider.EXTRA_LAUNCH_ID)?.let {
+            activeLaunchIdState.value = it
+        }
     }
     override fun onPause() {
         super.onPause()

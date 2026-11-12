@@ -19,6 +19,7 @@ class WidgetAlarmReceiver : BroadcastReceiver() {
             context.sendBroadcast(updateIntent)
             WidgetAlarmManager.scheduleWidgetUpdate(context)
             IssAppWidgetProvider.updateAllWidgets(context)
+            LaunchAppWidgetProvider.updateAllWidgets(context)
         }
     }
     companion object {

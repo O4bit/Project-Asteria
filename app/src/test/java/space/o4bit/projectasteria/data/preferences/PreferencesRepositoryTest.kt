@@ -11,21 +11,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Unit tests for the preference repositories.
- *
- * DataStore requires an Android context for real I/O, so these tests use
- * mocked repository instances to verify:
- *   - Default values exposed by each repository.
- *   - Flow emission contract (each preference emits its declared default).
- *   - Toggling / updating functions exist and can be called without error.
- *
- * End-to-end persistence tests (write → read) belong in the androidTest suite
- * where a real DataStore backed by a temp directory can be used.
- */
 class PreferencesRepositoryTest {
-
-    // ─── SortingPreferencesRepository ────────────────────────────────────────
 
     @Test
     fun sortingPrefs_launchesAscending_defaultIsTrue() = runTest {
@@ -72,8 +58,6 @@ class PreferencesRepositoryTest {
         assertTrue(before)
         assertFalse(after)
     }
-
-    // ─── BackgroundPreferencesRepository ─────────────────────────────────────
 
     @Test
     fun backgroundPrefs_defaultType_isSpace() = runTest {
@@ -143,8 +127,6 @@ class PreferencesRepositoryTest {
         assertEquals(1, before)
         assertEquals(5, after)
     }
-
-    // ─── Contract: default values match companion object constants ────────────
 
     @Test
     fun backgroundType_defaultConstant_isSpace() {

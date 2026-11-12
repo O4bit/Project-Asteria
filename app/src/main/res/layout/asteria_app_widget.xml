@@ -10,14 +10,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/widget_background"
-        android:clipToOutline="true"
-        android:outlineProvider="background">
+        android:clipToOutline="true">
 
         <!-- Edge to edge image -->
         <ImageView
             android:id="@+id/widget_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:src="@drawable/apod_widget_preview_art"
             android:scaleType="centerCrop"
             android:contentDescription="@string/widget_image_content_description" />
 

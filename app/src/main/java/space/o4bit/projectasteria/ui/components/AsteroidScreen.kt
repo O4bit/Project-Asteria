@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Settings
@@ -83,15 +88,23 @@ fun AsteroidScreen(
     val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     val sortDirection by viewModel.sortDirection.collectAsStateWithLifecycle()
     val hazardousOnly by viewModel.hazardousOnly.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
     var showSortSheet by remember { mutableStateOf(false) }
-    var isRefreshing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val listState = rememberSaveable(sortBy, sortDirection, hazardousOnly, saver = LazyListState.Saver) {
         LazyListState(0, 0)
     }
     val snackbarHostState = remember { SnackbarHostState() }
+    val isTablet = LocalConfiguration.current.smallestScreenWidthDp >= 600
     LaunchedEffect(Unit) {
         viewModel.refresh()
+    }
+    LaunchedEffect(refreshError) {
+        refreshError?.let {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(it)
+        }
     }
     var browserUrl by remember { mutableStateOf<String?>(null) }
     browserUrl?.let { url ->
@@ -129,6 +142,7 @@ fun AsteroidScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
         ) {
             SortFilterHeader(
                 sortLabel = sortBy.label,
@@ -164,38 +178,61 @@ fun AsteroidScreen(
                         } else {
                             PullToRefreshBox(
                                 isRefreshing = isRefreshing,
-                                onRefresh = {
-                                    scope.launch {
-                                        isRefreshing = true
-                                        viewModel.refresh()
-                                        isRefreshing = false
-                                    }
-                                },
+                                onRefresh = { viewModel.refresh() },
                                 modifier = Modifier.fillMaxSize()
                             ) {
-                                LazyColumn(
-                                    state = listState,
-                                    contentPadding = PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clipToBounds()
-                                ) {
-                                    items(
-                                        items = state.asteroids,
-                                        key = { "${sortBy.name}_${sortDirection.name}_${hazardousOnly}_${it.id}" }
-                                    ) { asteroid ->
-                                        AsteroidCard(
-                                            asteroid = asteroid,
-                                            onClick = {
-                                                val raw = asteroid.nasaJplUrl
-                                                browserUrl = if (raw.startsWith("http://", ignoreCase = true)) {
-                                                    raw.replaceFirst("http://", "https://", ignoreCase = true)
-                                                } else {
-                                                    raw
+                                if (isTablet) {
+                                    LazyVerticalGrid(
+                                        columns = GridCells.Adaptive(minSize = 340.dp),
+                                        contentPadding = PaddingValues(16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clipToBounds()
+                                    ) {
+                                        items(
+                                            items = state.asteroids,
+                                            key = { "${sortBy.name}_${sortDirection.name}_${hazardousOnly}_${it.id}" }
+                                        ) { asteroid ->
+                                            AsteroidCard(
+                                                asteroid = asteroid,
+                                                onClick = {
+                                                    val raw = asteroid.nasaJplUrl
+                                                    browserUrl = if (raw.startsWith("http://", ignoreCase = true)) {
+                                                        raw.replaceFirst("http://", "https://", ignoreCase = true)
+                                                    } else {
+                                                        raw
+                                                    }
                                                 }
-                                            }
-                                        )
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    LazyColumn(
+                                        state = listState,
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clipToBounds()
+                                    ) {
+                                        items(
+                                            items = state.asteroids,
+                                            key = { "${sortBy.name}_${sortDirection.name}_${hazardousOnly}_${it.id}" }
+                                        ) { asteroid ->
+                                            AsteroidCard(
+                                                asteroid = asteroid,
+                                                onClick = {
+                                                    val raw = asteroid.nasaJplUrl
+                                                    browserUrl = if (raw.startsWith("http://", ignoreCase = true)) {
+                                                        raw.replaceFirst("http://", "https://", ignoreCase = true)
+                                                    } else {
+                                                        raw
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -226,7 +263,7 @@ fun AsteroidCard(
     val diameterMax = asteroid.estimatedDiameterMaxKm * 1000
     val speed = asteroid.relativeVelocityKmh.toDoubleOrNull()
         ?.let { String.format(Locale.US, "%.0f", it) } ?: "Unknown"
-    val distance = if (asteroid.missDistanceKm < Double.MAX_VALUE)
+    val distance = if (asteroid.missDistanceKm > 0.0 && asteroid.missDistanceKm < Double.MAX_VALUE)
         String.format(Locale.US, "%,.0f", asteroid.missDistanceKm)
     else "Unknown"
     val interactionSource = remember { MutableInteractionSource() }
@@ -237,7 +274,6 @@ fun AsteroidCard(
             .fillMaxWidth()
             .scale(scale)
             .clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
-            .semantics(mergeDescendants = true) {}
             .clickable(
                 interactionSource = interactionSource,
                 indication = androidx.compose.foundation.LocalIndication.current,

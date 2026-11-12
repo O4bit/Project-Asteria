@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -127,6 +129,8 @@ val LocalNavOffset = androidx.compose.runtime.compositionLocalOf<androidx.compos
 @Composable
 fun AsteriaApp(
     openDirectlyFromNotification: Boolean = false,
+    initialLaunchId: String? = null,
+    onLaunchIdHandled: () -> Unit = {},
     onRequestNotificationPermission: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -141,10 +145,14 @@ fun AsteriaApp(
     val navOffset = remember { mutableStateOf(0f) }
     androidx.compose.runtime.CompositionLocalProvider(LocalNavOffset provides navOffset) {
     val spaceRepository = remember { SpaceRepository(application.database.apodDao()) }
+    val reminderScheduler = remember { space.o4bit.projectasteria.data.worker.LaunchReminderScheduler(androidx.work.WorkManager.getInstance(context)) }
     val launchRepository = remember {
         LaunchRepository(
             launchDao = application.database.launchDao(),
-            sortingPreferences = application.sortingPreferences
+            sortingPreferences = application.sortingPreferences,
+            reminderScheduler = reminderScheduler,
+            reminderPreferences = application.reminderPreferences,
+            backgroundPreferences = application.backgroundPreferences
         )
     }
     val asteroidRepository = remember {
@@ -184,6 +192,12 @@ fun AsteriaApp(
             navController.navigate("fullscreen")
         }
     }
+    LaunchedEffect(initialLaunchId) {
+        if (!initialLaunchId.isNullOrEmpty()) {
+            navController.navigate("launch_detail/$initialLaunchId")
+            onLaunchIdHandled()
+        }
+    }
     var splashVisible by rememberSaveable { mutableStateOf(true) }
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedBackground(
@@ -200,6 +214,7 @@ fun AsteriaApp(
         ) {
             Scaffold(
                 containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 bottomBar = {
                     val offset = LocalNavOffset.current.value
                     Box(modifier = Modifier
@@ -224,7 +239,12 @@ fun AsteriaApp(
                     }
                 }
             ) { innerPadding ->
-                Box(modifier = Modifier.padding(innerPadding)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = innerPadding.calculateBottomPadding())
+                        .consumeWindowInsets(innerPadding)
+                ) {
                     HorizontalPager(
                         state = pagerState,
                         userScrollEnabled = true,
@@ -319,7 +339,15 @@ private fun ApodTab(
     val context = LocalContext.current
     val application = context.applicationContext as AsteriaApplication
     val bgPrefs = remember { application.backgroundPreferences }
-    val launchRepo = remember { LaunchRepository(application.database.launchDao(), application.sortingPreferences) }
+    val launchRepo = remember {
+        LaunchRepository(
+            launchDao = application.database.launchDao(),
+            sortingPreferences = application.sortingPreferences,
+            reminderScheduler = space.o4bit.projectasteria.data.worker.LaunchReminderScheduler(androidx.work.WorkManager.getInstance(context)),
+            reminderPreferences = application.reminderPreferences,
+            backgroundPreferences = application.backgroundPreferences
+        )
+    }
     val scope = rememberCoroutineScope()
     val pinnedIds by bgPrefs.pinnedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
     val autoRemoveSetting by bgPrefs.autoRemovePinnedLaunches.collectAsStateWithLifecycle(initialValue = false)
@@ -381,11 +409,13 @@ private fun ApodTab(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             AnimatedSatelliteEasterEgg()
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Project Asteria",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Column {
+                                Text(
+                                    text = "Project Asteria",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     },
                     actions = {
@@ -446,12 +476,14 @@ private fun ApodTab(
         }
     ) { paddingValues ->
         val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-        val isTablet = configuration.smallestScreenWidthDp >= 600
-        if (isTablet && apodState is ApodUiState.Success) {
+        val isTabletOrLandscape = configuration.smallestScreenWidthDp >= 600 ||
+                (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE && configuration.screenWidthDp >= 640)
+        if (isTabletOrLandscape && apodState is ApodUiState.Success) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.Top
@@ -516,12 +548,14 @@ private fun ApodTab(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .consumeWindowInsets(paddingValues)
             )
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
+                    .padding(paddingValues)
+                    .consumeWindowInsets(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -565,7 +599,6 @@ private fun ApodTab(
                             }
                         }
                     }
-                    else -> {  }
                 }
             }
         }

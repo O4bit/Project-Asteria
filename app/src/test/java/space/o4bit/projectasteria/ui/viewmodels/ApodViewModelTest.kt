@@ -80,7 +80,6 @@ class ApodViewModelTest {
         advanceUntilIdle()
         val state = viewModel.uiState.value
         assertTrue(state is ApodUiState.Error)
-        // RuntimeException is not IOException/HttpException → maps to generic user message
         assertEquals(
             "Couldn't load today's space picture. Tap Retry to try again.",
             (state as ApodUiState.Error).message

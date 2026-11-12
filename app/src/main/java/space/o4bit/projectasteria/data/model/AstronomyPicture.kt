@@ -11,7 +11,10 @@ data class AstronomyPicture(
     @param:Json(name = "title") val title: String,
     @param:Json(name = "url") val url: String?,
     @param:Json(name = "copyright") val copyright: String? = null,
-    @param:Json(name = "thumbnail") val thumbnail: String? = null
+    @param:Json(name = "thumbnail") val thumbnail: String? = null,
+    @param:Json(name = "thumbnail_url") val thumbnailUrl: String? = null,
+    @param:Json(name = "basic_html") val basicHtml: String? = null,
+    @param:Json(name = "permalink") val permalink: String? = null
 )
 data class EnhancedAstronomyPicture(
     val astronomyPicture: AstronomyPicture,

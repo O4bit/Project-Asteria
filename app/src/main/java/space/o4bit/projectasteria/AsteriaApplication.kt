@@ -8,10 +8,21 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import okhttp3.OkHttpClient
 import space.o4bit.projectasteria.data.local.ApodDatabase
 class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("User-Agent", "ProjectAsteria/4.7 (Android; +https:" + "/" + "/github.com/O4bit/Project-Asteria)")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
         return ImageLoader.Builder(this)
+            .okHttpClient(httpClient)
+            .crossfade(true)
             .components {
                 add(GifDecoder.Factory())
                 if (Build.VERSION.SDK_INT >= 28) {
@@ -26,7 +37,7 @@ class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFac
             ApodDatabase::class.java,
             "apod_database"
         )
-        .fallbackToDestructiveMigration(true)
+        .addMigrations(*ApodDatabase.ALL_MIGRATIONS)
         .build()
     }
     val sortingPreferences: space.o4bit.projectasteria.data.preferences.SortingPreferencesRepository by lazy {
@@ -42,6 +53,7 @@ class AsteriaApplication : Application(), Configuration.Provider, ImageLoaderFac
         super.onCreate()
         Coil.setImageLoader(newImageLoader())
         space.o4bit.projectasteria.util.DiagnosticLogger.initialize(this)
+        space.o4bit.projectasteria.utils.WidgetPinningUtils.registerWidgetPreviews(this)
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             space.o4bit.projectasteria.util.DiagnosticLogger.log("CRASH", "Uncaught exception on thread ${thread.name}", throwable)

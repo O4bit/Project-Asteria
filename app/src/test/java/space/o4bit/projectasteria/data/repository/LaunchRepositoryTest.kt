@@ -56,7 +56,6 @@ class LaunchRepositoryTest {
 
         launchRepository = LaunchRepository(launchDao, sortingPreferences)
 
-        // Verifies sorting preference is respected via flatMapLatest
         assertTrue(true)
     }
 
@@ -80,5 +79,89 @@ class LaunchRepositoryTest {
         assertEquals("SpaceX", entity.providerName)
         assertEquals("LC-39A", entity.padName)
         assertEquals("Kennedy Space Center", entity.locationName)
+    }
+
+    @Test
+    fun refreshUpcomingLaunches_atomicallyReplacesLaunches() = runTest {
+        val launchService = mockk<space.o4bit.projectasteria.data.api.SpaceLaunchService>()
+        val apiLaunch = space.o4bit.projectasteria.data.model.launch.Launch(
+            id = "api-1",
+            name = "Falcon 9 Starlink",
+            status = space.o4bit.projectasteria.data.model.launch.LaunchStatus(1, "Go for Launch", "Go", "Ready"),
+            net = "2026-08-01T12:00:00Z",
+            launchServiceProvider = null,
+            pad = null,
+            mission = null,
+            image = null
+        )
+        coEvery { launchService.getUpcomingLaunches(any(), any()) } returns space.o4bit.projectasteria.data.model.launch.LaunchResponse(1, listOf(apiLaunch))
+        io.mockk.coEvery { launchDao.replaceAll(any()) } returns Unit
+
+        val repo = LaunchRepository(
+            launchDao = launchDao,
+            sortingPreferences = sortingPreferences,
+            launchService = launchService
+        )
+        repo.refreshUpcomingLaunches(15)
+
+        io.mockk.coVerify(exactly = 1) {
+            launchDao.replaceAll(match { it.size == 1 && it[0].id == "api-1" })
+        }
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun refreshUpcomingLaunches_blankLaunchId_throwsException() = runTest {
+        val launchService = mockk<space.o4bit.projectasteria.data.api.SpaceLaunchService>()
+        val blankLaunch = space.o4bit.projectasteria.data.model.launch.Launch(
+            id = "   ",
+            name = "Invalid Launch",
+            status = space.o4bit.projectasteria.data.model.launch.LaunchStatus(1, "Go", "Go", "Ready"),
+            net = "2026-08-01T12:00:00Z",
+            launchServiceProvider = null,
+            pad = null,
+            mission = null,
+            image = null
+        )
+        coEvery { launchService.getUpcomingLaunches(any(), any()) } returns space.o4bit.projectasteria.data.model.launch.LaunchResponse(1, listOf(blankLaunch))
+
+        val repo = LaunchRepository(
+            launchDao = launchDao,
+            sortingPreferences = sortingPreferences,
+            launchService = launchService
+        )
+        repo.refreshUpcomingLaunches(15)
+    }
+
+    @Test
+    fun refreshUpcomingLaunches_withReminderScheduler_reconcilesReminders() = runTest {
+        val launchService = mockk<space.o4bit.projectasteria.data.api.SpaceLaunchService>()
+        val scheduler = mockk<space.o4bit.projectasteria.data.worker.LaunchReminderScheduler>(relaxed = true)
+        val reminderPrefs = mockk<space.o4bit.projectasteria.data.preferences.ReminderPreferencesRepository>()
+        val apiLaunch = space.o4bit.projectasteria.data.model.launch.Launch(
+            id = "api-remind",
+            name = "Falcon Heavy",
+            status = space.o4bit.projectasteria.data.model.launch.LaunchStatus(1, "Go for Launch", "Go", "Ready"),
+            net = "2026-08-01T12:00:00Z",
+            launchServiceProvider = null,
+            pad = null,
+            mission = null,
+            image = null
+        )
+        coEvery { launchService.getUpcomingLaunches(any(), any()) } returns space.o4bit.projectasteria.data.model.launch.LaunchResponse(1, listOf(apiLaunch))
+        io.mockk.coEvery { launchDao.replaceAll(any()) } returns Unit
+        coEvery { reminderPrefs.remindedLaunchIds } returns flowOf(setOf("api-remind"))
+
+        val repo = LaunchRepository(
+            launchDao = launchDao,
+            sortingPreferences = sortingPreferences,
+            launchService = launchService,
+            reminderScheduler = scheduler,
+            reminderPreferences = reminderPrefs
+        )
+        repo.refreshUpcomingLaunches(15)
+
+        io.mockk.verify(exactly = 1) {
+            scheduler.reconcile(match { it.size == 1 && it[0].id == "api-remind" }, setOf("api-remind"))
+        }
     }
 }

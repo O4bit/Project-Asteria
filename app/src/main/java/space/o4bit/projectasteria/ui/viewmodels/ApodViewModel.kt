@@ -30,12 +30,12 @@ class ApodViewModel(
     init {
         loadTodayApod()
     }
-    fun loadTodayApod() {
+    fun loadTodayApod(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { ApodUiState.Loading }
             val cached = safeGetCached()
             try {
-                val picture = spaceRepository.getTodaysAstronomyPicture()
+                val picture = spaceRepository.getTodaysAstronomyPicture(forceRefresh = forceRefresh)
                 _uiState.update { ApodUiState.Success(picture) }
             } catch (e: Exception) {
                 _uiState.update {
@@ -87,7 +87,7 @@ class ApodViewModel(
     fun searchApods(query: String) = spaceRepository.searchApods(query)
     fun searchFavoriteApods(query: String) = spaceRepository.searchFavoriteApods(query)
     private suspend fun safeGetCached(): EnhancedAstronomyPicture? = try {
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        val today = java.time.LocalDate.now(java.time.ZoneId.of("UTC")).format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
         spaceRepository.getApodByDate(today)
     } catch (_: Exception) {
         null

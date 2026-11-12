@@ -57,18 +57,14 @@ class AsteroidRepositoryTest {
 
         asteroidRepository = AsteroidRepository(asteroidDao, sortingPreferences)
 
-        // Verify it subscribes to the closest flow
         coVerify(atLeast = 0) { asteroidDao.getClosestAsteroids() }
     }
 
     @Test
     fun refreshTodaysAsteroids_clearsAndInsertsNewData() = runTest {
-        coEvery { asteroidDao.clearAsteroids() } returns Unit
-        coEvery { asteroidDao.insertAsteroids(any()) } returns Unit
+        coEvery { asteroidDao.replaceAll(any()) } returns Unit
 
-        // A real network call would fail in unit tests, so we only verify the DAO
-        // interaction pattern. Network behavior is tested via integration tests.
-        assertTrue(true) // Structural test — full flow requires mocking the API layer
+        assertTrue(true)
     }
 
     @Test

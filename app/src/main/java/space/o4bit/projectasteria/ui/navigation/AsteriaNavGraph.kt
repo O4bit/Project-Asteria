@@ -140,9 +140,9 @@ fun AsteriaNavGraph(
                 ) { backStackEntry ->
                     val date = backStackEntry.arguments?.getString("date")
                     val picture by produceState<AstronomyPicture?>(
-                        initialValue = currentApodPicture()?.astronomyPicture
+                        initialValue = currentApodPicture()?.astronomyPicture?.takeIf { date == null || it.date == date }
                     ) {
-                        if (value == null) {
+                        if (value == null || (date != null && value?.date != date)) {
                             val target = date
                                 ?: SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                             value = spaceRepository.getApodByDate(target)?.astronomyPicture
@@ -172,9 +172,9 @@ fun AsteriaNavGraph(
                 ) { backStackEntry ->
                     val date = backStackEntry.arguments?.getString("date") ?: return@composable
                     val picture by produceState<AstronomyPicture?>(
-                        initialValue = currentApodPicture()?.astronomyPicture
+                        initialValue = currentApodPicture()?.astronomyPicture?.takeIf { it.date == date }
                     ) {
-                        if (value == null) {
+                        if (value == null || value?.date != date) {
                             value = spaceRepository.getApodByDate(date)?.astronomyPicture
                         }
                     }

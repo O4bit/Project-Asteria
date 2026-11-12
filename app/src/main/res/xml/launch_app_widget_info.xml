@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="140dp"
+    android:minResizeWidth="220dp"
+    android:minResizeHeight="110dp"
+    android:maxResizeWidth="600dp"
+    android:maxResizeHeight="400dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/launch_app_widget_layout"
+    android:previewLayout="@layout/launch_app_widget_layout"
+    android:previewImage="@drawable/launch_widget_preview_art"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:configure="space.o4bit.projectasteria.widget.LaunchWidgetConfigActivity"
+    android:widgetFeatures="reconfigurable|configuration_optional"
+    android:description="@string/widget_launch_description">
+</appwidget-provider>

@@ -1,17 +1,23 @@
 package space.o4bit.projectasteria.ui.components
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
@@ -31,17 +37,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.Libs
-import com.mikepenz.aboutlibraries.util.withContext
-import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
-import com.mikepenz.aboutlibraries.ui.compose.chipColors
-import com.mikepenz.aboutlibraries.ui.compose.libraryColors
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+import com.mikepenz.aboutlibraries.ui.compose.m3.chipColors
+import com.mikepenz.aboutlibraries.ui.compose.m3.libraryColors
+import com.mikepenz.aboutlibraries.util.withContext
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OssLicensesScreen(
@@ -52,6 +60,21 @@ fun OssLicensesScreen(
     var isSearchVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val libs = remember<Libs> { Libs.Builder().withContext(context).build() }
+    val filteredLibs = remember(libs, searchQuery) {
+        if (searchQuery.isBlank()) {
+            libs
+        } else {
+            val query = searchQuery.trim().lowercase()
+            val filtered = libs.libraries.filter { lib ->
+                lib.name.lowercase().contains(query) ||
+                    lib.uniqueId.lowercase().contains(query) ||
+                    lib.description?.lowercase()?.contains(query) == true ||
+                    lib.developers.any { it.name?.lowercase()?.contains(query) == true } ||
+                    lib.licenses.any { it.name.lowercase().contains(query) }
+            }
+            libs.copy(libraries = filtered)
+        }
+    }
     val chipColors = LibraryDefaults.chipColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -102,7 +125,14 @@ fun OssLicensesScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                    IconButton(
+                        onClick = {
+                            isSearchVisible = !isSearchVisible
+                            if (!isSearchVisible) {
+                                searchQuery = ""
+                            }
+                        }
+                    ) {
                         Icon(
                             imageVector = if (isSearchVisible) Icons.Default.Clear else Icons.Default.Search,
                             contentDescription = if (isSearchVisible) "Close search" else "Search libraries"
@@ -111,7 +141,7 @@ fun OssLicensesScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = Color.Transparent,
                     scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
@@ -124,6 +154,8 @@ fun OssLicensesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
+                .imePadding()
         ) {
             AnimatedVisibility(
                 visible = isSearchVisible,
@@ -161,31 +193,57 @@ fun OssLicensesScreen(
                         }
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(28.dp),
+                    shape = RoundedCornerShape(20.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.8f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f)
                     )
                 )
             }
-            LibrariesContainer(
-                libraries = libs,
-                modifier = Modifier.fillMaxSize(),
-                showAuthor = true,
-                showVersion = true,
-                showLicenseBadges = true,
-                colors = libraryColors,
-                padding = libraryPadding,
-                dimensions = libraryDimensions,
-                contentPadding = PaddingValues(bottom = 24.dp),
-                onLibraryClick = if (searchQuery.isNotBlank()) {
-                    null
-                } else {
-                    null
+            if (filteredLibs.libraries.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            text = "No libraries found",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "No open source dependencies match \"$searchQuery\"",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            )
+            } else {
+                LibrariesContainer(
+                    libraries = filteredLibs,
+                    modifier = Modifier.fillMaxSize(),
+                    showAuthor = true,
+                    showVersion = true,
+                    showLicenseBadges = true,
+                    colors = libraryColors,
+                    padding = libraryPadding,
+                    dimensions = libraryDimensions,
+                    contentPadding = PaddingValues(bottom = 24.dp)
+                )
+            }
         }
     }
 }

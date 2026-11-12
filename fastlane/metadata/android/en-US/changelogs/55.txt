@@ -1,0 +1,5 @@
+- Added configurable Rocket Launch Countdown home screen widget (Multi-Stack & Single Focus modes) with pinned launches manager
+- Added scheduled Rocket Launch reminder notifications
+- Added Solar System & Celestial Objects database and explorer with APOD history search and date picker
+- Fixed APOD video playback, HTML text cleanup, date navigation, and multi-source NASA fallbacks
+- Upgraded Open-Source Licenses screen to Material 3 with search filtering and improved tablet layouts

@@ -36,11 +36,15 @@ class IssViewModel(
     private val _ticker = MutableStateFlow(0)
     private val _intervalFlow = MutableStateFlow(IssUpdateInterval.ONE_MIN)
     val updateInterval: StateFlow<IssUpdateInterval> = _intervalFlow
+    private var lastLocation: IssPosition? = null
+    private var lastSuccessfulTime = 0L
+    private val trail = ArrayDeque<IssPosition>(MAX_TRAIL)
+
     fun refresh() {
         _ticker.update { it + 1 }
     }
     fun setUpdateInterval(interval: IssUpdateInterval) {
-        _intervalFlow.value = interval
+        _intervalFlow.update { interval }
         _ticker.update { it + 1 }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -49,31 +53,37 @@ class IssViewModel(
             flow {
                 var backoffDelay = interval.intervalMs
                 val maxDelay = 300_000L
-                var lastLocation: IssPosition? = null
-                val trail = ArrayDeque<IssPosition>(MAX_TRAIL)
-                emit(IssUiState(location = null, isLive = false, errorMessage = null, updateInterval = interval))
+                emit(IssUiState(
+                    location = lastLocation,
+                    isLive = false,
+                    lastUpdateTime = lastSuccessfulTime,
+                    errorMessage = null,
+                    orbitTrail = trail.toList(),
+                    updateInterval = interval
+                ))
                 while (currentCoroutineContext().isActive) {
                     try {
                         val location = repository.getIssPosition()
+                        lastSuccessfulTime = System.currentTimeMillis()
                         if (hasMeaningfulChange(lastLocation, location)) {
                             trail.addFirst(location)
                             if (trail.size > MAX_TRAIL) trail.removeLast()
-                            emit(IssUiState(
-                                location = location,
-                                isLive = true,
-                                lastUpdateTime = System.currentTimeMillis(),
-                                errorMessage = null,
-                                orbitTrail = trail.toList(),
-                                updateInterval = interval
-                            ))
                             lastLocation = location
                         }
+                        emit(IssUiState(
+                            location = location,
+                            isLive = true,
+                            lastUpdateTime = lastSuccessfulTime,
+                            errorMessage = null,
+                            orbitTrail = trail.toList(),
+                            updateInterval = interval
+                        ))
                         backoffDelay = interval.intervalMs
                     } catch (e: Exception) {
                         emit(IssUiState(
                             location = lastLocation,
                             isLive = false,
-                            lastUpdateTime = System.currentTimeMillis(),
+                            lastUpdateTime = lastSuccessfulTime,
                             errorMessage = "Signal lost. Retrying in ${backoffDelay / 1000}s...",
                             orbitTrail = trail.toList(),
                             updateInterval = interval

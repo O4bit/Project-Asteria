@@ -2,8 +2,10 @@ package space.o4bit.projectasteria.ui.components
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -11,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,8 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -34,11 +35,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import space.o4bit.projectasteria.AsteriaApplication
 import space.o4bit.projectasteria.data.local.LaunchEntity
-import space.o4bit.projectasteria.data.worker.LaunchReminderWorker
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
-import java.util.concurrent.TimeUnit
+import space.o4bit.projectasteria.data.worker.LaunchReminderScheduler
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaunchDetailScreen(
@@ -49,11 +51,14 @@ fun LaunchDetailScreen(
     val application = context.applicationContext as AsteriaApplication
     val launchDao = remember { application.database.launchDao() }
     val reminderPrefs = remember { application.reminderPreferences }
+    val bgPrefs = remember { application.backgroundPreferences }
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val launch by launchDao.getLaunchByIdFlow(launchId).collectAsState(initial = null)
     val remindedIds by reminderPrefs.remindedLaunchIds.collectAsState(initial = emptySet())
     val isReminded = remindedIds.contains(launchId)
+    val pinnedIds by bgPrefs.pinnedLaunchIds.collectAsState(initial = emptySet())
+    val isPinned = pinnedIds.contains(launchId)
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -64,8 +69,25 @@ fun LaunchDetailScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            scope.launch {
+                                bgPrefs.togglePinLaunch(launchId)
+                                space.o4bit.projectasteria.widget.LaunchAppWidgetProvider.updateAllWidgets(context)
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PushPin,
+                            contentDescription = if (isPinned) "Unpin from Widget" else "Pin to Widget",
+                            tint = if (isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 )
             )
@@ -76,150 +98,241 @@ fun LaunchDetailScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
             }
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                if (!currentLaunch.image.isNullOrEmpty()) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(currentLaunch.image)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Launch Image",
-                        contentScale = ContentScale.Crop,
+            val configuration = LocalConfiguration.current
+            val isTablet = configuration.smallestScreenWidthDp >= 600
+            if (isTablet) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding)
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(260.dp)
-                    )
-                }
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = currentLaunch.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    EfficientCountdown(launchNet = currentLaunch.net)
-                    Spacer(modifier = Modifier.height(20.dp))
-                    ReminderButton(
-                        isReminded = isReminded,
-                        onToggle = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            scope.launch {
-                                if (isReminded) {
-                                    reminderPrefs.removeReminder(launchId)
-                                    WorkManager.getInstance(context)
-                                        .cancelAllWorkByTag("launch_reminder_$launchId")
-                                } else {
-                                    reminderPrefs.setReminder(launchId)
-                                    scheduleLaunchReminder(context, currentLaunch)
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (!currentLaunch.image.isNullOrEmpty()) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(currentLaunch.image)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "Launch Image",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(280.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                            )
+                        }
+                        Text(
+                            text = currentLaunch.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        EfficientCountdown(launchNet = currentLaunch.net)
+                        ReminderButton(
+                            isReminded = isReminded,
+                            onToggle = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                scope.launch {
+                                    val scheduler = LaunchReminderScheduler(WorkManager.getInstance(context))
+                                    if (isReminded) {
+                                        reminderPrefs.removeReminder(launchId)
+                                        scheduler.cancel(launchId)
+                                    } else {
+                                        val scheduled = scheduler.schedule(currentLaunch)
+                                        if (scheduled) {
+                                            reminderPrefs.setReminder(launchId)
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                         )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .weight(1.2f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = "Status",
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "Status: ${currentLaunch.statusName}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            if (currentLaunch.statusDescription.isNotBlank()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = currentLaunch.statusDescription,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
+                        LaunchStatusAndDetails(currentLaunch = currentLaunch)
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    if (!currentLaunch.providerName.isNullOrEmpty()) {
-                        DetailRow(label = "Provider", value = currentLaunch.providerName)
-                    }
-                    val formattedDate = remember(currentLaunch.net) {
-                        try {
-                            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-                                timeZone = TimeZone.getTimeZone("UTC")
-                            }
-                            val date = parser.parse(currentLaunch.net)
-                            date?.let {
-                                val formatter = java.text.DateFormat.getDateTimeInstance(
-                                    java.text.DateFormat.FULL,
-                                    java.text.DateFormat.SHORT,
-                                    java.util.Locale.getDefault()
-                                )
-                                formatter.format(it)
-                            } ?: currentLaunch.net
-                        } catch (e: Exception) {
-                            currentLaunch.net
-                        }
-                    }
-                    DetailRow(label = "Scheduled", value = formattedDate)
-                    if (!currentLaunch.locationName.isNullOrEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Place,
-                                contentDescription = "Location",
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = currentLaunch.locationName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    if (!currentLaunch.padName.isNullOrEmpty()) {
-                        DetailRow(label = "Pad", value = currentLaunch.padName)
-                    }
-                    if (!currentLaunch.missionName.isNullOrEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Mission: ${currentLaunch.missionName}",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    if (!currentLaunch.image.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(currentLaunch.image)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Launch Image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(260.dp)
                         )
                     }
-                    if (!currentLaunch.missionDescription.isNullOrEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
                         Text(
-                            text = currentLaunch.missionDescription,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.animateContentSize()
+                            text = currentLaunch.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
                         )
+                        EfficientCountdown(launchNet = currentLaunch.net)
+                        ReminderButton(
+                            isReminded = isReminded,
+                            onToggle = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                scope.launch {
+                                    val scheduler = LaunchReminderScheduler(WorkManager.getInstance(context))
+                                    if (isReminded) {
+                                        reminderPrefs.removeReminder(launchId)
+                                        scheduler.cancel(launchId)
+                                    } else {
+                                        val scheduled = scheduler.schedule(currentLaunch)
+                                        if (scheduled) {
+                                            reminderPrefs.setReminder(launchId)
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                        LaunchStatusAndDetails(currentLaunch = currentLaunch)
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LaunchStatusAndDetails(currentLaunch: LaunchEntity) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Status",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Status: ${currentLaunch.statusName}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            if (currentLaunch.statusDescription.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = currentLaunch.statusDescription,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (!currentLaunch.providerName.isNullOrEmpty()) {
+                DetailRow(label = "Provider", value = currentLaunch.providerName)
+            }
+            val formattedDate = remember(currentLaunch.net) {
+                val parsed = runCatching { Instant.parse(currentLaunch.net) }.getOrNull()
+                if (parsed != null) {
+                    val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.SHORT)
+                        .withZone(ZoneId.systemDefault())
+                    formatter.format(parsed)
+                } else {
+                    currentLaunch.net
+                }
+            }
+            DetailRow(label = "Scheduled", value = formattedDate)
+            if (!currentLaunch.locationName.isNullOrEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Location",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = currentLaunch.locationName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (!currentLaunch.padName.isNullOrEmpty()) {
+                DetailRow(label = "Pad", value = currentLaunch.padName)
+            }
+        }
+    }
+    if (!currentLaunch.missionName.isNullOrEmpty() || !currentLaunch.missionDescription.isNullOrEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                if (!currentLaunch.missionName.isNullOrEmpty()) {
+                    Text(
+                        text = "Mission: ${currentLaunch.missionName}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                if (!currentLaunch.missionDescription.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = currentLaunch.missionDescription,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.animateContentSize()
+                    )
                 }
             }
         }
@@ -228,23 +341,22 @@ fun LaunchDetailScreen(
 @Composable
 fun EfficientCountdown(launchNet: String) {
     val countdownText by produceState(initialValue = "Calculating...", key1 = launchNet) {
-        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
-        }
-        val targetTime = parser.parse(launchNet)?.time ?: run {
+        val targetInstant = runCatching { Instant.parse(launchNet) }.getOrNull()
+        if (targetInstant == null) {
             value = "Date unknown"
             return@produceState
         }
         while (isActive) {
-            val diff = targetTime - System.currentTimeMillis()
-            if (diff <= 0) {
-                value = "Launched!"
+            val now = Instant.now()
+            val remaining = Duration.between(now, targetInstant)
+            if (remaining.isNegative) {
+                value = "Awaiting confirmed launch status"
                 break
             }
-            val days = TimeUnit.MILLISECONDS.toDays(diff)
-            val hours = TimeUnit.MILLISECONDS.toHours(diff) % 24
-            val minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
-            val seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60
+            val days = remaining.toDays()
+            val hours = remaining.toHours() % 24
+            val minutes = remaining.toMinutes() % 60
+            val seconds = remaining.seconds % 60
             value = when {
                 days > 0 -> "T-${days}d ${hours}h ${minutes}m"
                 else -> "T-${hours}h ${minutes}m ${seconds}s"
@@ -254,10 +366,11 @@ fun EfficientCountdown(launchNet: String) {
     }
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        )
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
     ) {
         Row(
             modifier = Modifier
@@ -290,7 +403,7 @@ fun ReminderButton(
             containerColor = containerColor,
             contentColor = if (isReminded) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Icon(
             imageVector = icon,
@@ -309,23 +422,4 @@ private fun DetailRow(label: String, value: String) {
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-}
-private fun scheduleLaunchReminder(context: android.content.Context, launch: LaunchEntity) {
-    val data = Data.Builder()
-        .putString("launch_id", launch.id)
-        .putString("launch_name", launch.name)
-        .build()
-    val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
-    val targetDate = parser.parse(launch.net)?.time ?: return
-    val delayMs = targetDate - TimeUnit.MINUTES.toMillis(15) - System.currentTimeMillis()
-    if (delayMs > 0) {
-        val workRequest = OneTimeWorkRequestBuilder<LaunchReminderWorker>()
-            .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
-            .setInputData(data)
-            .addTag("launch_reminder_${launch.id}")
-            .build()
-        WorkManager.getInstance(context).enqueue(workRequest)
-    }
 }

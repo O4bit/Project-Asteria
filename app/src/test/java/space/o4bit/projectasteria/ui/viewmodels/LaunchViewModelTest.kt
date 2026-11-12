@@ -1,5 +1,6 @@
 package space.o4bit.projectasteria.ui.viewmodels
 
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +15,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -32,7 +34,7 @@ class LaunchViewModelTest {
     private fun fakeLaunch(
         id: String,
         statusName: String = "Go for Launch",
-        netMillis: Long = System.currentTimeMillis() + 86_400_000L  // tomorrow
+        netMillis: Long = System.currentTimeMillis() + 86_400_000L
     ) = LaunchEntity(
         id = id,
         name = "Mission $id",
@@ -108,7 +110,7 @@ class LaunchViewModelTest {
         val inFlight = fakeLaunch(
             id = "l_inflight",
             statusName = "In Flight",
-            netMillis = System.currentTimeMillis() - 300_000L   // launched 5 min ago
+            netMillis = System.currentTimeMillis() - 300_000L
         )
         every { launchRepository.allLaunches } returns flowOf(listOf(inFlight))
         every { backgroundPrefs.hyperdriveThresholdMinutes } returns flowOf(1)
@@ -125,7 +127,7 @@ class LaunchViewModelTest {
         val imminent = fakeLaunch(
             id = "l_imminent",
             statusName = "Go for Launch",
-            netMillis = System.currentTimeMillis() + 30_000L    // 30 seconds from now
+            netMillis = System.currentTimeMillis() + 30_000L
         )
         every { launchRepository.allLaunches } returns flowOf(listOf(imminent))
         every { backgroundPrefs.hyperdriveThresholdMinutes } returns flowOf(1)
@@ -134,6 +136,37 @@ class LaunchViewModelTest {
         advanceTimeBy(100)
         val state = viewModel.uiState.value as LaunchUiState.Success
         assertEquals(15f, state.launchSpeedMultiplier)
+        job.cancel()
+    }
+
+    @Test
+    fun refresh_failureWithEmptyList_transitionsToError() = runTest {
+        coEvery { launchRepository.refreshUpcomingLaunches() } throws RuntimeException("Network down")
+        viewModel = LaunchViewModel(launchRepository, backgroundPrefs)
+        val job = launch { viewModel.uiState.collect {} }
+        advanceTimeBy(100)
+        viewModel.refresh()
+        advanceTimeBy(100)
+        assertTrue(viewModel.uiState.value is LaunchUiState.Error)
+        assertFalse(viewModel.isRefreshing.value)
+        assertEquals("Network down", viewModel.refreshError.value)
+        job.cancel()
+    }
+
+    @Test
+    fun refresh_failureWithCachedData_preservesSuccessState() = runTest {
+        val launches = listOf(fakeLaunch("l1"))
+        every { launchRepository.allLaunches } returns flowOf(launches)
+        coEvery { launchRepository.refreshUpcomingLaunches() } throws RuntimeException("Network timeout")
+        viewModel = LaunchViewModel(launchRepository, backgroundPrefs)
+        val job = launch { viewModel.uiState.collect {} }
+        advanceTimeBy(100)
+        assertTrue(viewModel.uiState.value is LaunchUiState.Success)
+        viewModel.refresh()
+        advanceTimeBy(100)
+        assertTrue(viewModel.uiState.value is LaunchUiState.Success)
+        assertFalse(viewModel.isRefreshing.value)
+        assertEquals("Network timeout", viewModel.refreshError.value)
         job.cancel()
     }
 }

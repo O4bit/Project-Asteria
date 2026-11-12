@@ -5,8 +5,7 @@
     android:layout_height="match_parent"
     android:padding="0dp"
     android:background="@drawable/iss_widget_background"
-    android:clipToOutline="true"
-    android:outlineProvider="background">
+    android:clipToOutline="true">
 
     <!-- Map fills the entire widget background -->
     <ImageView
@@ -14,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="ISS World Map"
+        android:src="@drawable/iss_widget_preview_map"
         android:scaleType="fitXY"
         android:background="@drawable/iss_widget_map_container" />
 

@@ -99,9 +99,10 @@ fun FullscreenImageViewer(
     } catch (_: Exception) {
         astronomyPicture.date
     }
-    if (astronomyPicture.mediaType == "video") {
-        val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
-        if (videoUrl != null) {
+    if (astronomyPicture.mediaType.equals("video", ignoreCase = true)) {
+        val videoUrl = astronomyPicture.url?.takeIf { it.isNotBlank() }
+            ?: astronomyPicture.hdUrl?.takeIf { it.isNotBlank() }
+        if (!videoUrl.isNullOrBlank()) {
             var showVideoControls by remember { mutableStateOf(true) }
             val videoControlsAlpha by animateFloatAsState(
                 targetValue = if (showVideoControls) 1f else 0f,

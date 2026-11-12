@@ -1,0 +1,266 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "75ccab5a4b1900ff5924c03250a9c79d",
+    "entities": [
+      {
+        "tableName": "apods",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `explanation` TEXT NOT NULL, `hdUrl` TEXT, `mediaType` TEXT NOT NULL, `serviceVersion` TEXT, `title` TEXT NOT NULL, `url` TEXT, `copyright` TEXT, `thumbnail` TEXT, `shortFact` TEXT NOT NULL, `notificationTitle` TEXT NOT NULL, `notificationBody` TEXT NOT NULL, `isFavorite` INTEGER NOT NULL, PRIMARY KEY(`date`))",
+        "fields": [
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "explanation",
+            "columnName": "explanation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hdUrl",
+            "columnName": "hdUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "mediaType",
+            "columnName": "mediaType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serviceVersion",
+            "columnName": "serviceVersion",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "copyright",
+            "columnName": "copyright",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "thumbnail",
+            "columnName": "thumbnail",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "shortFact",
+            "columnName": "shortFact",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationTitle",
+            "columnName": "notificationTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationBody",
+            "columnName": "notificationBody",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date"
+          ]
+        }
+      },
+      {
+        "tableName": "launches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `statusName` TEXT NOT NULL, `statusDescription` TEXT NOT NULL, `net` TEXT NOT NULL, `providerName` TEXT, `padName` TEXT, `locationName` TEXT, `missionName` TEXT, `missionDescription` TEXT, `image` TEXT, `netMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusName",
+            "columnName": "statusName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusDescription",
+            "columnName": "statusDescription",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "net",
+            "columnName": "net",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "providerName",
+            "columnName": "providerName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "padName",
+            "columnName": "padName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locationName",
+            "columnName": "locationName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "missionName",
+            "columnName": "missionName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "missionDescription",
+            "columnName": "missionDescription",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image",
+            "columnName": "image",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "netMillis",
+            "columnName": "netMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "asteroids",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `nasaJplUrl` TEXT NOT NULL, `absoluteMagnitudeH` REAL NOT NULL, `estimatedDiameterMinKm` REAL NOT NULL, `estimatedDiameterMaxKm` REAL NOT NULL, `isPotentiallyHazardous` INTEGER NOT NULL, `isSentryObject` INTEGER NOT NULL, `closeApproachDate` TEXT NOT NULL, `relativeVelocityKms` TEXT NOT NULL, `relativeVelocityKmh` TEXT NOT NULL, `missDistanceKm` REAL NOT NULL, `missDistanceLunar` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nasaJplUrl",
+            "columnName": "nasaJplUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "absoluteMagnitudeH",
+            "columnName": "absoluteMagnitudeH",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedDiameterMinKm",
+            "columnName": "estimatedDiameterMinKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedDiameterMaxKm",
+            "columnName": "estimatedDiameterMaxKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPotentiallyHazardous",
+            "columnName": "isPotentiallyHazardous",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSentryObject",
+            "columnName": "isSentryObject",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "closeApproachDate",
+            "columnName": "closeApproachDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativeVelocityKms",
+            "columnName": "relativeVelocityKms",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativeVelocityKmh",
+            "columnName": "relativeVelocityKmh",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "missDistanceKm",
+            "columnName": "missDistanceKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "missDistanceLunar",
+            "columnName": "missDistanceLunar",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '75ccab5a4b1900ff5924c03250a9c79d')"
+    ]
+  }
+}

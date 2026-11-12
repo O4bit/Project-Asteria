@@ -19,7 +19,7 @@ interface NasaNeoWsService {
     companion object {
         fun create(): NasaNeoWsService {
             val logger = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
+                level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             }
             val client = OkHttpClient.Builder()
                 .addInterceptor(logger)

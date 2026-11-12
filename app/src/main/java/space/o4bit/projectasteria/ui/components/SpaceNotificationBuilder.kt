@@ -69,7 +69,7 @@ object SpaceNotificationBuilder {
                 .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
             if (apod.mediaType == "video") {
                 builder.setStyle(NotificationCompat.BigTextStyle()
-                    .bigText("🎥 $title\n\n$snippet")
+                    .bigText("$title\n\n$snippet")
                 )
             } else {
                 val imageUrl = apod.url
@@ -180,7 +180,7 @@ object SpaceNotificationBuilder {
             )
             val builder = NotificationCompat.Builder(context, "launch_reminders")
                 .setSmallIcon(R.drawable.ic_notification_asteria)
-                .setContentTitle("🚀 Upcoming Launch!")
+                .setContentTitle("Upcoming Launch!")
                 .setContentText("$launchName is launching soon!")
                 .setStyle(NotificationCompat.BigTextStyle().bigText("Get ready! $launchName is launching within 15 minutes! Open app for live timer."))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

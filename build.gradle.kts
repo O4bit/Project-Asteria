@@ -1,15 +1,12 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
 }
 
-
 buildscript {
     dependencies {
         constraints {
-            // Netty — force every published module to the patched line.
             listOf(
                 "netty-all",
                 "netty-buffer",
@@ -34,7 +31,6 @@ buildscript {
                 }
             }
 
-            // Bouncy Castle — covert timing channel + LDAP injection + broken algo.
             listOf("bcprov-jdk18on", "bcpkix-jdk18on", "bcutil-jdk18on", "bcjmail-jdk18on", "bctls-jdk18on", "bcmail-jdk18on").forEach { artifact ->
                 classpath("org.bouncycastle:$artifact") {
                     version { require("1.84") }
@@ -42,13 +38,11 @@ buildscript {
                 }
             }
 
-            // JDOM — XXE in SAXBuilder.
             classpath("org.jdom:jdom2") {
                 version { require("2.0.6.1") }
                 because("Pin JDOM2 to 2.0.6.1 to fix XXE Injection (CVE-2021-33813)")
             }
 
-            // jose4j — DoS via compressed JWE.
             classpath("org.bitbucket.b_c:jose4j") {
                 version { require("0.9.6") }
                 because("Pin jose4j to 0.9.6 to fix DoS via compressed JWE content (CVE-2024-29371)")
@@ -57,11 +51,6 @@ buildscript {
     }
 }
 
-// The above pins the *root* buildscript classpath. Several vulnerable jars
-// (netty 4.1.93/4.1.110 via gRPC, bouncycastle 1.79 via build-tools, etc.)
-// are pulled into the *app module's* lint / aapt2 / analyzer configurations
-// instead. Apply the same constraints there via a resolutionStrategy on all
-// configurations of every subproject.
 subprojects {
     configurations.all {
         resolutionStrategy.eachDependency {

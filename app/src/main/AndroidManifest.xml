@@ -32,7 +32,10 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.ProjectAsteria">
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.ProjectAsteria"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -46,10 +49,23 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".widget.LaunchWidgetConfigActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.ProjectAsteria"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
 
         <!-- App Widget Provider -->
         <receiver
             android:name=".widget.AsteriaAppWidget"
+            android:label="@string/widget_apod_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -62,6 +78,7 @@
         <!-- ISS App Widget Provider -->
         <receiver
             android:name=".widget.IssAppWidgetProvider"
+            android:label="@string/widget_iss_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -69,6 +86,21 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/iss_app_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.LaunchAppWidgetProvider"
+            android:label="@string/widget_launch_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="space.o4bit.projectasteria.widget.ACTION_REFRESH_LAUNCH" />
+                <action android:name="space.o4bit.projectasteria.widget.ACTION_PREV_LAUNCH" />
+                <action android:name="space.o4bit.projectasteria.widget.ACTION_NEXT_LAUNCH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/launch_app_widget_info" />
         </receiver>
 
         <!-- Receiver to open app from widget with smooth animation -->

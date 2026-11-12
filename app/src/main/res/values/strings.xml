@@ -1,26 +1,32 @@
 <resources>
-    <string name="app_name">Project Asteria</string>
-    <string name="default_notification_channel_id">space_discovery_channel</string>
-    <string name="notification_channel_name">Space Discoveries</string>
-    <string name="notification_channel_description">Daily astronomy pictures and space facts</string>
-    <string name="app_widget_description">Display today\'s astronomy picture and space facts on your home screen</string>
-    <string name="settings_background_label">Background Animation</string>
-    <string name="settings_background_starry">Starry</string>
-    <string name="settings_background_space">Space</string>
-    <string name="settings_background_none">None</string>
+  <string name="app_name">Project Asteria</string>
+  <string name="default_notification_channel_id">space_discovery_channel</string>
+  <string name="notification_channel_name">Space Discoveries</string>
+  <string name="notification_channel_description">Daily astronomy pictures and space facts</string>
+  <string name="app_widget_description">Daily NASA astronomy picture and space discovery title on your home screen</string>
+  <string name="widget_apod_label">Astronomy Picture of the Day</string>
+  <string name="widget_apod_description">Daily NASA space photo and cosmic discovery title on your home screen</string>
+  <string name="widget_iss_label">ISS Live Orbit Tracker</string>
+  <string name="widget_iss_description">Live International Space Station world map, coordinates, altitude, and orbital speed</string>
+  <string name="widget_launch_label">Rocket Launch Countdown</string>
+  <string name="widget_launch_description">Modular rocket launch tracker supporting single or multiple pinned mission countdowns</string>
+  <string name="settings_background_label">Background Animation</string>
+  <string name="settings_background_starry">Starry</string>
+  <string name="settings_background_space">Space</string>
+  <string name="settings_background_none">None</string>
 
-    <!-- Widget strings (translatable=false: overwritten at runtime by the widget provider) -->
-    <string name="widget_image_content_description" translatable="false">Space Image</string>
-    <string name="widget_date_placeholder" translatable="false">Date</string>
-    <string name="widget_title_placeholder" translatable="false">Project Asteria APOD</string>
-    <string name="widget_sparkle_emoji" translatable="false">💫</string>
-    <string name="widget_loading_text" translatable="false">Loading space discoveries…</string>
+  <!-- Widget strings (translatable=false: overwritten at runtime by the widget provider) -->
+  <string name="widget_image_content_description" translatable="false">Space Image</string>
+  <string name="widget_date_placeholder" translatable="false">NASA APOD • TODAY</string>
+  <string name="widget_title_placeholder" translatable="false">Pillars of Creation in Eagle Nebula</string>
+  <string name="widget_sparkle_emoji" translatable="false"></string>
+  <string name="widget_loading_text" translatable="false">Loading space discoveries…</string>
 
-    <!-- Test / diagnostics (translatable=false: internal debug activity) -->
-    <string name="test_crash_button_label" translatable="false">Simulate Crash</string>
-    <string name="test_crash_simulated_recorded" translatable="false">Simulated crash recorded</string>
-    <string name="test_crash_log_breadcrumb" translatable="false">Log Breadcrumb</string>
-    <string name="test_crash_breadcrumb_logged" translatable="false">Logged breadcrumb</string>
+  <!-- Test / diagnostics (translatable=false: internal debug activity) -->
+  <string name="test_crash_button_label" translatable="false">Simulate Crash</string>
+  <string name="test_crash_simulated_recorded" translatable="false">Simulated crash recorded</string>
+  <string name="test_crash_log_breadcrumb" translatable="false">Log Breadcrumb</string>
+  <string name="test_crash_breadcrumb_logged" translatable="false">Logged breadcrumb</string>
 </resources>
 
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+
+    <path
+        android:fillColor="@color/m3e_widget_surface"
+        android:pathData="M28,0h264a28,28 0,0 1,28 28v124a28,28 0,0 1,-28 28h-264a28,28 0,0 1,-28 -28v-124a28,28 0,0 1,28 -28z" />
+
+    <path
+        android:fillColor="@color/m3e_widget_primary_container"
+        android:pathData="M28,24m-12,0a12,12 0,1 1,24 0a12,12 0,1 1,-24 0" />
+
+    <path
+        android:fillColor="@color/m3e_widget_secondary_container"
+        android:pathData="M210,16h54a8,8 0,0 1,8 8v0a8,8 0,0 1,-8 8h-54a8,8 0,0 1,-8 -8v0a8,8 0,0 1,8 -8z" />
+
+    <path
+        android:fillColor="@color/m3e_widget_surface_container"
+        android:pathData="M34,46h252a18,18 0,0 1,18 18v18a18,18 0,0 1,-18 18h-252a18,18 0,0 1,-18 -18v-18a18,18 0,0 1,18 -18z" />
+
+    <path
+        android:fillColor="@color/m3e_widget_surface_container"
+        android:pathData="M34,108h252a18,18 0,0 1,18 18v18a18,18 0,0 1,-18 18h-252a18,18 0,0 1,-18 -18v-18a18,18 0,0 1,18 -18z" />
+
+    <path
+        android:fillColor="@color/m3e_widget_primary_container"
+        android:pathData="M226,62h52a11,11 0,0 1,11 11v0a11,11 0,0 1,-11 11h-52a11,11 0,0 1,-11 -11v0a11,11 0,0 1,11 -11z" />
+
+    <path
+        android:fillColor="@color/m3e_widget_primary_container"
+        android:pathData="M226,124h52a11,11 0,0 1,11 11v0a11,11 0,0 1,-11 11h-52a11,11 0,0 1,-11 -11v0a11,11 0,0 1,11 -11z" />
+</vector>

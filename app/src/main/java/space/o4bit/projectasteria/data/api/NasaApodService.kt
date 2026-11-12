@@ -6,6 +6,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 import space.o4bit.projectasteria.BuildConfig
 import space.o4bit.projectasteria.data.model.AstronomyPicture
@@ -22,10 +23,22 @@ interface NasaApodService {
         @Query("start_date") startDate: String,
         @Query("end_date") endDate: String
     ): List<AstronomyPicture>
+    @GET("https://science.nasa.gov/wp-json/wp/v2/apod-basic")
+    suspend fun getScienceNasaLatestApods(): List<AstronomyPicture>
+    @GET("https://science.nasa.gov/wp-json/wp/v2/apod-basic/{code}")
+    suspend fun getScienceNasaApodByCode(
+        @Path("code") code: String
+    ): AstronomyPicture
+    @GET("https://api.nasa.gov/planetary/apod")
+    suspend fun getDirectAstronomyPictureByDate(
+        @Query("date") date: String,
+        @Query("api_key") apiKey: String = "DEMO_KEY",
+        @Query("thumbs") thumbs: Boolean = true
+    ): AstronomyPicture
     companion object {
         fun create(): NasaApodService {
             val logger = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
+                level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             }
             val client = OkHttpClient.Builder()
                 .addInterceptor(logger)

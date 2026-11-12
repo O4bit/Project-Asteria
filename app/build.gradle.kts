@@ -36,8 +36,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "space.o4bit.projectasteria"
         minSdk = 31
         targetSdk = 36
-        versionCode = 54
-        versionName = "4.7.1"
+        versionCode = 55
+        versionName = "4.8.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -186,7 +186,7 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
 
-    implementation(libs.aboutlibraries.compose)
+    implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
 
@@ -194,6 +194,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
+    testImplementation(libs.androidx.room.testing)
 }
 
 androidComponents {

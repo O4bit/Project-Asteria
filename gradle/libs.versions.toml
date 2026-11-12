@@ -1,7 +1,7 @@
 [versions]
 navigationCompose = "2.9.8"
 paging = "3.5.0"
-androidGradlePlugin = "9.3.3"
+androidGradlePlugin = "9.4.1"
 kotlin = "2.3.21"
 androidxCore = "1.18.0"
 androidxLifecycle = "2.10.0"
@@ -65,7 +65,8 @@ compose-destinations-core = { group = "io.github.raamcosta.compose-destinations"
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
-aboutlibraries-compose = { group = "com.mikepenz", name = "aboutlibraries-compose", version.ref = "aboutlibraries" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+aboutlibraries-compose-m3 = { group = "com.mikepenz", name = "aboutlibraries-compose-m3", version.ref = "aboutlibraries" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }

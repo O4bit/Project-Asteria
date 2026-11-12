@@ -1,22 +1,32 @@
 package space.o4bit.projectasteria.data.repository
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import space.o4bit.projectasteria.data.api.SpaceLaunchService
 import space.o4bit.projectasteria.data.local.LaunchDao
 import space.o4bit.projectasteria.data.local.LaunchEntity
+import space.o4bit.projectasteria.data.preferences.ReminderPreferencesRepository
 import space.o4bit.projectasteria.data.preferences.SortingPreferencesRepository
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
+import space.o4bit.projectasteria.data.worker.LaunchReminderScheduler
+import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class LaunchRepository(
     private val launchDao: LaunchDao,
     private val sortingPreferences: SortingPreferencesRepository,
-    private val launchService: SpaceLaunchService = SpaceLaunchService.create()
+    private val launchService: SpaceLaunchService = SpaceLaunchService.create(),
+    private val reminderScheduler: LaunchReminderScheduler? = null,
+    private val reminderPreferences: ReminderPreferencesRepository? = null,
+    private val backgroundPreferences: space.o4bit.projectasteria.data.preferences.BackgroundPreferencesRepository? = null
 ) {
+    private val refreshMutex = Mutex()
+
     val allLaunches: Flow<List<LaunchEntity>> = launchDao.getAllLaunches()
     val launches: Flow<List<LaunchEntity>> = sortingPreferences.isLaunchesAscending.flatMapLatest { isAscending ->
         if (isAscending) {
@@ -25,17 +35,13 @@ class LaunchRepository(
             launchDao.getNewestLaunches()
         }
     }
+
     suspend fun refreshUpcomingLaunches(limit: Int = 15) = withContext(Dispatchers.IO) {
-        try {
+        refreshMutex.withLock {
             val response = launchService.getUpcomingLaunches(limit = limit)
             val entities = response.results.map { launch ->
-                val netMillis = try {
-                    val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-                    format.timeZone = TimeZone.getTimeZone("UTC")
-                    format.parse(launch.net)?.time ?: 0L
-                } catch (e: Exception) {
-                    0L
-                }
+                val netInstant = parseLaunchInstant(launch.net)
+                val netMillis = netInstant?.toEpochMilli() ?: -1L
                 LaunchEntity(
                     id = launch.id,
                     name = launch.name,
@@ -51,10 +57,25 @@ class LaunchRepository(
                     netMillis = netMillis
                 )
             }
-            launchDao.clearLaunches()
-            launchDao.insertLaunches(entities)
-        } catch (e: Exception) {
-            throw e
+            require(entities.all { it.id.isNotBlank() }) {
+                "Launch response contains an invalid identifier"
+            }
+            val pinnedIds = backgroundPreferences?.pinnedLaunchIds?.first() ?: emptySet()
+            val remindedIds = reminderPreferences?.remindedLaunchIds?.first() ?: emptySet()
+            val preservedIds = (pinnedIds + remindedIds).toList()
+            launchDao.replaceAll(entities, preservedIds)
+            if (reminderScheduler != null && reminderPreferences != null) {
+                reminderScheduler.reconcile(entities, remindedIds)
+            }
+        }
+    }
+
+    companion object {
+        fun parseLaunchInstant(raw: String?): Instant? {
+            if (raw.isNullOrBlank()) return null
+            return runCatching { Instant.parse(raw) }.getOrNull()
+                ?: runCatching { java.time.OffsetDateTime.parse(raw).toInstant() }.getOrNull()
+                ?: runCatching { java.time.ZonedDateTime.parse(raw).toInstant() }.getOrNull()
         }
     }
 }

@@ -111,8 +111,10 @@ fun AstronomyPictureCard(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            val imageUrl = astronomyPicture.hdUrl ?: astronomyPicture.url
-            val isVideo = astronomyPicture.mediaType == "video"
+            val imageUrl = astronomyPicture.thumbnail?.takeIf { it.isNotBlank() }
+                ?: astronomyPicture.url?.takeIf { it.isNotBlank() }
+                ?: astronomyPicture.hdUrl?.takeIf { it.isNotBlank() }
+            val isVideo = astronomyPicture.mediaType.equals("video", ignoreCase = true)
             val context = LocalContext.current
             val configuration = LocalConfiguration.current
             val isLandscapePhone = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && configuration.smallestScreenWidthDp < 600
@@ -149,47 +151,76 @@ fun AstronomyPictureCard(
                         )
                     }
                     isVideo -> {
-                        val videoUrl = astronomyPicture.url ?: astronomyPicture.hdUrl
-                        var isPlayingInline by remember { mutableStateOf(false) }
-                        if (isPlayingInline && videoUrl != null) {
+                        val videoUrl = astronomyPicture.url?.takeIf { it.isNotBlank() }
+                            ?: astronomyPicture.hdUrl?.takeIf { it.isNotBlank() }
+                        var isPlayingInline by remember(videoUrl) { mutableStateOf(false) }
+                        if (isPlayingInline && !videoUrl.isNullOrBlank()) {
                             ApodVideoPlayer(
                                 videoUrl = videoUrl,
                                 modifier = Modifier.fillMaxSize()
                             )
                         } else {
-                            val thumbnailUrl = astronomyPicture.thumbnail ?: extractYouTubeThumbnail(imageUrl)
-                            if (thumbnailUrl != null) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .data(thumbnailUrl)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentDescription = "Video Thumbnail",
-                                    contentScale = ContentScale.Crop,
-                                    onSuccess = { isImageLoaded = true },
-                                    onError = { isImageLoaded = true },
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clickable { isPlayingInline = true }
-                                )
-                            } else {
-                                LaunchedEffect(Unit) { isImageLoaded = true }
-                            }
+                            val thumbnailUrl = astronomyPicture.thumbnail?.takeIf { it.isNotBlank() }
+                                ?: space.o4bit.projectasteria.utils.VideoEmbedUtils.extractVideoThumbnailUrl(videoUrl ?: imageUrl)
                             Box(
                                 modifier = Modifier
-                                    .size(56.dp)
-                                    .align(Alignment.Center)
-                                    .clip(CircleShape)
-                                    .background(Color.Black.copy(alpha = 0.65f))
-                                    .clickable { isPlayingInline = true },
-                                contentAlignment = Alignment.Center
+                                    .fillMaxSize()
+                                    .background(
+                                        androidx.compose.ui.graphics.Brush.linearGradient(
+                                            listOf(
+                                                Color(0xFF0F172A),
+                                                Color(0xFF1E1B4B)
+                                            )
+                                        )
+                                    )
+                                    .clickable { isPlayingInline = true }
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = "Play video",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(36.dp)
-                                )
+                                if (thumbnailUrl != null) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(context)
+                                            .data(thumbnailUrl)
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = "Video Thumbnail",
+                                        contentScale = ContentScale.Crop,
+                                        onSuccess = { isImageLoaded = true },
+                                        onError = { isImageLoaded = true },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                } else {
+                                    LaunchedEffect(Unit) { isImageLoaded = true }
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(percent = 50),
+                                    color = Color.Black.copy(alpha = 0.5f),
+                                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
+                                    modifier = Modifier
+                                        .align(Alignment.TopStart)
+                                        .padding(12.dp)
+                                ) {
+                                    Text(
+                                        text = "APOD Video",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .align(Alignment.Center)
+                                        .clip(CircleShape)
+                                        .background(Color.Black.copy(alpha = 0.65f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayArrow,
+                                        contentDescription = "Play video",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -481,20 +512,4 @@ fun AstronomyExplanationCard(
             }
         }
     }
-}
-private fun extractYouTubeThumbnail(url: String?): String? {
-    if (url == null) return null
-    val patterns = listOf(
-        Regex("""youtube\.com/embed/([a-zA-Z0-9_-]+)"""),
-        Regex("""youtu\.be/([a-zA-Z0-9_-]+)"""),
-        Regex("""youtube\.com/watch\?v=([a-zA-Z0-9_-]+)""")
-    )
-    for (pattern in patterns) {
-        val match = pattern.find(url)
-        if (match != null) {
-            val videoId = match.groupValues[1]
-            return "https://img.youtube.com/vi/$videoId/hqdefault.jpg"
-        }
-    }
-    return null
 }

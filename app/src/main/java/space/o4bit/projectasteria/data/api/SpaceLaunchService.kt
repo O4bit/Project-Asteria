@@ -19,7 +19,7 @@ interface SpaceLaunchService {
         private const val BASE_URL = "https://lldev.thespacedevs.com/2.2.0/"
         fun create(): SpaceLaunchService {
             val logger = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
+                level = if (space.o4bit.projectasteria.BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             }
             val client = OkHttpClient.Builder()
                 .addInterceptor { chain ->

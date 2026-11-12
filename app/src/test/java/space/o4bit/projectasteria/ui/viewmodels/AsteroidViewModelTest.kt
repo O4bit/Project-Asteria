@@ -100,4 +100,36 @@ class AsteroidViewModelTest {
         coVerify(atLeast = 1) { asteroidRepository.refreshTodaysAsteroids() }
         job.cancel()
     }
+
+    @Test
+    fun refresh_failureWithEmptyCache_transitionsToError() = runTest {
+        every { asteroidRepository.allAsteroids } returns flowOf(emptyList())
+        io.mockk.coEvery { asteroidRepository.refreshTodaysAsteroids() } throws RuntimeException("Asteroid sync error")
+        viewModel = AsteroidViewModel(asteroidRepository)
+        val job = launch { viewModel.uiState.collect {} }
+        advanceTimeBy(100)
+        viewModel.refresh()
+        advanceTimeBy(100)
+        assertTrue(viewModel.uiState.value is AsteroidUiState.Error)
+        org.junit.Assert.assertFalse(viewModel.isRefreshing.value)
+        org.junit.Assert.assertEquals("Asteroid sync error", viewModel.refreshError.value)
+        job.cancel()
+    }
+
+    @Test
+    fun refresh_failureWithCachedData_preservesSuccessState() = runTest {
+        val entities = listOf(fakeEntity("a1"))
+        every { asteroidRepository.allAsteroids } returns flowOf(entities)
+        io.mockk.coEvery { asteroidRepository.refreshTodaysAsteroids() } throws RuntimeException("Asteroid sync timeout")
+        viewModel = AsteroidViewModel(asteroidRepository)
+        val job = launch { viewModel.uiState.collect {} }
+        advanceTimeBy(100)
+        assertTrue(viewModel.uiState.value is AsteroidUiState.Success)
+        viewModel.refresh()
+        advanceTimeBy(100)
+        assertTrue(viewModel.uiState.value is AsteroidUiState.Success)
+        org.junit.Assert.assertFalse(viewModel.isRefreshing.value)
+        org.junit.Assert.assertEquals("Asteroid sync timeout", viewModel.refreshError.value)
+        job.cancel()
+    }
 }

@@ -1,5 +1,5 @@
 package space.o4bit.projectasteria.ui.components
-import android.content.Context
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,21 +10,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Settings
-import kotlinx.coroutines.flow.map
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,21 +64,20 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import space.o4bit.projectasteria.AsteriaApplication
 import space.o4bit.projectasteria.data.local.LaunchEntity
 import space.o4bit.projectasteria.data.model.LaunchSortBy
 import space.o4bit.projectasteria.data.repository.LaunchRepository
-import space.o4bit.projectasteria.data.worker.LaunchReminderWorker
+import space.o4bit.projectasteria.data.worker.LaunchReminderScheduler
 import space.o4bit.projectasteria.ui.viewmodels.LaunchUiState
 import space.o4bit.projectasteria.ui.viewmodels.LaunchViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
-import java.util.concurrent.TimeUnit
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaunchScreen(
@@ -84,10 +86,14 @@ fun LaunchScreen(
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as AsteriaApplication
+    val reminderScheduler = remember { LaunchReminderScheduler(WorkManager.getInstance(context)) }
     val repository = remember {
         LaunchRepository(
             launchDao = application.database.launchDao(),
-            sortingPreferences = application.sortingPreferences
+            sortingPreferences = application.sortingPreferences,
+            reminderScheduler = reminderScheduler,
+            reminderPreferences = application.reminderPreferences,
+            backgroundPreferences = application.backgroundPreferences
         )
     }
     val viewModel: LaunchViewModel = viewModel(
@@ -96,16 +102,33 @@ fun LaunchScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     val sortDirection by viewModel.sortDirection.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val refreshError by viewModel.refreshError.collectAsStateWithLifecycle()
+
+    val remindedIds by application.reminderPreferences.remindedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
+    val pinnedIds by application.backgroundPreferences.pinnedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
+
     var showSortSheet by remember { mutableStateOf(false) }
-    var isRefreshing by remember { mutableStateOf(false) }
+    var showPinnedSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
     val listState = rememberSaveable(sortBy, sortDirection, saver = LazyListState.Saver) {
         LazyListState(0, 0)
     }
     val snackbarHostState = remember { SnackbarHostState() }
+    val isTablet = LocalConfiguration.current.smallestScreenWidthDp >= 600
+
     LaunchedEffect(Unit) {
         viewModel.refresh()
     }
+
+    LaunchedEffect(refreshError) {
+        refreshError?.let {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(it)
+        }
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -120,6 +143,9 @@ fun LaunchScreen(
                     )
                 },
                 actions = {
+                    IconButton(onClick = { showPinnedSheet = true }) {
+                        Icon(Icons.Default.PushPin, contentDescription = "Pinned Widget Launches")
+                    }
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
@@ -135,6 +161,7 @@ fun LaunchScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
         ) {
             SortFilterHeader(
                 sortLabel = sortBy.label,
@@ -168,37 +195,119 @@ fun LaunchScreen(
                         } else {
                             PullToRefreshBox(
                                 isRefreshing = isRefreshing,
-                                onRefresh = {
-                                    scope.launch {
-                                        isRefreshing = true
-                                        viewModel.refresh()
-                                        isRefreshing = false
-                                    }
-                                },
+                                onRefresh = { viewModel.refresh() },
                                 modifier = Modifier.fillMaxSize()
                             ) {
-                                LazyColumn(
-                                    state = listState,
-                                    contentPadding = PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clipToBounds()
-                                ) {
-                                    items(
-                                        items = state.launches,
-                                        key = { "${sortBy.name}_${sortDirection.name}_${it.id}" }
-                                    ) { launch ->
-                                        LaunchCard(
-                                            launch = launch,
-                                            onClick = { onLaunchClick(launch.id) },
-                                            onShowSnackbar = { message ->
-                                                scope.launch {
-                                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                                    snackbarHostState.showSnackbar(message)
+                                if (isTablet) {
+                                    LazyVerticalGrid(
+                                        columns = GridCells.Adaptive(minSize = 360.dp),
+                                        contentPadding = PaddingValues(16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clipToBounds()
+                                    ) {
+                                        items(
+                                            items = state.launches,
+                                            key = { "${sortBy.name}_${sortDirection.name}_${it.id}" }
+                                        ) { launch ->
+                                            val isReminded = remindedIds.contains(launch.id)
+                                            val isPinned = pinnedIds.contains(launch.id)
+                                            LaunchCard(
+                                                launch = launch,
+                                                isReminded = isReminded,
+                                                isPinned = isPinned,
+                                                onClick = { onLaunchClick(launch.id) },
+                                                onTogglePin = {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    scope.launch {
+                                                        application.backgroundPreferences.togglePinLaunch(launch.id)
+                                                        space.o4bit.projectasteria.widget.LaunchAppWidgetProvider.updateAllWidgets(context)
+                                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                                        snackbarHostState.showSnackbar(
+                                                            if (isPinned) "Unpinned from Widget" else "Pinned ${launch.name} to Widget"
+                                                        )
+                                                    }
+                                                },
+                                                onToggleReminder = {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    scope.launch {
+                                                        if (isReminded) {
+                                                            application.reminderPreferences.removeReminder(launch.id)
+                                                            reminderScheduler.cancel(launch.id)
+                                                            snackbarHostState.currentSnackbarData?.dismiss()
+                                                            snackbarHostState.showSnackbar("Reminder cancelled for ${launch.name}")
+                                                        } else {
+                                                            val scheduled = reminderScheduler.schedule(launch)
+                                                            if (scheduled) {
+                                                                application.reminderPreferences.setReminder(launch.id)
+                                                                snackbarHostState.currentSnackbarData?.dismiss()
+                                                                snackbarHostState.showSnackbar("Reminder set 15m before ${launch.name}")
+                                                            } else {
+                                                                snackbarHostState.currentSnackbarData?.dismiss()
+                                                                snackbarHostState.showSnackbar("Cannot set reminder for past or unknown launch time")
+                                                            }
+                                                        }
+                                                    }
                                                 }
-                                            }
-                                        )
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    LazyColumn(
+                                        state = listState,
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clipToBounds()
+                                    ) {
+                                        items(
+                                            items = state.launches,
+                                            key = { "${sortBy.name}_${sortDirection.name}_${it.id}" }
+                                        ) { launch ->
+                                            val isReminded = remindedIds.contains(launch.id)
+                                            val isPinned = pinnedIds.contains(launch.id)
+                                            LaunchCard(
+                                                launch = launch,
+                                                isReminded = isReminded,
+                                                isPinned = isPinned,
+                                                onClick = { onLaunchClick(launch.id) },
+                                                onTogglePin = {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    scope.launch {
+                                                        application.backgroundPreferences.togglePinLaunch(launch.id)
+                                                        space.o4bit.projectasteria.widget.LaunchAppWidgetProvider.updateAllWidgets(context)
+                                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                                        snackbarHostState.showSnackbar(
+                                                            if (isPinned) "Unpinned from Widget" else "Pinned ${launch.name} to Widget"
+                                                        )
+                                                    }
+                                                },
+                                                onToggleReminder = {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    scope.launch {
+                                                        if (isReminded) {
+                                                            application.reminderPreferences.removeReminder(launch.id)
+                                                            reminderScheduler.cancel(launch.id)
+                                                            snackbarHostState.currentSnackbarData?.dismiss()
+                                                            snackbarHostState.showSnackbar("Reminder cancelled for ${launch.name}")
+                                                        } else {
+                                                            val scheduled = reminderScheduler.schedule(launch)
+                                                            if (scheduled) {
+                                                                application.reminderPreferences.setReminder(launch.id)
+                                                                snackbarHostState.currentSnackbarData?.dismiss()
+                                                                snackbarHostState.showSnackbar("Reminder set 15m before ${launch.name}")
+                                                            } else {
+                                                                snackbarHostState.currentSnackbarData?.dismiss()
+                                                                snackbarHostState.showSnackbar("Cannot set reminder for past or unknown launch time")
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -212,54 +321,51 @@ fun LaunchScreen(
                 options = LaunchSortBy.entries,
                 selectedOption = sortBy,
                 getOptionLabel = { it.label },
-                onOptionSelected = { viewModel.setSortBy(it) },
+                onOptionSelected = { newSort ->
+                    viewModel.setSortBy(newSort)
+                    showSortSheet = false
+                },
                 onDismissRequest = { showSortSheet = false }
+            )
+        }
+        if (showPinnedSheet) {
+            PinnedLaunchesSheet(
+                onDismissRequest = { showPinnedSheet = false },
+                onLaunchClick = onLaunchClick
             )
         }
     }
 }
+
 @Composable
 fun LaunchCard(
     launch: LaunchEntity,
+    isReminded: Boolean,
+    isPinned: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
-    onShowSnackbar: (String) -> Unit = {}
+    onTogglePin: () -> Unit = {},
+    onToggleReminder: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val application = context.applicationContext as AsteriaApplication
-    val reminderPrefs = remember { application.reminderPreferences }
-    val bgPrefs = remember { application.backgroundPreferences }
-    val haptic = LocalHapticFeedback.current
-    val scope = rememberCoroutineScope()
-    val remindedIds by reminderPrefs.remindedLaunchIds.collectAsStateWithLifecycle(initialValue = emptySet())
-    val isReminded = remindedIds.contains(launch.id)
     val formattedDate = remember(launch.net) {
-        try {
-            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-                timeZone = TimeZone.getTimeZone("UTC")
-            }
-            val date = parser.parse(launch.net)
-            date?.let {
-                val formatter = java.text.DateFormat.getDateTimeInstance(
-                    java.text.DateFormat.MEDIUM,
-                    java.text.DateFormat.SHORT,
-                    java.util.Locale.getDefault()
-                )
-                formatter.format(it)
-            } ?: launch.net
-        } catch (e: Exception) {
+        val parsed = runCatching { Instant.parse(launch.net) }.getOrNull()
+        if (parsed != null) {
+            val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+                .withZone(ZoneId.systemDefault())
+            formatter.format(parsed)
+        } else {
             launch.net
         }
     }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "scale")
+
     space.o4bit.projectasteria.ui.components.settings.AsteriaCard(
         modifier = modifier
             .fillMaxWidth()
             .scale(scale)
             .clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
-            .semantics(mergeDescendants = true) {}
             .clickable(
                 interactionSource = interactionSource,
                 indication = androidx.compose.foundation.LocalIndication.current,
@@ -279,39 +385,14 @@ fun LaunchCard(
                     modifier = Modifier.weight(1f)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val isPinned by bgPrefs.pinnedLaunchIds.map { it.contains(launch.id) }.collectAsStateWithLifecycle(initialValue = false)
-                    IconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            val currentlyPinned = isPinned
-                            scope.launch {
-                                bgPrefs.togglePinLaunch(launch.id)
-                                onShowSnackbar(if (currentlyPinned) "Unpinned from Home" else "Pinned ${launch.name} to Home")
-                            }
-                        }
-                    ) {
+                    IconButton(onClick = onTogglePin) {
                         Icon(
                             imageVector = Icons.Default.PushPin,
                             contentDescription = if (isPinned) "Unpin from Home" else "Pin to Home",
                             tint = if (isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }
-                    IconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            scope.launch {
-                                if (isReminded) {
-                                    reminderPrefs.removeReminder(launch.id)
-                                    cancelLaunchReminder(context, launch.id)
-                                    onShowSnackbar("Reminder cancelled for ${launch.name}")
-                                } else {
-                                    reminderPrefs.setReminder(launch.id)
-                                    scheduleLaunchReminder(context, launch)
-                                    onShowSnackbar("Reminder set 15m before ${launch.name}")
-                                }
-                            }
-                        }
-                    ) {
+                    IconButton(onClick = onToggleReminder) {
                         Icon(
                             imageVector = if (isReminded) Icons.Default.Notifications else Icons.Default.NotificationsOff,
                             contentDescription = if (isReminded) "Cancel reminder" else "Set reminder",
@@ -353,24 +434,4 @@ fun LaunchCard(
             }
         }
     }
-}
-private fun scheduleLaunchReminder(context: Context, launch: LaunchEntity) {
-    val workManager = WorkManager.getInstance(context)
-    val delayMillis = launch.netMillis - System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(15)
-    if (delayMillis > 0) {
-        val inputData = Data.Builder()
-            .putString("LAUNCH_ID", launch.id)
-            .putString("LAUNCH_NAME", launch.name)
-            .build()
-        val reminderWork = OneTimeWorkRequestBuilder<LaunchReminderWorker>()
-            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
-            .setInputData(inputData)
-            .addTag("reminder_${launch.id}")
-            .build()
-        workManager.enqueue(reminderWork)
-    }
-}
-private fun cancelLaunchReminder(context: Context, launchId: String) {
-    val workManager = WorkManager.getInstance(context)
-    workManager.cancelAllWorkByTag("reminder_$launchId")
 }
