@@ -1,0 +1,3 @@
+- Restored F-Droid package ID (space.o4bit.projectasteria.foss) via separate FOSS and Play build flavors so updates install cleanly
+- Includes all 4.8.0 features: Rocket Launch Countdown home screen widget, launch reminder notifications, and Celestial Objects explorer
+- Includes APOD video/HTML/history fixes, search & date picker, and Material 3 Open-Source Licenses

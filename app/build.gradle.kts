@@ -36,8 +36,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "space.o4bit.projectasteria"
         minSdk = 31
         targetSdk = 36
-        versionCode = 55
-        versionName = "4.8.0"
+        versionCode = 56
+        versionName = "4.8.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -52,6 +52,18 @@ extensions.configure<ApplicationExtension> {
             "\"https://asteria.o4bit.dev/\""
         )
 
+    }
+
+    flavorDimensions += "store"
+    productFlavors {
+        create("foss") {
+            dimension = "store"
+            applicationIdSuffix = ".foss"
+            isDefault = true
+        }
+        create("play") {
+            dimension = "store"
+        }
     }
 
     signingConfigs {
